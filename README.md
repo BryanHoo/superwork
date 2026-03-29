@@ -36,20 +36,16 @@
 <a href="https://chatgpt.com/?q=Explain+the+project+BryanHoo/superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
 </p>
 
-<p align="center">
-<img src="assets/superwork-demo.gif" alt="Superwork workflow demo" width="100%">
-</p>
-
 ## Why Superwork?
 
-| Capability | What it changes |
-| --- | --- |
-| **Auto-injected specs** | Write conventions once in `.superwork/spec/`, then let Superwork inject the relevant context into each session instead of repeating yourself. |
-| **Task-centered workflow** | Keep PRDs, implementation context, review context, and task status in `.superwork/tasks/` so AI work stays structured. |
-| **Parallel agent execution** | Run multiple AI tasks side by side with git worktrees instead of turning one branch into a traffic jam. |
-| **Project memory** | Journals in `.superwork/workspace/` preserve what happened last time, so each new session starts with real context. |
-| **Team-shared standards** | Specs live in the repo, so one person’s hard-won workflow or rule can benefit the whole team. |
-| **Multi-platform setup** | Bring the same Superwork structure to Claude Code and Codex instead of rebuilding your workflow per tool. |
+| Capability                   | What it changes                                                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Auto-injected specs**      | Write conventions once in `.superwork/spec/`, then let Superwork inject the relevant context into each session instead of repeating yourself. |
+| **Task-centered workflow**   | Keep PRDs, implementation context, review context, and task status in `.superwork/tasks/` so AI work stays structured.                        |
+| **Parallel agent execution** | Run multiple AI tasks side by side with git worktrees instead of turning one branch into a traffic jam.                                       |
+| **Project memory**           | Journals in `.superwork/workspace/` preserve what happened last time, so each new session starts with real context.                           |
+| **Team-shared standards**    | Specs live in the repo, so one person’s hard-won workflow or rule can benefit the whole team.                                                 |
+| **Multi-platform setup**     | Bring the same Superwork structure to Claude Code and Codex instead of rebuilding your workflow per tool.                                     |
 
 ## Quick Start
 

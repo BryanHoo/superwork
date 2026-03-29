@@ -37,14 +37,6 @@
 <a href="https://chatgpt.com/?q=Explain+the+project+BryanHoo/superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
 </p>
 
-<p align="center">
-<img src="assets/superwork-demo-zh.gif" alt="Superwork 工作流演示" width="100%">
-</p>
-
-<p align="center">
-<img src="assets/superwork-demo-zh.gif" alt="Superwork 工作流演示" width="100%">
-</p>
-
 ## 为什么用 Superwork？
 
 | 能力                | 带来的变化                                                                                               |
