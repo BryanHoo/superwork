@@ -14,7 +14,7 @@ This script:
 
 Prerequisites:
     - task.json must exist with 'branch' field
-    - agents/dispatch.md must exist (in .claude/, .cursor/, .iflow/, or .opencode/)
+    - Agent definition must exist for the selected platform
 
 Configuration: .superwork/worktree.yaml
 """
@@ -187,7 +187,7 @@ def main() -> int:
     parser.add_argument("task_dir", help="Task directory path")
     parser.add_argument(
         "--platform", "-p",
-        choices=["claude", "cursor", "iflow", "opencode", "codex", "qoder"],
+        choices=["claude", "codex"],
         default=DEFAULT_PLATFORM,
         help="Platform to use (default: claude)"
     )
@@ -415,14 +415,13 @@ def main() -> int:
 
     log_file.touch()
 
-    # Generate session ID for resume support (Claude Code only)
-    # OpenCode generates its own session ID, we'll extract it from logs later
+    # Generate session ID for CLIs that support it on session creation.
     if adapter.supports_session_id_on_create:
         session_id = str(uuid.uuid4()).lower()
         session_id_file.write_text(session_id, encoding="utf-8")
         log_info(f"Session ID: {session_id}")
     else:
-        session_id = None  # Will be extracted from logs after startup
+        session_id = None  # Will be extracted from logs after startup if possible
         log_info("Session ID will be extracted from logs after startup")
 
     # Get proxy environment variables
@@ -474,7 +473,7 @@ def main() -> int:
 
     log_success(f"Agent started with PID: {agent_pid}")
 
-    # For OpenCode: extract session ID from logs after startup
+    # For CLIs without session-id-on-create support, try extracting from logs.
     if not adapter.supports_session_id_on_create:
         import time
         log_info("Waiting for session ID from logs...")

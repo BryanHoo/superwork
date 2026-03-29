@@ -1,6 +1,6 @@
 # Create New Slash Command
 
-Create a new slash command in both `.cursor/commands/` (with `superwork-` prefix) and `.claude/commands/superwork/` directories based on user requirements.
+Create a new slash command in `.claude/commands/superwork/` based on user requirements.
 
 ## Usage
 
@@ -60,8 +60,7 @@ Template
 
 ### 4. Create Files
 
-Create in both directories:
-- `.cursor/commands/superwork-<command-name>.md`
+Create the command file:
 - `.claude/commands/superwork/<command-name>.md`
 
 ### 5. Confirm Creation
@@ -71,7 +70,6 @@ Output result:
 [OK] Created Slash Command: /<command-name>
 
 File paths:
-- .cursor/commands/superwork-<command-name>.md
 - .claude/commands/superwork/<command-name>.md
 
 Usage:

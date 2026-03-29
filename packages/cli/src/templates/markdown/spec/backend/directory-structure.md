@@ -6,7 +6,7 @@
 
 ## Overview
 
-This project is a **TypeScript CLI tool** using ES modules. The source code follows a **dogfooding architecture** - Superwork uses its own configuration files (`.cursor/`, `.claude/`, `.superwork/`) as templates for new projects.
+This project is a **TypeScript CLI tool** using ES modules. The source code follows a **dogfooding architecture** - Superwork uses its own configuration files (`.claude/`, `.codex/`, `.superwork/`) as templates for new projects.
 
 ---
 
@@ -22,9 +22,7 @@ src/
 │   ├── index.ts         # Platform registry (PLATFORM_FUNCTIONS, derived helpers)
 │   ├── shared.ts        # Shared utilities (resolvePlaceholders)
 │   ├── claude.ts        # Claude Code configurator
-│   ├── cursor.ts        # Cursor configurator
-│   ├── iflow.ts         # iFlow CLI configurator
-│   ├── opencode.ts      # OpenCode configurator
+│   ├── codex.ts         # Codex configurator
 │   └── workflow.ts      # Creates .superwork/ structure
 ├── constants/           # Shared constants and paths
 │   └── paths.ts         # Path constants (centralized)
@@ -52,17 +50,17 @@ src/
 These directories are copied to `dist/` during build and used as templates:
 
 ```
-.cursor/                 # Cursor configuration (dogfooded)
-├── commands/            # Slash commands for Cursor
-│   ├── start.md
-│   ├── finish-work.md
-│   └── ...
-
 .claude/                 # Claude Code configuration (dogfooded)
 ├── commands/            # Slash commands
 ├── agents/              # Multi-agent pipeline agents
 ├── hooks/               # Context injection hooks
 └── settings.json        # Hook configuration
+
+.codex/                  # Codex configuration (dogfooded)
+├── agents/              # Custom agents
+├── hooks/               # Session hooks
+├── skills/              # Platform-specific skills
+└── config.toml          # Project config
 
 .superwork/                # Superwork workflow (partially dogfooded)
 ├── scripts/             # Python scripts (dogfooded)
@@ -91,8 +89,9 @@ Files that are copied directly from Superwork project to user projects:
 
 | Source | Destination | Description |
 |--------|-------------|-------------|
-| `.cursor/` | `.cursor/` | Entire directory copied |
 | `.claude/` | `.claude/` | Entire directory copied |
+| `.codex/` | `.codex/` | Entire directory copied |
+| `.agents/skills/` | `.agents/skills/` | Shared Codex skills copied |
 | `.superwork/scripts/` | `.superwork/scripts/` | All scripts copied |
 | `.superwork/workflow.md` | `.superwork/workflow.md` | Direct copy |
 | `.superwork/.gitignore` | `.superwork/.gitignore` | Direct copy |
@@ -117,8 +116,8 @@ pnpm build
 
 # Result:
 dist/
-├── .cursor/           # From project root .cursor/
 ├── .claude/           # From project root .claude/
+├── .codex/            # From project root .codex/
 ├── .superwork/          # From project root .superwork/ (filtered)
 │   ├── scripts/       # All scripts
 │   ├── workspace/
@@ -152,10 +151,10 @@ dist/
 Configurators use `cpSync` for direct directory copy (dogfooding):
 
 ```typescript
-// configurators/cursor.ts
-export async function configureCursor(cwd: string): Promise<void> {
-  const sourcePath = getCursorSourcePath(); // dist/.cursor/ or .cursor/
-  const destPath = path.join(cwd, ".cursor");
+// configurators/claude.ts
+export async function configureClaude(cwd: string): Promise<void> {
+  const sourcePath = getClaudeSourcePath(); // dist/.claude/ or .claude/
+  const destPath = path.join(cwd, ".claude");
   cpSync(sourcePath, destPath, { recursive: true });
 }
 ```
@@ -206,7 +205,7 @@ Templates use `.txt` extension to:
 - Use `cpSync` for copying entire directories
 - Keep generic templates in `src/templates/markdown/`
 - Use `.md.txt` or `.yaml.txt` for template files
-- Update dogfooding sources (`.cursor/`, `.claude/`, `.superwork/scripts/`) when making changes
+- Update dogfooding sources (`.claude/`, `.codex/`, `.superwork/scripts/`) when making changes
 - Always use `python3` explicitly when documenting script invocation (Windows compatibility)
 
 ### DON'T

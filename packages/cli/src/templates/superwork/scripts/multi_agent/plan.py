@@ -12,7 +12,7 @@ This script:
 After completion, use start.py to launch the Dispatch Agent.
 
 Prerequisites:
-    - agents/plan.md must exist (in .claude/, .cursor/, .iflow/, or .opencode/)
+    - Agent definition must exist for the selected platform
     - Developer must be initialized
 """
 
@@ -53,7 +53,7 @@ def main() -> int:
     parser.add_argument("--requirement", "-r", required=True, help="Requirement description")
     parser.add_argument(
         "--platform", "-p",
-        choices=["claude", "cursor", "iflow", "opencode", "codex", "qoder"],
+        choices=["claude", "codex"],
         default=DEFAULT_PLATFORM,
         help="Platform to use (default: claude)"
     )
@@ -158,7 +158,7 @@ def main() -> int:
 
     # Build CLI command using adapter
     cli_cmd = adapter.build_run_command(
-        agent="plan",  # Will be mapped to "superwork-plan" for OpenCode
+        agent="plan",
         prompt=f"Start planning for task: {task_name}",
         skip_permissions=True,
         verbose=True,

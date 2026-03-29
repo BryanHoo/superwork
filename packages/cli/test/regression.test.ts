@@ -34,10 +34,6 @@ import {
   getAllAgents as getClaudeAgents,
   getAllHooks as getClaudeHooks,
 } from "../src/templates/claude/index.js";
-import {
-  settingsTemplate as iflowSettingsTemplate,
-  getAllHooks as getIflowHooks,
-} from "../src/templates/iflow/index.js";
 import { getAllHooks as getCodexHooks } from "../src/templates/codex/index.js";
 import {
   commonInit,
@@ -59,7 +55,6 @@ import {
 } from "../src/configurators/index.js";
 import { guidesIndexContent, workspaceIndexContent } from "../src/templates/markdown/index.js";
 import * as markdownExports from "../src/templates/markdown/index.js";
-import { SuperworkContext } from "../src/templates/opencode/lib/superwork-context.js";
 
 afterEach(() => {
   clearManifestCache();
@@ -467,9 +462,8 @@ describe("regression: Windows path separator (beta.12)", () => {
   it("[beta.12] isManagedPath handles Windows backslash paths", () => {
     expect(isManagedPath(".claude\\commands\\foo.md")).toBe(true);
     expect(isManagedPath(".superwork\\spec\\backend")).toBe(true);
-    expect(isManagedPath(".iflow\\hooks\\test.py")).toBe(true);
-    expect(isManagedPath(".cursor\\commands\\start.md")).toBe(true);
-    expect(isManagedPath(".opencode\\config.json")).toBe(true);
+    expect(isManagedPath(".codex\\agents\\check.toml")).toBe(true);
+    expect(isManagedPath(".agents\\skills\\start\\SKILL.md")).toBe(true);
   });
 
   it("[beta.12] isManagedPath handles mixed separators", () => {
@@ -643,25 +637,8 @@ describe("regression: migration data integrity (beta.14)", () => {
 });
 
 describe("regression: update only configured platforms (beta.16)", () => {
-  it("[beta.16] collectPlatformTemplates returns undefined for opencode (no collectTemplates)", () => {
-    // OpenCode uses plugin system, templates tracked separately
-    const result = collectPlatformTemplates("opencode");
-    expect(result).toBeUndefined();
-  });
-
   it("[beta.16] collectPlatformTemplates returns Map for platforms with tracking", () => {
-    const withTracking = [
-      "claude-code",
-      "cursor",
-      "iflow",
-      "codex",
-      "kilo",
-      "kiro",
-      "gemini",
-      "antigravity",
-      "qoder",
-      "codebuddy",
-    ] as const;
+    const withTracking = ["claude-code", "codex"] as const;
     for (const id of withTracking) {
       const result = collectPlatformTemplates(id);
       expect(result, `${id} should have template tracking`).toBeInstanceOf(Map);
@@ -775,25 +752,6 @@ describe("regression: hook JSON format (beta.7)", () => {
     }
   });
 
-  it("[beta.7] iFlow settings.json is valid JSON with hooks", () => {
-    expect(() => JSON.parse(iflowSettingsTemplate)).not.toThrow();
-    const settings = JSON.parse(iflowSettingsTemplate);
-    expect(settings).toHaveProperty("hooks");
-  });
-
-  it("[beta.7] iFlow hook commands use {{PYTHON_CMD}} placeholder", () => {
-    const settings = JSON.parse(iflowSettingsTemplate);
-    const hookTypes = Object.values(settings.hooks) as {
-      hooks: { command: string }[];
-    }[][];
-    for (const entries of hookTypes) {
-      for (const entry of entries) {
-        for (const hook of entry.hooks) {
-          expect(hook.command).toContain("{{PYTHON_CMD}}");
-        }
-      }
-    }
-  });
 });
 
 describe("regression: SessionStart reinject on clear/compact (MIN-231)", () => {
@@ -807,21 +765,8 @@ describe("regression: SessionStart reinject on clear/compact (MIN-231)", () => {
     );
   });
 
-  it("[MIN-231] iFlow SessionStart hooks cover startup, clear, and compress", () => {
-    const settings = JSON.parse(iflowSettingsTemplate);
-    const matchers = settings.hooks.SessionStart.map(
-      (e: { matcher: string }) => e.matcher,
-    );
-    expect(matchers).toEqual(
-      expect.arrayContaining(["startup", "clear", "compress"]),
-    );
-  });
-
   it("[MIN-231] all SessionStart matchers invoke session-start.py", () => {
-    for (const [label, template] of [
-      ["claude", claudeSettingsTemplate],
-      ["iflow", iflowSettingsTemplate],
-    ] as const) {
+    for (const [label, template] of [["claude", claudeSettingsTemplate]] as const) {
       const settings = JSON.parse(template);
       for (const entry of settings.hooks.SessionStart) {
         expect(
@@ -837,9 +782,6 @@ describe("regression: current-task path normalization", () => {
   let tmpDir: string;
   const pythonCmd = process.platform === "win32" ? "python" : "python3";
   const claudeSessionStart = getClaudeHooks().find(
-    (hook) => hook.targetPath === "hooks/session-start.py",
-  )?.content;
-  const iflowSessionStart = getIflowHooks().find(
     (hook) => hook.targetPath === "hooks/session-start.py",
   )?.content;
   const codexSessionStart = getCodexHooks().find(
@@ -946,22 +888,17 @@ describe("regression: current-task path normalization", () => {
       expectTemplateContent(claudeSessionStart, "claude session-start"),
     );
     writeProjectFile(
-      path.join(".iflow", "hooks", "session-start.py"),
-      expectTemplateContent(iflowSessionStart, "iflow session-start"),
-    );
-    writeProjectFile(
       path.join(".codex", "hooks", "session-start.py"),
       expectTemplateContent(codexSessionStart, "codex session-start"),
     );
 
     const claudeOutput = runPython(path.join(".claude", "hooks", "session-start.py"));
-    const iflowOutput = runPython(path.join(".iflow", "hooks", "session-start.py"));
     const codexOutput = runPython(
       path.join(".codex", "hooks", "session-start.py"),
       JSON.stringify({ cwd: tmpDir }),
     );
 
-    for (const output of [claudeOutput, iflowOutput]) {
+    for (const output of [claudeOutput]) {
       expect(output).toContain("Status: READY");
       expect(output).not.toContain("STALE POINTER");
     }
@@ -977,18 +914,6 @@ describe("regression: current-task path normalization", () => {
     );
   });
 
-  it("[current-task] OpenCode context layer normalizes backslash refs for downstream plugins", () => {
-    setupTaskRepo();
-
-    const ctx = new SuperworkContext(tmpDir) as SuperworkContext & {
-      resolveTaskDir: (taskRef: string) => string | null;
-    };
-
-    expect(ctx.getCurrentTask()).toBe(".superwork/tasks/issue-106");
-    expect(ctx.resolveTaskDir(".superwork\\tasks\\issue-106")).toBe(
-      path.join(tmpDir, ".superwork", "tasks", "issue-106"),
-    );
-  });
 });
 
 describe("regression: backslash in markdown templates (beta.12)", () => {
@@ -1016,13 +941,6 @@ describe("regression: backslash in markdown templates (beta.12)", () => {
     }
   });
 
-  it("[beta.12] iFlow hook templates do not contain problematic backslash sequences", () => {
-    const hooks = getIflowHooks();
-    for (const hook of hooks) {
-      expect(hook.content).not.toContain("\\--");
-      expect(hook.content).not.toContain("\\->");
-    }
-  });
 });
 
 // =============================================================================
@@ -1030,50 +948,15 @@ describe("regression: backslash in markdown templates (beta.12)", () => {
 // =============================================================================
 
 describe("regression: platform additions (beta.9, beta.13, beta.16)", () => {
-  it("[beta.9] OpenCode platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("opencode");
-    expect(AI_TOOLS.opencode.configDir).toBe(".opencode");
-  });
-
-  it("[beta.13] Cursor platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("cursor");
-    expect(AI_TOOLS.cursor.configDir).toBe(".cursor");
-  });
-
-  it("[beta.16] iFlow platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("iflow");
-    expect(AI_TOOLS.iflow.configDir).toBe(".iflow");
+  it("[claude] Claude platform is registered", () => {
+    expect(AI_TOOLS).toHaveProperty("claude-code");
+    expect(AI_TOOLS["claude-code"].configDir).toBe(".claude");
   });
 
   it("[codex] Codex platform is registered", () => {
     expect(AI_TOOLS).toHaveProperty("codex");
     expect(AI_TOOLS.codex.configDir).toBe(".codex");
     expect(AI_TOOLS.codex.supportsAgentSkills).toBe(true);
-  });
-
-  it("[kiro] Kiro platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("kiro");
-    expect(AI_TOOLS.kiro.configDir).toBe(".kiro/skills");
-  });
-
-  it("[gemini] Gemini CLI platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("gemini");
-    expect(AI_TOOLS.gemini.configDir).toBe(".gemini");
-  });
-
-  it("[antigravity] Antigravity platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("antigravity");
-    expect(AI_TOOLS.antigravity.configDir).toBe(".agent/workflows");
-  });
-
-  it("[qoder] Qoder platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("qoder");
-    expect(AI_TOOLS.qoder.configDir).toBe(".qoder");
-  });
-
-  it("[codebuddy] CodeBuddy platform is registered", () => {
-    expect(AI_TOOLS).toHaveProperty("codebuddy");
-    expect(AI_TOOLS.codebuddy.configDir).toBe(".codebuddy");
   });
 
   it("[beta.9] all platforms have consistent required fields", () => {
@@ -1091,19 +974,9 @@ describe("regression: platform additions (beta.9, beta.13, beta.16)", () => {
 });
 
 describe("regression: cli_adapter platform support (beta.9, beta.13, beta.16)", () => {
-  it("[beta.9] cli_adapter.py supports opencode platform", () => {
-    expect(commonCliAdapter).toContain('"opencode"');
-    expect(commonCliAdapter).toContain(".opencode");
-  });
-
-  it("[beta.13] cli_adapter.py supports cursor platform", () => {
-    expect(commonCliAdapter).toContain('"cursor"');
-    expect(commonCliAdapter).toContain(".cursor");
-  });
-
-  it("[beta.16] cli_adapter.py supports iflow platform", () => {
-    expect(commonCliAdapter).toContain('"iflow"');
-    expect(commonCliAdapter).toContain(".iflow");
+  it("[claude] cli_adapter.py supports claude platform", () => {
+    expect(commonCliAdapter).toContain('"claude"');
+    expect(commonCliAdapter).toContain(".claude");
   });
 
   it("[codex] cli_adapter.py supports codex platform", () => {
@@ -1115,31 +988,6 @@ describe("regression: cli_adapter platform support (beta.9, beta.13, beta.16)", 
   it("[codex] multi_agent plan/start scripts allow codex platform", () => {
     expect(multiAgentPlan).toContain('"codex"');
     expect(multiAgentStart).toContain('"codex"');
-  });
-
-  it("[kiro] cli_adapter.py supports kiro platform", () => {
-    expect(commonCliAdapter).toContain('"kiro"');
-    expect(commonCliAdapter).toContain(".kiro");
-  });
-
-  it("[gemini] cli_adapter.py supports gemini platform", () => {
-    expect(commonCliAdapter).toContain('"gemini"');
-    expect(commonCliAdapter).toContain(".gemini");
-  });
-
-  it("[antigravity] cli_adapter.py supports antigravity platform", () => {
-    expect(commonCliAdapter).toContain('"antigravity"');
-    expect(commonCliAdapter).toContain(".agent");
-  });
-
-  it("[qoder] cli_adapter.py supports qoder platform", () => {
-    expect(commonCliAdapter).toContain('"qoder"');
-    expect(commonCliAdapter).toContain(".qoder");
-  });
-
-  it("[codebuddy] cli_adapter.py supports codebuddy platform", () => {
-    expect(commonCliAdapter).toContain('"codebuddy"');
-    expect(commonCliAdapter).toContain(".codebuddy");
   });
 
   it("[beta.9] cli_adapter.py has detect_platform function", () => {
@@ -1155,26 +1003,7 @@ describe("regression: cli_adapter platform support (beta.9, beta.13, beta.16)", 
   it("[beta.12] cli_adapter.py has config_dir_name property for each platform", () => {
     expect(commonCliAdapter).toContain("config_dir_name");
     expect(commonCliAdapter).toContain(".claude");
-    expect(commonCliAdapter).toContain(".cursor");
-    expect(commonCliAdapter).toContain(".opencode");
-    expect(commonCliAdapter).toContain(".iflow");
     expect(commonCliAdapter).toContain(".codex");
-    expect(commonCliAdapter).toContain(".kiro");
-    expect(commonCliAdapter).toContain(".gemini");
-    expect(commonCliAdapter).toContain(".agent");
-    expect(commonCliAdapter).toContain(".qoder");
-    expect(commonCliAdapter).toContain(".codebuddy");
-  });
-
-  it("[0.3.10] iFlow CLI uses correct agent invocation syntax", () => {
-    // iFlow does NOT support --agent flag, uses $agent_name prefix instead
-    // Verify the correct command format exists
-    expect(commonCliAdapter).toContain('cmd = ["iflow", "-y", "-p"]');
-    expect(commonCliAdapter).toContain('f"${mapped_agent} {prompt}"');
-
-    // Verify that the old incorrect format does NOT exist
-    // The bug was: cmd.extend(["-y", "--agent", mapped_agent])
-    expect(commonCliAdapter).not.toContain('cmd.extend(["-y", "--agent", mapped_agent])');
   });
 });
 
@@ -1306,22 +1135,8 @@ describe("regression: migration manifest consistency", () => {
 // =============================================================================
 
 describe("regression: collectTemplates paths match init directory structure (0.3.1)", () => {
-  it("[0.3.1] iflow collectTemplates uses commands/superwork/ subdirectory", () => {
-    const templates = collectPlatformTemplates("iflow");
-    expect(templates).toBeInstanceOf(Map);
-    const commandKeys = [...(templates as Map<string, string>).keys()].filter(
-      (k) => k.includes("/commands/"),
-    );
-    for (const key of commandKeys) {
-      expect(
-        key,
-        `iflow command path should include superwork/ subdirectory: ${key}`,
-      ).toMatch(/\.iflow\/commands\/superwork\//);
-    }
-  });
-
   it("[0.3.1] all platforms with commands use consistent superwork/ subdirectory", () => {
-    const platformsWithCommands = ["claude-code", "iflow", "gemini"] as const;
+    const platformsWithCommands = ["claude-code"] as const;
     for (const id of platformsWithCommands) {
       const templates = collectPlatformTemplates(id);
       if (!templates) continue;
@@ -1334,21 +1149,6 @@ describe("regression: collectTemplates paths match init directory structure (0.3
           `${id} command path should include superwork/ subdirectory: ${key}`,
         ).toContain("/commands/superwork/");
       }
-    }
-  });
-
-  it("[0.3.4] kilo uses workflows/ instead of commands/superwork/", () => {
-    const templates = collectPlatformTemplates("kilo");
-    expect(templates).toBeInstanceOf(Map);
-    if (!templates) return;
-    const keys = [...templates.keys()];
-    for (const key of keys) {
-      expect(key, `kilo path should use workflows/: ${key}`).toContain(
-        ".kilocode/workflows/",
-      );
-      expect(key, `kilo should not use commands/: ${key}`).not.toContain(
-        "/commands/",
-      );
     }
   });
 

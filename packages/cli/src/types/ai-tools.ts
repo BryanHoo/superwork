@@ -9,16 +9,7 @@
  */
 export type AITool =
   | "claude-code"
-  | "cursor"
-  | "opencode"
-  | "iflow"
-  | "codex"
-  | "kilo"
-  | "kiro"
-  | "gemini"
-  | "antigravity"
-  | "qoder"
-  | "codebuddy";
+  | "codex";
 
 /**
  * Template directory categories
@@ -26,33 +17,15 @@ export type AITool =
 export type TemplateDir =
   | "common"
   | "claude"
-  | "cursor"
-  | "opencode"
-  | "iflow"
-  | "codex"
-  | "kilo"
-  | "kiro"
-  | "gemini"
-  | "antigravity"
-  | "qoder"
-  | "codebuddy";
+  | "codex";
 
 /**
- * CLI flag names for platform selection (e.g., --claude, --cursor, --kilo, --kiro, --gemini, --antigravity)
+ * CLI flag names for platform selection (e.g., --claude, --codex)
  * Must match keys in InitOptions (src/commands/init.ts)
  */
 export type CliFlag =
   | "claude"
-  | "cursor"
-  | "opencode"
-  | "iflow"
-  | "codex"
-  | "kilo"
-  | "kiro"
-  | "gemini"
-  | "antigravity"
-  | "qoder"
-  | "codebuddy";
+  | "codex";
 
 /**
  * Configuration for an AI tool
@@ -98,30 +71,6 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     defaultChecked: true,
     hasPythonHooks: true,
   },
-  cursor: {
-    name: "Cursor",
-    templateDirs: ["common", "cursor"],
-    configDir: ".cursor",
-    cliFlag: "cursor",
-    defaultChecked: true,
-    hasPythonHooks: false,
-  },
-  opencode: {
-    name: "OpenCode",
-    templateDirs: ["common", "opencode"],
-    configDir: ".opencode",
-    cliFlag: "opencode",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  iflow: {
-    name: "iFlow CLI",
-    templateDirs: ["common", "iflow"],
-    configDir: ".iflow",
-    cliFlag: "iflow",
-    defaultChecked: false,
-    hasPythonHooks: true,
-  },
   codex: {
     name: "Codex",
     templateDirs: ["common", "codex"],
@@ -130,54 +79,6 @@ export const AI_TOOLS: Record<AITool, AIToolConfig> = {
     cliFlag: "codex",
     defaultChecked: false,
     hasPythonHooks: true,
-  },
-  kilo: {
-    name: "Kilo CLI",
-    templateDirs: ["common", "kilo"],
-    configDir: ".kilocode",
-    cliFlag: "kilo",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  kiro: {
-    name: "Kiro Code",
-    templateDirs: ["common", "kiro"],
-    configDir: ".kiro/skills",
-    cliFlag: "kiro",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  gemini: {
-    name: "Gemini CLI",
-    templateDirs: ["common", "gemini"],
-    configDir: ".gemini",
-    cliFlag: "gemini",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  antigravity: {
-    name: "Antigravity",
-    templateDirs: ["common", "antigravity"],
-    configDir: ".agent/workflows",
-    cliFlag: "antigravity",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  qoder: {
-    name: "Qoder",
-    templateDirs: ["common", "qoder"],
-    configDir: ".qoder",
-    cliFlag: "qoder",
-    defaultChecked: false,
-    hasPythonHooks: false,
-  },
-  codebuddy: {
-    name: "CodeBuddy",
-    templateDirs: ["common", "codebuddy"],
-    configDir: ".codebuddy",
-    cliFlag: "codebuddy",
-    defaultChecked: false,
-    hasPythonHooks: false,
   },
 };
 

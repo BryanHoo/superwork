@@ -68,10 +68,10 @@ describe("cleanupEmptyDirs", () => {
     expect(fs.existsSync(path.join(tmpDir, ".superwork"))).toBe(true);
   });
 
-  it("[CR#1] does not delete .iflow root even if empty", () => {
-    fs.mkdirSync(path.join(tmpDir, ".iflow"), { recursive: true });
-    cleanupEmptyDirs(tmpDir, ".iflow");
-    expect(fs.existsSync(path.join(tmpDir, ".iflow"))).toBe(true);
+  it("[CR#1] does not delete .codex root even if empty", () => {
+    fs.mkdirSync(path.join(tmpDir, ".codex"), { recursive: true });
+    cleanupEmptyDirs(tmpDir, ".codex");
+    expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(true);
   });
 
   it("recursively cleans parent directories but stops at root", () => {

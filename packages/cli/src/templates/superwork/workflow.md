@@ -28,7 +28,7 @@ python3 ./.superwork/scripts/get_developer.py
 
 # If not initialized, run:
 python3 ./.superwork/scripts/init_developer.py <your-name>
-# Example: python3 ./.superwork/scripts/init_developer.py cursor-agent
+# Example: python3 ./.superwork/scripts/init_developer.py claude-agent
 ```
 
 This creates:
@@ -37,9 +37,8 @@ This creates:
 
 **Naming suggestions**:
 - Human developers: Use your name, e.g., `john-doe`
-- Cursor AI: `cursor-agent` or `cursor-<task>`
 - Claude Code: `claude-agent` or `claude-<task>`
-- iFlow cli: `iflow-agent` or `iflow-<task>`
+- Codex: `codex-agent` or `codex-<task>`
 
 ### Step 1: Understand Current Context
 

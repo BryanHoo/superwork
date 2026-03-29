@@ -50,7 +50,6 @@ describe("codex getAllSkills", () => {
     for (const skill of skills) {
       expect(skill.content).not.toContain("/superwork:");
       expect(skill.content).not.toContain(".claude/");
-      expect(skill.content).not.toContain(".cursor/");
       expect(skill.content).not.toContain("Task(");
       expect(skill.content).not.toContain("subagent_type");
       expect(skill.content).not.toContain('model: "opus"');

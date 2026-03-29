@@ -60,18 +60,10 @@ describe("init() integration", () => {
     expect(fs.existsSync(path.join(tmpDir, PATHS.TASKS))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, PATHS.SPEC))).toBe(true);
 
-    // Default platforms: cursor + claude
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(true);
+    // Default platform: claude
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".agent", "workflows"))).toBe(
-      false,
-    );
-    expect(fs.existsSync(path.join(tmpDir, ".kiro", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".qoder"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".codebuddy"))).toBe(false);
 
     // Root files
     expect(fs.existsSync(path.join(tmpDir, "AGENTS.md"))).toBe(true);
@@ -81,36 +73,16 @@ describe("init() integration", () => {
     await init({ yes: true, claude: true });
 
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".iflow"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".opencode"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(false);
     expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".agent", "workflows"))).toBe(
-      false,
-    );
-    expect(fs.existsSync(path.join(tmpDir, ".kiro", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".qoder"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".codebuddy"))).toBe(false);
   });
 
   it("#3 multi platform creates all selected platform directories", async () => {
-    await init({ yes: true, claude: true, cursor: true, opencode: true });
+    await init({ yes: true, claude: true, codex: true });
 
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".opencode"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".iflow"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".agent", "workflows"))).toBe(
-      false,
-    );
-    expect(fs.existsSync(path.join(tmpDir, ".kiro", "skills"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".qoder"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".codebuddy"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(true);
   });
 
   it("#3b codex platform creates skills plus .codex assets", async () => {
@@ -142,74 +114,6 @@ describe("init() integration", () => {
       ),
     ).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
-  });
-
-  it("#3c kiro platform creates .kiro/skills", async () => {
-    await init({ yes: true, kiro: true });
-
-    expect(fs.existsSync(path.join(tmpDir, ".kiro", "skills"))).toBe(true);
-    expect(
-      fs.existsSync(path.join(tmpDir, ".kiro", "skills", "start", "SKILL.md")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(path.join(tmpDir, ".kiro", "skills", "parallel")),
-    ).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-  });
-
-  it("#3d antigravity platform creates .agent/workflows", async () => {
-    await init({ yes: true, antigravity: true });
-
-    expect(fs.existsSync(path.join(tmpDir, ".agent", "workflows"))).toBe(
-      true,
-    );
-    expect(
-      fs.existsSync(path.join(tmpDir, ".agent", "workflows", "start.md")),
-    ).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini"))).toBe(false);
-  });
-
-  it("#3g qoder platform creates .qoder/skills", async () => {
-    await init({ yes: true, qoder: true });
-
-    expect(
-      fs.existsSync(path.join(tmpDir, ".qoder", "skills")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(
-        path.join(tmpDir, ".qoder", "skills", "start", "SKILL.md"),
-      ),
-    ).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-  });
-
-  it("#3h codebuddy platform creates .codebuddy/commands/superwork", async () => {
-    await init({ yes: true, codebuddy: true });
-
-    expect(
-      fs.existsSync(path.join(tmpDir, ".codebuddy", "commands", "superwork")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(
-        path.join(tmpDir, ".codebuddy", "commands", "superwork", "start.md"),
-      ),
-    ).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
-  });
-
-  it("#3e gemini platform creates .gemini/commands/superwork", async () => {
-    await init({ yes: true, gemini: true });
-    expect(fs.existsSync(path.join(tmpDir, ".gemini", "commands", "superwork"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".gemini", "commands", "superwork", "start.toml"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(false);
-    expect(fs.existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
   });
 
   it("#4 force mode overwrites previously modified files", async () => {

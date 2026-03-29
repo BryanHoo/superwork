@@ -137,8 +137,6 @@ Many projects already have coding conventions documented. **Check these first** 
 |------|------|
 | \`CLAUDE.md\` / \`CLAUDE.local.md\` | Claude Code |
 | \`AGENTS.md\` | Codex / Claude Code / agent-compatible tools |
-| \`.cursorrules\` | Cursor |
-| \`.cursor/rules/*.mdc\` | Cursor (rules directory) |
 | \`.windsurfrules\` | Windsurf |
 | \`.clinerules\` | Cline |
 | \`.roomodes\` | Roo Code |
@@ -154,7 +152,7 @@ If any of these exist, read them first and extract the relevant coding conventio
 
 Ask AI to help discover patterns from actual code:
 
-- "Read all existing config files (CLAUDE.md, .cursorrules, etc.) and extract coding conventions into .superwork/spec/"
+- "Read all existing config files (CLAUDE.md, AGENTS.md, etc.) and extract coding conventions into .superwork/spec/"
 - "Analyze my codebase and document the patterns you see"
 - "Find error handling / component / API patterns and document them"
 
@@ -350,17 +348,8 @@ function createBootstrapTask(
 }
 
 interface InitOptions {
-  cursor?: boolean;
   claude?: boolean;
-  iflow?: boolean;
-  opencode?: boolean;
   codex?: boolean;
-  kilo?: boolean;
-  kiro?: boolean;
-  gemini?: boolean;
-  antigravity?: boolean;
-  qoder?: boolean;
-  codebuddy?: boolean;
   yes?: boolean;
   user?: string;
   force?: boolean;
@@ -437,7 +426,7 @@ export async function init(options: InitOptions): Promise<void> {
   console.log(chalk.cyan(`\n${banner.trimEnd()}`));
   console.log(
     chalk.gray(
-      "\n   All-in-one AI framework & toolkit for Claude Code & Cursor\n",
+      "\n   Workflow toolkit for Claude Code and Codex\n",
     ),
   );
 
@@ -685,7 +674,7 @@ export async function init(options: InitOptions): Promise<void> {
     // Explicit flags take precedence (works with or without -y)
     tools = explicitTools;
   } else if (options.yes) {
-    // No explicit tools + -y: default to Cursor and Claude
+    // No explicit tools + -y: use default checked tools from the registry
     tools = TOOLS.filter((t) => t.defaultChecked).map((t) => t.key);
   } else {
     // Interactive mode

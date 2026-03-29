@@ -53,24 +53,15 @@ const program = new Command();
 program
   .name("superwork")
   .description(
-    "AI-assisted development workflow framework for Cursor, Claude Code and more",
+    "AI-assisted development workflow framework for Claude Code and Codex",
   )
   .version(VERSION, "-v, --version", "output the version number");
 
 program
   .command("init")
   .description("Initialize superwork in the current project")
-  .option("--cursor", "Include Cursor commands")
   .option("--claude", "Include Claude Code commands")
-  .option("--iflow", "Include iFlow CLI commands")
-  .option("--opencode", "Include OpenCode commands")
   .option("--codex", "Include Codex skills")
-  .option("--kilo", "Include Kilo CLI commands")
-  .option("--kiro", "Include Kiro Code skills")
-  .option("--gemini", "Include Gemini CLI commands")
-  .option("--antigravity", "Include Antigravity workflows")
-  .option("--qoder", "Include Qoder commands")
-  .option("--codebuddy", "Include CodeBuddy commands")
   .option("-y, --yes", "Skip prompts and use defaults")
   .option(
     "-u, --user <name>",

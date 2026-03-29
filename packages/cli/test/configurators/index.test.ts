@@ -61,25 +61,15 @@ describe("isManagedPath", () => {
   // Positive: sub-path match (startsWith(d + "/") = true, === d = false)
   it("matches platform config sub-paths", () => {
     expect(isManagedPath(".claude/commands/foo.md")).toBe(true);
-    expect(isManagedPath(".cursor/rules/bar.md")).toBe(true);
-    expect(isManagedPath(".iflow/hooks/test.py")).toBe(true);
-    expect(isManagedPath(".opencode/config.json")).toBe(true);
     expect(isManagedPath(".agents/skills/start/SKILL.md")).toBe(true);
     expect(isManagedPath(".codex/agents/check.toml")).toBe(true);
-    expect(isManagedPath(".agent/workflows/start.md")).toBe(true);
-    expect(isManagedPath(".kiro/skills/start/SKILL.md")).toBe(true);
   });
 
   // Positive: exact match (startsWith(d + "/") = false, === d = true)
   it("matches exact managed directory names", () => {
     expect(isManagedPath(".claude")).toBe(true);
-    expect(isManagedPath(".cursor")).toBe(true);
-    expect(isManagedPath(".iflow")).toBe(true);
-    expect(isManagedPath(".opencode")).toBe(true);
     expect(isManagedPath(".agents/skills")).toBe(true);
     expect(isManagedPath(".codex")).toBe(true);
-    expect(isManagedPath(".agent/workflows")).toBe(true);
-    expect(isManagedPath(".kiro/skills")).toBe(true);
     expect(isManagedPath(".superwork")).toBe(true);
   });
 
@@ -93,12 +83,8 @@ describe("isManagedPath", () => {
   it("rejects prefix-similar non-sub-paths", () => {
     expect(isManagedPath(".claude-backup")).toBe(false);
     expect(isManagedPath(".superwork-old")).toBe(false);
-    expect(isManagedPath(".cursorignore")).toBe(false);
-    expect(isManagedPath(".opencode-v2")).toBe(false);
     expect(isManagedPath(".agents/skills-backup")).toBe(false);
     expect(isManagedPath(".codex-backup")).toBe(false);
-    expect(isManagedPath(".agent/workflows-backup")).toBe(false);
-    expect(isManagedPath(".kiro/skills-backup")).toBe(false);
   });
 
   // Boundary: empty string
@@ -124,11 +110,8 @@ describe("isManagedPath", () => {
   it("matches Windows-style backslash paths", () => {
     expect(isManagedPath(".claude\\commands\\foo.md")).toBe(true);
     expect(isManagedPath(".superwork\\spec\\backend")).toBe(true);
-    expect(isManagedPath(".iflow\\hooks\\test.py")).toBe(true);
     expect(isManagedPath(".agents\\skills\\start\\SKILL.md")).toBe(true);
     expect(isManagedPath(".codex\\agents\\check.toml")).toBe(true);
-    expect(isManagedPath(".agent\\workflows\\start.md")).toBe(true);
-    expect(isManagedPath(".kiro\\skills\\start\\SKILL.md")).toBe(true);
   });
 
   // Mixed separators
@@ -190,13 +173,13 @@ describe("resolveCliFlag", () => {
 
   it("returns undefined for flag with -- prefix", () => {
     expect(resolveCliFlag("--claude")).toBeUndefined();
-    expect(resolveCliFlag("--cursor")).toBeUndefined();
+    expect(resolveCliFlag("--codex")).toBeUndefined();
   });
 
   it("is case-sensitive", () => {
     expect(resolveCliFlag("Claude")).toBeUndefined();
     expect(resolveCliFlag("CLAUDE")).toBeUndefined();
-    expect(resolveCliFlag("Cursor")).toBeUndefined();
+    expect(resolveCliFlag("Codex")).toBeUndefined();
   });
 
   it("does not match platform IDs directly (claude-code != claude)", () => {

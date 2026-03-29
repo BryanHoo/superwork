@@ -47,16 +47,16 @@ NC='\033[0m'
 
 REPO_ROOT=$(get_repo_root)
 
-# Platform (claude | cursor), can be overridden via --platform flag
+# Platform (claude | codex), can be overridden via --platform flag
 PLATFORM="claude"
 
 # Get command file path based on platform
 # Claude: .claude/commands/superwork/<name>.md
-# Cursor: .cursor/commands/superwork-<name>.md
+# Codex: .agents/skills/<name>/SKILL.md
 get_command_path() {
   local name="$1"
-  if [[ "$PLATFORM" == "cursor" ]]; then
-    echo ".cursor/commands/superwork-${name}.md"
+  if [[ "$PLATFORM" == "codex" ]]; then
+    echo ".agents/skills/${name}/SKILL.md"
   else
     echo ".claude/commands/superwork/${name}.md"
   fi
@@ -321,9 +321,9 @@ cmd_init_context() {
 
   if [[ -z "$target_dir" ]] || [[ -z "$dev_type" ]]; then
     echo -e "${RED}Error: Missing arguments${NC}"
-    echo "Usage: $0 init-context <task-dir> <dev_type> [--platform claude|cursor]"
+    echo "Usage: $0 init-context <task-dir> <dev_type> [--platform claude|codex]"
     echo "  dev_type: backend | frontend | fullstack | test | docs"
-    echo "  --platform: claude (default) | cursor"
+    echo "  --platform: claude (default) | codex"
     exit 1
   fi
 
@@ -1105,7 +1105,7 @@ Task Management Script for Multi-Agent Pipeline
 
 Usage:
   $0 create <title>                     Create new task directory
-  $0 init-context <dir> <type> [--platform claude|cursor]  Initialize jsonl files
+  $0 init-context <dir> <type> [--platform claude|codex]  Initialize jsonl files
   $0 add-context <dir> <jsonl> <path> [reason]  Add entry to jsonl
   $0 validate <dir>                     Validate jsonl files
   $0 list-context <dir>                 List jsonl entries
@@ -1128,7 +1128,7 @@ List options:
 Examples:
   $0 create "Add login feature" --slug add-login
   $0 init-context .superwork/tasks/01-21-add-login backend
-  $0 init-context .superwork/tasks/01-21-add-login frontend --platform cursor
+  $0 init-context .superwork/tasks/01-21-add-login frontend --platform codex
   $0 add-context <dir> implement .superwork/spec/backend/auth.md "Auth guidelines"
   $0 set-branch <dir> task/add-login
   $0 start .superwork/tasks/01-21-add-login

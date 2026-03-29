@@ -237,7 +237,7 @@ Before committing cross-platform code:
 
 ### 7. External Tool API Contracts
 
-When integrating with external tools (Claude Code, Cursor, etc.), their API contracts are **implicit assumptions**.
+When integrating with external tools (Claude Code, Codex, etc.), their API contracts are **implicit assumptions**.
 
 **Rule**: Verify API formats from official documentation, don't guess.
 

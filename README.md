@@ -8,7 +8,7 @@
 
 <p align="center">
 <strong>A multi-platform AI coding framework that rules</strong><br/>
-<sub>Supports Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, Antigravity, Qoder, and CodeBuddy.</sub>
+<sub>Supports Claude Code and Codex.</sub>
 </p>
 
 <p align="center">
@@ -45,7 +45,7 @@
 | **Parallel agent execution** | Run multiple AI tasks side by side with git worktrees instead of turning one branch into a traffic jam. |
 | **Project memory** | Journals in `.superwork/workspace/` preserve what happened last time, so each new session starts with real context. |
 | **Team-shared standards** | Specs live in the repo, so one person’s hard-won workflow or rule can benefit the whole team. |
-| **Multi-platform setup** | Bring the same Superwork structure to 10 AI coding platforms instead of rebuilding your workflow per tool. |
+| **Multi-platform setup** | Bring the same Superwork structure to Claude Code and Codex instead of rebuilding your workflow per tool. |
 
 ## Quick Start
 
@@ -57,11 +57,11 @@ npm install -g @mindfoldhq/superwork@latest
 superwork init -u your-name
 
 # 3. Or initialize with the platforms you actually use
-superwork init --cursor --opencode --codex -u your-name
+superwork init --claude --codex -u your-name
 ```
 
 - `-u your-name` creates `.superwork/workspace/your-name/` for personal journals and session continuity.
-- Platform flags can be mixed and matched. Current options include `--cursor`, `--opencode`, `--iflow`, `--codex`, `--kilo`, `--kiro`, `--gemini`, `--antigravity`, `--qoder`, and `--codebuddy`.
+- Platform flags can be mixed and matched. Current options include `--claude` and `--codex`.
 - For platform-specific setup, entry commands, and upgrade paths, use the docs:
   [Quick Start](https://docs.trysuperwork.app/guide/ch02-quick-start) •
   [Supported Platforms](https://docs.trysuperwork.app/guide/ch13-multi-platform) •
@@ -98,7 +98,7 @@ Superwork keeps the core workflow in `.superwork/` and generates the platform-sp
 └── scripts/                 # Utilities that power the workflow
 ```
 
-Depending on the platforms you enable, Superwork also creates tool-specific integration files such as `.claude/`, `.cursor/`, `AGENTS.md`, `.agents/`, `.codex/`, `.kilocode/`, and `.kiro/`. For Codex, Superwork now installs both project skills under `.agents/skills/` and project-scoped config/custom agents under `.codex/`.
+Depending on the platforms you enable, Superwork also creates tool-specific integration files such as `.claude/`, `AGENTS.md`, `.agents/`, and `.codex/`. For Codex, Superwork installs both project skills under `.agents/skills/` and project-scoped config/custom agents under `.codex/`.
 
 At a high level, the workflow is simple:
 
@@ -121,15 +121,15 @@ Browse available templates and learn how to publish your own on the [Spec Templa
 ## What's New
 
 - **v0.3.6**: task lifecycle hooks, custom template registries (`--registry`), parent-child subtasks, fix PreToolUse hook for CC v2.1.63+.
-- **v0.3.5**: hotfix for delete migration manifest field name (Kilo workflows).
-- **v0.3.4**: Qoder platform support, Kilo workflows migration, record-session task awareness.
+- **v0.3.5**: hotfix for delete migration manifest field name.
+- **v0.3.4**: record-session task awareness and platform maintenance updates.
 - **v0.3.1**: background watch mode for `superwork update`, improved `.gitignore` handling, docs refresh.
 - **v0.3.0**: platform support expanded from 2 to 10, Windows compatibility, remote spec templates, `/superwork:brainstorm`.
 
 ## FAQ
 
 <details>
-<summary><strong>How is this different from <code>CLAUDE.md</code>, <code>AGENTS.md</code>, or <code>.cursorrules</code>?</strong></summary>
+<summary><strong>How is this different from <code>CLAUDE.md</code> or <code>AGENTS.md</code>?</strong></summary>
 
 Those files are useful, but they tend to become monolithic. Superwork adds structure around them: layered specs, task context, workspace memory, and platform-aware workflow wiring.
 
@@ -138,7 +138,7 @@ Those files are useful, but they tend to become monolithic. Superwork adds struc
 <details>
 <summary><strong>Is Superwork only for Claude Code?</strong></summary>
 
-No. Superwork currently supports Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, and Antigravity. The detailed setup and entry command for each tool lives in the supported platforms guide.
+No. Superwork currently supports Claude Code and Codex. The detailed setup and entry command for each tool lives in the supported platforms guide.
 
 </details>
 

@@ -2,7 +2,10 @@
  * Platform Registry — Single source of truth for platform functions and derived helpers
  *
  * All platform-specific lists (backup dirs, template dirs, configured platforms, etc.)
- * are derived from AI_TOOLS in types/ai-tools.ts. Adding a new platform requires:
+ * are derived from AI_TOOLS in types/ai-tools.ts.
+ *
+ * Supported platform templates are intentionally limited to Claude Code and Codex.
+ * Adding a new platform requires:
  * 1. Adding to AI_TOOLS (data)
  * 2. Adding to PLATFORM_FUNCTIONS below (behavior)
  * 3. Creating the configurator file + template directory
@@ -19,16 +22,7 @@ import {
 
 // Platform configurators
 import { configureClaude } from "./claude.js";
-import { configureCursor } from "./cursor.js";
-import { configureIflow } from "./iflow.js";
-import { configureOpenCode } from "./opencode.js";
 import { configureCodex } from "./codex.js";
-import { configureKilo } from "./kilo.js";
-import { configureKiro } from "./kiro.js";
-import { configureGemini } from "./gemini.js";
-import { configureAntigravity } from "./antigravity.js";
-import { configureQoder } from "./qoder.js";
-import { configureCodebuddy } from "./codebuddy.js";
 
 // Shared utilities
 import { resolvePlaceholders } from "./shared.js";
@@ -40,13 +34,6 @@ import {
   getAllHooks as getClaudeHooks,
   getSettingsTemplate as getClaudeSettings,
 } from "../templates/claude/index.js";
-import { getAllCommands as getCursorCommands } from "../templates/cursor/index.js";
-import {
-  getAllAgents as getIflowAgents,
-  getAllCommands as getIflowCommands,
-  getAllHooks as getIflowHooks,
-  getSettingsTemplate as getIflowSettings,
-} from "../templates/iflow/index.js";
 import {
   getAllAgents as getCodexAgents,
   getAllCodexSkills as getCodexPlatformSkills,
@@ -55,12 +42,6 @@ import {
   getConfigTemplate as getCodexConfigTemplate,
   getHooksConfig as getCodexHooksConfig,
 } from "../templates/codex/index.js";
-import { getAllWorkflows as getKiloWorkflows } from "../templates/kilo/index.js";
-import { getAllSkills as getKiroSkills } from "../templates/kiro/index.js";
-import { getAllCommands as getGeminiCommands } from "../templates/gemini/index.js";
-import { getAllWorkflows as getAntigravityWorkflows } from "../templates/antigravity/index.js";
-import { getAllSkills as getQoderSkills } from "../templates/qoder/index.js";
-import { getAllCommands as getCodebuddyCommands } from "../templates/codebuddy/index.js";
 
 // =============================================================================
 // Platform Functions Registry
@@ -103,46 +84,6 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
       return files;
     },
   },
-  cursor: {
-    configure: configureCursor,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      // Commands (flat structure with superwork- prefix, Cursor doesn't support subdirs)
-      for (const cmd of getCursorCommands()) {
-        files.set(`.cursor/commands/${cmd.name}.md`, cmd.content);
-      }
-      return files;
-    },
-  },
-  opencode: {
-    configure: configureOpenCode,
-    // OpenCode uses plugin system, templates handled separately during init
-  },
-  iflow: {
-    configure: configureIflow,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      // Commands
-      for (const cmd of getIflowCommands()) {
-        files.set(`.iflow/commands/superwork/${cmd.name}.md`, cmd.content);
-      }
-      // Agents
-      for (const agent of getIflowAgents()) {
-        files.set(`.iflow/agents/${agent.name}.md`, agent.content);
-      }
-      // Hooks
-      for (const hook of getIflowHooks()) {
-        files.set(`.iflow/${hook.targetPath}`, hook.content);
-      }
-      // Settings (resolve {{PYTHON_CMD}} to match what configure() writes)
-      const settings = getIflowSettings();
-      files.set(
-        `.iflow/${settings.targetPath}`,
-        resolvePlaceholders(settings.content),
-      );
-      return files;
-    },
-  },
   codex: {
     configure: configureCodex,
     collectTemplates: () => {
@@ -168,67 +109,6 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
       return files;
     },
   },
-  kilo: {
-    configure: configureKilo,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      for (const wf of getKiloWorkflows()) {
-        files.set(`.kilocode/workflows/${wf.name}.md`, wf.content);
-      }
-      return files;
-    },
-  },
-  kiro: {
-    configure: configureKiro,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      for (const skill of getKiroSkills()) {
-        files.set(`.kiro/skills/${skill.name}/SKILL.md`, skill.content);
-      }
-      return files;
-    },
-  },
-  gemini: {
-    configure: configureGemini,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      for (const cmd of getGeminiCommands()) {
-        files.set(`.gemini/commands/superwork/${cmd.name}.toml`, cmd.content);
-      }
-      return files;
-    },
-  },
-  antigravity: {
-    configure: configureAntigravity,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      for (const workflow of getAntigravityWorkflows()) {
-        files.set(`.agent/workflows/${workflow.name}.md`, workflow.content);
-      }
-      return files;
-    },
-  },
-  qoder: {
-    configure: configureQoder,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      for (const skill of getQoderSkills()) {
-        files.set(`.qoder/skills/${skill.name}/SKILL.md`, skill.content);
-      }
-      return files;
-    },
-  },
-  codebuddy: {
-    configure: configureCodebuddy,
-    collectTemplates: () => {
-      const files = new Map<string, string>();
-      // Commands in superwork/ subdirectory (CodeBuddy supports nested dirs)
-      for (const cmd of getCodebuddyCommands()) {
-        files.set(`.codebuddy/commands/superwork/${cmd.name}.md`, cmd.content);
-      }
-      return files;
-    },
-  },
 };
 
 // =============================================================================
@@ -238,7 +118,7 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
 /** All platform IDs */
 export const PLATFORM_IDS = Object.keys(AI_TOOLS) as AITool[];
 
-/** All platform config directory names (e.g., [".claude", ".cursor", ".iflow", ".opencode"]) */
+/** All platform config directory names (e.g., [".claude", ".codex"]) */
 export const CONFIG_DIRS = PLATFORM_IDS.map((id) => AI_TOOLS[id].configDir);
 
 /** All managed paths for every platform (primary configDir + extra managed paths). */
