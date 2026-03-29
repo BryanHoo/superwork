@@ -2,7 +2,7 @@
  * Remote template fetcher for Superwork CLI
  *
  * Fetches spec templates from the official marketplace:
- * https://github.com/mindfold-ai/Superwork/tree/main/marketplace
+ * https://github.com/BryanHoo/superwork/tree/main/marketplace
  */
 
 import fs from "node:fs";
@@ -15,9 +15,9 @@ import { downloadTemplate } from "giget";
 // =============================================================================
 
 export const TEMPLATE_INDEX_URL =
-  "https://raw.githubusercontent.com/mindfold-ai/Superwork/main/marketplace/index.json";
+  "https://raw.githubusercontent.com/BryanHoo/superwork/main/marketplace/index.json";
 
-const TEMPLATE_REPO = "gh:mindfold-ai/Superwork";
+const TEMPLATE_REPO = "gh:BryanHoo/superwork";
 
 /** Map template type to installation path */
 const INSTALL_PATHS: Record<string, string> = {

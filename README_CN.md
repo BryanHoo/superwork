@@ -12,6 +12,10 @@
 </p>
 
 <p align="center">
+<sub>本仓库基于更早的 <a href="https://github.com/mindfold-ai/Trellis"><code>mindfold-ai/Trellis</code></a> 代码修改而来</sub>
+</p>
+
+<p align="center">
 <a href="./README.md">English</a> •
 <a href="https://docs.trysuperwork.app/zh">文档</a> •
 <a href="https://docs.trysuperwork.app/zh/guide/ch02-quick-start">快速开始</a> •
@@ -23,14 +27,14 @@
 <p align="center">
 <a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/v/@bryanhu/superwork.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
 <a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/dw/@bryanhu/superwork?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/stargazers"><img src="https://img.shields.io/github/stars/mindfold-ai/Superwork?style=flat-square&color=eab308" alt="stars" /></a>
+<a href="https://github.com/BryanHoo/superwork/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
+<a href="https://github.com/BryanHoo/superwork/stargazers"><img src="https://img.shields.io/github/stars/BryanHoo/superwork?style=flat-square&color=eab308" alt="stars" /></a>
 <a href="https://docs.trysuperwork.app/zh"><img src="https://img.shields.io/badge/docs-trysuperwork.app-0f766e?style=flat-square" alt="docs" /></a>
 <a href="https://discord.com/invite/tWcCZ3aRHc"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/issues"><img src="https://img.shields.io/github/issues/mindfold-ai/Superwork?style=flat-square&color=e67e22" alt="open issues" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/pulls"><img src="https://img.shields.io/github/issues-pr/mindfold-ai/Superwork?style=flat-square&color=9b59b6" alt="open PRs" /></a>
-<a href="https://deepwiki.com/mindfold-ai/Superwork"><img src="https://img.shields.io/badge/Ask-DeepWiki-blue?style=flat-square" alt="Ask DeepWiki" /></a>
-<a href="https://chatgpt.com/?q=Explain+the+project+mindfold-ai/Superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
+<a href="https://github.com/BryanHoo/superwork/issues"><img src="https://img.shields.io/github/issues/BryanHoo/superwork?style=flat-square&color=e67e22" alt="open issues" /></a>
+<a href="https://github.com/BryanHoo/superwork/pulls"><img src="https://img.shields.io/github/issues-pr/BryanHoo/superwork?style=flat-square&color=9b59b6" alt="open PRs" /></a>
+<a href="https://deepwiki.com/BryanHoo/superwork"><img src="https://img.shields.io/badge/Ask-DeepWiki-blue?style=flat-square" alt="Ask DeepWiki" /></a>
+<a href="https://chatgpt.com/?q=Explain+the+project+BryanHoo/superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
 </p>
 
 <p align="center">
@@ -43,14 +47,14 @@
 
 ## 为什么用 Superwork？
 
-| 能力 | 带来的变化 |
-| --- | --- |
-| **自动注入 Spec** | 把规范写进 `.superwork/spec/` 之后，Superwork 会在每次会话里注入当前任务真正需要的上下文，不用反复解释。 |
-| **任务驱动工作流** | PRD、实现上下文、检查上下文和任务状态都放进 `.superwork/tasks/`，AI 开发不会越做越乱。 |
-| **并行 Agent 执行** | 用 git worktree 同时推进多个 AI 任务，不需要把一个分支挤成大杂烩。 |
-| **项目记忆** | `.superwork/workspace/` 里的 journal 会保留上一次工作的脉络，让新会话不是从空白开始。 |
-| **团队共享标准** | Spec 跟着仓库一起版本化，一个人总结出来的规则和流程，可以直接变成整个团队的基础设施。 |
-| **多平台复用** | 同一套 Superwork 结构可以带到 Claude Code 和 Codex，而不是每换一个工具就重搭一次工作流。 |
+| 能力                | 带来的变化                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| **自动注入 Spec**   | 把规范写进 `.superwork/spec/` 之后，Superwork 会在每次会话里注入当前任务真正需要的上下文，不用反复解释。 |
+| **任务驱动工作流**  | PRD、实现上下文、检查上下文和任务状态都放进 `.superwork/tasks/`，AI 开发不会越做越乱。                   |
+| **并行 Agent 执行** | 用 git worktree 同时推进多个 AI 任务，不需要把一个分支挤成大杂烩。                                       |
+| **项目记忆**        | `.superwork/workspace/` 里的 journal 会保留上一次工作的脉络，让新会话不是从空白开始。                    |
+| **团队共享标准**    | Spec 跟着仓库一起版本化，一个人总结出来的规则和流程，可以直接变成整个团队的基础设施。                    |
+| **多平台复用**      | 同一套 Superwork 结构可以带到 Claude Code 和 Codex，而不是每换一个工具就重搭一次工作流。                 |
 
 ## 快速开始
 
@@ -140,7 +144,7 @@ Spec 默认是空模板——需要根据你的项目技术栈和团队规范来
 superwork init --registry https://github.com/your-org/your-spec-templates
 ```
 
-浏览可用模板和了解如何发布你自己的模板，请查看 [Spec 模板页面](https://docs.trysuperwork.app/zh/templates/specs-index)。
+如果你想复用自己的模板仓库，可以通过 `--registry` 把 Superwork 指向自定义来源。
 
 ## 最新进展
 
@@ -182,7 +186,7 @@ superwork init --registry https://github.com/your-org/your-spec-templates
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mindfold-ai/Superwork&type=Date)](https://star-history.com/#mindfold-ai/Superwork&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=BryanHoo/superwork&type=Date)](https://star-history.com/#BryanHoo/superwork&Date)
 
 ## 社区与资源
 
@@ -192,7 +196,7 @@ superwork init --registry https://github.com/your-org/your-spec-templates
 - [使用场景](https://docs.trysuperwork.app/zh/guide/ch08-real-world) - 看 Superwork 在真实任务里怎么落地
 - [更新日志](https://docs.trysuperwork.app/zh/changelog/v0.3.6) - 跟踪当前版本变化
 - [Tech Blog](https://docs.trysuperwork.app/zh/blog) - 设计思路和技术文章
-- [GitHub Issues](https://github.com/mindfold-ai/Superwork/issues) - 提 Bug 或功能建议
+- [GitHub Issues](https://github.com/BryanHoo/superwork/issues) - 提 Bug 或功能建议
 - [Discord](https://discord.com/invite/tWcCZ3aRHc) - 加入社区讨论
 
 <a id="wechat-group"></a>
@@ -204,7 +208,7 @@ superwork init --registry https://github.com/your-org/your-spec-templates
 </p>
 
 <p align="center">
-<a href="https://github.com/mindfold-ai/Superwork">官方仓库</a> •
-<a href="https://github.com/mindfold-ai/Superwork/blob/main/LICENSE">AGPL-3.0 License</a> •
-Built by <a href="https://github.com/mindfold-ai">Mindfold</a>
+<a href="https://github.com/BryanHoo/superwork">官方仓库</a> •
+<a href="https://github.com/BryanHoo/superwork/blob/main/LICENSE">AGPL-3.0 License</a> •
+由 <a href="https://github.com/BryanHoo">bryanhu</a> 维护
 </p>

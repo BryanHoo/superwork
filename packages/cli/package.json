@@ -6,8 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "superwork": "./bin/superwork.js",
-    "sw": "./bin/superwork.js"
+    "superwork": "bin/superwork.js",
+    "sw": "bin/superwork.js"
   },
   "publishConfig": {
     "access": "public"
@@ -46,7 +46,7 @@
     "memory",
     "superwork"
   ],
-  "author": "Bryan Hu",
+  "author": "bryanhu",
   "license": "AGPL-3.0-only",
   "dependencies": {
     "chalk": "^5.3.0",
@@ -80,6 +80,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/BryanHoo/superwork.git"
+    "url": "https://github.com/BryanHoo/superwork.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/BryanHoo/superwork#readme",
+  "bugs": {
+    "url": "https://github.com/BryanHoo/superwork/issues"
   }
 }

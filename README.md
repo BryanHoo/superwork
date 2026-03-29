@@ -12,6 +12,10 @@
 </p>
 
 <p align="center">
+<sub>This repository is an independently maintained derivative adapted from the earlier <a href="https://github.com/mindfold-ai/Trellis"><code>mindfold-ai/Trellis</code></a> codebase.</sub>
+</p>
+
+<p align="center">
 <a href="./README_CN.md">简体中文</a> •
 <a href="https://docs.trysuperwork.app/">Docs</a> •
 <a href="https://docs.trysuperwork.app/guide/ch02-quick-start">Quick Start</a> •
@@ -22,14 +26,14 @@
 <p align="center">
 <a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/v/@bryanhu/superwork.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
 <a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/dw/@bryanhu/superwork?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/stargazers"><img src="https://img.shields.io/github/stars/mindfold-ai/Superwork?style=flat-square&color=eab308" alt="stars" /></a>
+<a href="https://github.com/BryanHoo/superwork/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
+<a href="https://github.com/BryanHoo/superwork/stargazers"><img src="https://img.shields.io/github/stars/BryanHoo/superwork?style=flat-square&color=eab308" alt="stars" /></a>
 <a href="https://docs.trysuperwork.app/"><img src="https://img.shields.io/badge/docs-trysuperwork.app-0f766e?style=flat-square" alt="docs" /></a>
 <a href="https://discord.com/invite/tWcCZ3aRHc"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/issues"><img src="https://img.shields.io/github/issues/mindfold-ai/Superwork?style=flat-square&color=e67e22" alt="open issues" /></a>
-<a href="https://github.com/mindfold-ai/Superwork/pulls"><img src="https://img.shields.io/github/issues-pr/mindfold-ai/Superwork?style=flat-square&color=9b59b6" alt="open PRs" /></a>
-<a href="https://deepwiki.com/mindfold-ai/Superwork"><img src="https://img.shields.io/badge/Ask-DeepWiki-blue?style=flat-square" alt="Ask DeepWiki" /></a>
-<a href="https://chatgpt.com/?q=Explain+the+project+mindfold-ai/Superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
+<a href="https://github.com/BryanHoo/superwork/issues"><img src="https://img.shields.io/github/issues/BryanHoo/superwork?style=flat-square&color=e67e22" alt="open issues" /></a>
+<a href="https://github.com/BryanHoo/superwork/pulls"><img src="https://img.shields.io/github/issues-pr/BryanHoo/superwork?style=flat-square&color=9b59b6" alt="open PRs" /></a>
+<a href="https://deepwiki.com/BryanHoo/superwork"><img src="https://img.shields.io/badge/Ask-DeepWiki-blue?style=flat-square" alt="Ask DeepWiki" /></a>
+<a href="https://chatgpt.com/?q=Explain+the+project+BryanHoo/superwork+on+GitHub"><img src="https://img.shields.io/badge/Ask-ChatGPT-74aa9c?style=flat-square&logo=openai&logoColor=white" alt="Ask ChatGPT" /></a>
 </p>
 
 <p align="center">
@@ -135,7 +139,7 @@ Specs ship as empty templates by default — they are meant to be customized for
 superwork init --registry https://github.com/your-org/your-spec-templates
 ```
 
-Browse available templates and learn how to publish your own on the [Spec Templates page](https://docs.trysuperwork.app/templates/specs-index).
+If you want to reuse your own template repository, pass `--registry` to point Superwork at a custom source.
 
 ## What's New
 
@@ -177,7 +181,7 @@ Yes. Personal workspace journals stay separate per developer, while shared specs
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mindfold-ai/Superwork&type=Date)](https://star-history.com/#mindfold-ai/Superwork&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=BryanHoo/superwork&type=Date)](https://star-history.com/#BryanHoo/superwork&Date)
 
 ## Community & Resources
 
@@ -187,11 +191,11 @@ Yes. Personal workspace journals stay separate per developer, while shared specs
 - [Real-World Scenarios](https://docs.trysuperwork.app/guide/ch08-real-world) - See how the workflow plays out in practice
 - [Changelog](https://docs.trysuperwork.app/changelog/v0.3.6) - Track current releases and updates
 - [Tech Blog](https://docs.trysuperwork.app/blog) - Product thinking and technical writeups
-- [GitHub Issues](https://github.com/mindfold-ai/Superwork/issues) - Report bugs or request features
+- [GitHub Issues](https://github.com/BryanHoo/superwork/issues) - Report bugs or request features
 - [Discord](https://discord.com/invite/tWcCZ3aRHc) - Join the community
 
 <p align="center">
-<a href="https://github.com/mindfold-ai/Superwork">Official Repository</a> •
-<a href="https://github.com/mindfold-ai/Superwork/blob/main/LICENSE">AGPL-3.0 License</a> •
-Built by <a href="https://github.com/mindfold-ai">Mindfold</a>
+<a href="https://github.com/BryanHoo/superwork">Official Repository</a> •
+<a href="https://github.com/BryanHoo/superwork/blob/main/LICENSE">AGPL-3.0 License</a> •
+Built by <a href="https://github.com/BryanHoo">bryanhu</a>
 </p>

@@ -238,7 +238,7 @@ Templates use `.txt` extension to:
 ```typescript
 import { downloadTemplate } from "giget";
 
-await downloadTemplate("gh:mindfold-ai/Superwork/marketplace/specs/electron-fullstack", {
+await downloadTemplate("gh:your-org/your-repo/marketplace/specs/electron-fullstack", {
   dir: destDir,
   preferOffline: true,
 });
