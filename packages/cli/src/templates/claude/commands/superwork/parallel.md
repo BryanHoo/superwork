@@ -187,6 +187,6 @@ The dispatch agent in worktree will automatically execute:
 ## Core Rules
 
 - **Don't write code directly** - delegate to agents in worktree
-- **Don't execute git commit** - agent does it via create-pr action
+- **Don't execute `git commit` manually in this flow** - let `create-pr` commit after `finish` verification passes
 - **Delegate complex analysis to research** - finding specs, analyzing code structure
 - **All sub agents use opus model** - ensure output quality

@@ -1,4 +1,4 @@
-[!] **Prerequisite**: This command should only be used AFTER the human has tested and committed the code.
+[!] **Prerequisite**: This command should only be used AFTER the code has passed verification and been committed.
 
 **Do NOT run `git commit` directly** — the scripts below handle their own commits for `.superwork/` metadata. You only need to read git history (`git log`, `git status`, `git diff`) and run the Python scripts.
 

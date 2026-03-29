@@ -1,9 +1,9 @@
 ---
 name: record-session
-description: "Records completed work progress to .superwork/workspace/ journal files after human testing and commit. Captures session summaries, commit hashes, and updates developer index files for future session context. Use when a coding session is complete, after the human has committed code, or to persist session knowledge for future AI sessions."
+description: "Records completed work progress to .superwork/workspace/ journal files after verification and commit. Captures session summaries, commit hashes, and updates developer index files for future session context. Use when a coding session is complete, after the validated code has been committed, or to persist session knowledge for future AI sessions."
 ---
 
-[!] **Prerequisite**: This skill should only be used AFTER the human has tested and committed the code.
+[!] **Prerequisite**: This skill should only be used AFTER the code has passed verification and been committed.
 
 **Do NOT run `git commit` directly** — the scripts below handle their own commits for `.superwork/` metadata. You only need to read git history (`git log`, `git status`, `git diff`) and run the Python scripts.
 

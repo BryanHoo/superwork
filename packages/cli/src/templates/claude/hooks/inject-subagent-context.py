@@ -487,7 +487,7 @@ All the information you need has been prepared for you:
 
 ## Important Constraints
 
-- Do NOT execute git commit, only code modifications
+- Do NOT execute `git commit` in this subagent role; only make code modifications and leave final commit to the coordinator after verification
 - Follow all dev specs injected above
 - Report list of modified/created files when done"""
 
@@ -595,7 +595,7 @@ Dev specs and Codex Review results:
 
 ## Important Constraints
 
-- Do NOT execute git commit, only code modifications
+- Do NOT execute `git commit` in this subagent role; only make code modifications and leave final commit to the coordinator after verification
 - Run typecheck after each fix to verify
 - Report which issues were fixed and which files were modified"""
 

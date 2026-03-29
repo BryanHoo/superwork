@@ -232,7 +232,7 @@ All the context AI built during this session will be lost when session ends. The
 **[3/6] Fix each CR issue** - Address feedback with guidelines in context
 **[4/6] /superwork:check** - Verify fixes did not introduce new issues
 **[5/6] /superwork:finish-work** - Document lessons from CR
-**[6/6] Human commits, then /superwork:record-session** - Preserve CR lessons
+**[6/6] Commit after verification, then /superwork:record-session** - Preserve CR lessons
 
 ### Example 4: Large Refactoring
 
@@ -249,13 +249,13 @@ All the context AI built during this session will be lost when session ends. The
 **[3/6] Investigation** - Actual debugging work
 **[4/6] /superwork:check** - Verify debug changes do not break other things
 **[5/6] /superwork:finish-work** - Debug findings might need documentation
-**[6/6] Human commits, then /superwork:record-session** - Debug knowledge is valuable
+**[6/6] Commit after verification, then /superwork:record-session** - Debug knowledge is valuable
 
 ---
 
 ## KEY RULES TO EMPHASIZE
 
-1. **AI NEVER commits** - Human tests and approves. AI prepares, human validates.
+1. **Commit only after verification passes** - Run checks and testing before `git commit`.
 2. **Guidelines before code** - /before-dev command injects project knowledge.
 3. **Check after code** - /check-* commands catch context drift.
 4. **Record everything** - /superwork:record-session persists memory.

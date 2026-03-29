@@ -372,7 +372,7 @@ python3 ./.superwork/scripts/task.py list-archive    # List archived tasks
 3. **After development complete**:
    - Use `/superwork:finish-work` for completion checklist
    - After fix bug, use `/superwork:break-loop` for deep analysis
-   - Human commits after testing passes
+   - Commit after testing passes
    - Use `add_session.py` to record progress
 
 ### [X] DON'T - Should Not Do
@@ -382,7 +382,7 @@ python3 ./.superwork/scripts/task.py list-archive    # List archived tasks
 3. **Don't** develop multiple unrelated tasks simultaneously
 4. **Don't** commit code with lint/test errors
 5. **Don't** forget to update spec docs after learning something
-6. [!] **Don't** execute `git commit` - AI should not commit code
+6. [!] **Don't** execute `git commit` before verification passes
 
 ---
 

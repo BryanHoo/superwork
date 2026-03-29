@@ -1,7 +1,7 @@
 ---
 name: implement
 description: |
-  Code implementation expert. Understands specs and requirements, then implements features. No git commit allowed.
+  Code implementation expert. Understands specs and requirements, then implements features. In multi-agent flow, commit is handled by the coordinator after verification passes.
 tools: Read, Write, Edit, Bash, Glob, Grep, mcp__exa__web_search_exa, mcp__exa__get_code_context_exa
 model: opus
 ---
@@ -27,7 +27,7 @@ Before implementing, read:
 
 ## Forbidden Operations
 
-**Do NOT execute these git commands:**
+**Do NOT execute these git commands in this subagent role:**
 
 - `git commit`
 - `git push`
