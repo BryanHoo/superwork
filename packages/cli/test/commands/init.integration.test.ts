@@ -91,7 +91,13 @@ describe("init() integration", () => {
     expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(true);
     expect(
       fs.existsSync(
-        path.join(tmpDir, ".agents", "skills", "start", "SKILL.md"),
+        path.join(
+          tmpDir,
+          ".agents",
+          "skills",
+          "superwork-start",
+          "SKILL.md",
+        ),
       ),
     ).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".codex", "config.toml"))).toBe(true);
@@ -102,7 +108,13 @@ describe("init() integration", () => {
     ).toBe(true);
     expect(
       fs.existsSync(
-        path.join(tmpDir, ".codex", "skills", "parallel", "SKILL.md"),
+        path.join(
+          tmpDir,
+          ".codex",
+          "skills",
+          "superwork-parallel",
+          "SKILL.md",
+        ),
       ),
     ).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".codex", "hooks.json"))).toBe(

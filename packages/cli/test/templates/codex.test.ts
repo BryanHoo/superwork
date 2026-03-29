@@ -7,23 +7,23 @@ import {
 } from "../../src/templates/codex/index.js";
 
 const EXPECTED_SKILL_NAMES = [
-  "before-dev",
-  "brainstorm",
-  "break-loop",
-  "check",
-  "check-cross-layer",
-  "create-command",
-  "debug-root-cause",
-  "execute-plan",
-  "finish-work",
-  "improve-ut",
-  "integrate-skill",
-  "onboard",
-  "record-session",
-  "spec-plan",
-  "start",
-  "tdd-core",
-  "update-spec",
+  "superwork-before-dev",
+  "superwork-brainstorm",
+  "superwork-break-loop",
+  "superwork-check",
+  "superwork-check-cross-layer",
+  "superwork-create-command",
+  "superwork-debug-root-cause",
+  "superwork-execute-plan",
+  "superwork-finish-work",
+  "superwork-improve-ut",
+  "superwork-integrate-skill",
+  "superwork-onboard",
+  "superwork-record-session",
+  "superwork-spec-plan",
+  "superwork-start",
+  "superwork-tdd-core",
+  "superwork-update-spec",
 ];
 
 const EXPECTED_AGENT_NAMES = [
@@ -51,7 +51,9 @@ describe("codex getAllSkills", () => {
 
   it("preserves bundled skill files when present", () => {
     const skills = getAllSkills();
-    const specPlan = skills.find((skill) => skill.name === "spec-plan");
+    const specPlan = skills.find(
+      (skill) => skill.name === "superwork-spec-plan",
+    );
     expect(specPlan?.files.map((file) => file.path)).toContain("SKILL.md");
     expect(specPlan?.files.map((file) => file.path)).toContain(
       "agents/openai.yaml",
@@ -91,7 +93,7 @@ describe("codex getAllCodexSkills (platform-specific)", () => {
   it("returns codex-specific skills", () => {
     const skills = getAllCodexSkills();
     const names = skills.map((skill) => skill.name);
-    expect(names).toEqual(["parallel"]);
+    expect(names).toEqual(["superwork-parallel"]);
   });
 
   it("codex-specific skills contain --platform codex", () => {

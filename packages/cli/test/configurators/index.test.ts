@@ -61,7 +61,7 @@ describe("isManagedPath", () => {
   // Positive: sub-path match (startsWith(d + "/") = true, === d = false)
   it("matches platform config sub-paths", () => {
     expect(isManagedPath(".claude/commands/foo.md")).toBe(true);
-    expect(isManagedPath(".agents/skills/start/SKILL.md")).toBe(true);
+    expect(isManagedPath(".agents/skills/superwork-start/SKILL.md")).toBe(true);
     expect(isManagedPath(".codex/agents/check.toml")).toBe(true);
   });
 
@@ -110,7 +110,9 @@ describe("isManagedPath", () => {
   it("matches Windows-style backslash paths", () => {
     expect(isManagedPath(".claude\\commands\\foo.md")).toBe(true);
     expect(isManagedPath(".superwork\\spec\\backend")).toBe(true);
-    expect(isManagedPath(".agents\\skills\\start\\SKILL.md")).toBe(true);
+    expect(isManagedPath(".agents\\skills\\superwork-start\\SKILL.md")).toBe(
+      true,
+    );
     expect(isManagedPath(".codex\\agents\\check.toml")).toBe(true);
   });
 

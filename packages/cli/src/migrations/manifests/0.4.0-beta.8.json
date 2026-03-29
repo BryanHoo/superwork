@@ -8,7 +8,7 @@
     {
       "type": "safe-file-delete",
       "from": ".agents/skills/parallel/SKILL.md",
-      "description": "Moved to .codex/skills/parallel/ (Codex-specific, not shared)",
+      "description": "Moved to .codex/skills/superwork-parallel/ (Codex-specific, not shared)",
       "allowed_hashes": ["b67b30c4e4fe00e5bc6b2f0da078e6cdfc4f082d5660b00b9ce6cfd6308d7dec"]
     },
     {

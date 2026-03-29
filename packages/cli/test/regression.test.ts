@@ -463,7 +463,9 @@ describe("regression: Windows path separator (beta.12)", () => {
     expect(isManagedPath(".claude\\commands\\foo.md")).toBe(true);
     expect(isManagedPath(".superwork\\spec\\backend")).toBe(true);
     expect(isManagedPath(".codex\\agents\\check.toml")).toBe(true);
-    expect(isManagedPath(".agents\\skills\\start\\SKILL.md")).toBe(true);
+    expect(isManagedPath(".agents\\skills\\superwork-start\\SKILL.md")).toBe(
+      true,
+    );
   });
 
   it("[beta.12] isManagedPath handles mixed separators", () => {

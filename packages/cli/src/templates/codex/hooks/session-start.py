@@ -194,9 +194,15 @@ Read and follow all instructions below carefully.
     output.write("</guidelines>\n\n")
 
     # Inject start skill as instructions (Codex uses skills, not slash commands)
-    start_skill = codex_dir / "skills" / "start" / "SKILL.md"
+    start_skill = codex_dir / "skills" / "superwork-start" / "SKILL.md"
     if not start_skill.is_file():
-        start_skill = project_dir / ".agents" / "skills" / "start" / "SKILL.md"
+        start_skill = (
+            project_dir
+            / ".agents"
+            / "skills"
+            / "superwork-start"
+            / "SKILL.md"
+        )
     if start_skill.is_file():
         output.write("<instructions>\n")
         output.write(read_file(start_skill))
