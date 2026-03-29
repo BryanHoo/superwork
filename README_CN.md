@@ -21,8 +21,8 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@mindfoldhq/superwork"><img src="https://img.shields.io/npm/v/@mindfoldhq/superwork.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
-<a href="https://www.npmjs.com/package/@mindfoldhq/superwork"><img src="https://img.shields.io/npm/dw/@mindfoldhq/superwork?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
+<a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/v/@bryanhu/superwork.svg?style=flat-square&color=2563eb" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@bryanhu/superwork"><img src="https://img.shields.io/npm/dw/@bryanhu/superwork?style=flat-square&color=cb3837&label=downloads" alt="npm downloads" /></a>
 <a href="https://github.com/mindfold-ai/Superwork/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-16a34a.svg?style=flat-square" alt="license" /></a>
 <a href="https://github.com/mindfold-ai/Superwork/stargazers"><img src="https://img.shields.io/github/stars/mindfold-ai/Superwork?style=flat-square&color=eab308" alt="stars" /></a>
 <a href="https://docs.trysuperwork.app/zh"><img src="https://img.shields.io/badge/docs-trysuperwork.app-0f766e?style=flat-square" alt="docs" /></a>
@@ -56,7 +56,7 @@
 
 ```bash
 # 1. 安装 Superwork
-npm install -g @mindfoldhq/superwork@latest
+npm install -g @bryanhu/superwork@latest
 
 # 2. 在仓库里初始化
 superwork init -u your-name

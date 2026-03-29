@@ -2,14 +2,14 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "build": "pnpm --filter @mindfoldhq/superwork build",
-    "test": "pnpm --filter @mindfoldhq/superwork test",
-    "lint": "pnpm --filter @mindfoldhq/superwork lint",
-    "typecheck": "pnpm --filter @mindfoldhq/superwork typecheck",
-    "release": "pnpm --filter @mindfoldhq/superwork release",
-    "release:minor": "pnpm --filter @mindfoldhq/superwork release:minor",
-    "release:beta": "pnpm --filter @mindfoldhq/superwork release:beta",
-    "release:rc": "pnpm --filter @mindfoldhq/superwork release:rc"
+    "build": "pnpm --filter @bryanhu/superwork build",
+    "test": "pnpm --filter @bryanhu/superwork test",
+    "lint": "pnpm --filter @bryanhu/superwork lint",
+    "typecheck": "pnpm --filter @bryanhu/superwork typecheck",
+    "release": "pnpm --filter @bryanhu/superwork release",
+    "release:minor": "pnpm --filter @bryanhu/superwork release:minor",
+    "release:beta": "pnpm --filter @bryanhu/superwork release:beta",
+    "release:rc": "pnpm --filter @bryanhu/superwork release:rc"
   },
   "devDependencies": {
     "husky": "^9.1.7",
