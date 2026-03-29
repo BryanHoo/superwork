@@ -68,6 +68,8 @@ Only after green:
 
 Keep the suite green while refactoring.
 
+If the remaining work is purely structural cleanup, you may use `/superwork:code-simplifier` here to keep the refactor narrow and explicitly non-behavioral.
+
 ## Test Quality Bar
 
 Prefer tests that:
@@ -84,6 +86,7 @@ Avoid tests that only prove mocks were called unless the boundary itself is the 
 - Use `/superwork:spec-plan` to decide what behaviors need tests.
 - Use `/superwork:execute-plan` to sequence TDD across a larger task.
 - Use `/superwork:debug-root-cause` first when the task begins with a failing bug.
+- Use `/superwork:code-simplifier` only after green, during Refactor, when you want to simplify touched code without changing behavior.
 
 ## Output
 

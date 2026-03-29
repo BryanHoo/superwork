@@ -25,6 +25,8 @@ Execute these steps:
 
 4. **Read the specific guideline files** referenced in the Quality Check section (e.g., `quality-guidelines.md`, `conventions.md`). The index is NOT the goal — it points you to the actual guideline files. Read those files and review your code against them.
 
-5. **Run lint and typecheck** for the affected package.
+5. **If the code works but is still unnecessarily dense**, run `$superwork-code-simplifier` before the final checks. Keep that pass non-behavioral and limited to the touched code.
 
-6. **Report any violations** and fix them if found.
+6. **Run lint and typecheck** for the affected package.
+
+7. **Report any violations** and fix them if found.

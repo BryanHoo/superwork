@@ -47,6 +47,14 @@ These guides help you **ask the right questions before coding**.
 
 → Read [Code Reuse Thinking Guide](./code-reuse-thinking-guide.md)
 
+### When to Run `superwork-code-simplifier`
+
+- [ ] The behavior is already green, but the touched code is harder to read than it should be
+- [ ] You want a narrow refactor pass before final checks
+- [ ] You removed duplication or renamed helpers without changing behavior
+
+→ Run `superwork-code-simplifier`, then continue with your normal verification flow
+
 ---
 
 ## Pre-Modification Rule (CRITICAL)

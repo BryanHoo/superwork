@@ -73,7 +73,7 @@ When user describes a task, classify it:
 |------|----------|----------|
 | **Question** | User asks about code, architecture, or how something works | Answer directly |
 | **Trivial Fix** | Typo fix, comment update, single-line change, < 5 minutes | Direct Edit |
-| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `$superwork-before-dev` → `$superwork-tdd-core` |
+| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `$superwork-before-dev` → `$superwork-tdd-core` → optional `$superwork-code-simplifier` |
 | **Planned Task** | Multiple files, behavior change, sequencing needed | `$superwork-spec-plan` → `$superwork-execute-plan` |
 | **Complex Task** | Vague goal, multiple files, architectural decisions | **`$superwork-brainstorm` → `$superwork-spec-plan` → `$superwork-execute-plan`** |
 | **Bug / Failure** | Regression, test failure, flaky or broken behavior | **`$superwork-debug-root-cause` → `$superwork-tdd-core` → verification** |
@@ -283,6 +283,7 @@ Implement the task described in `prd.md`.
 - Follow all specs injected into implement context
 - Keep changes scoped to requirements
 - Use `$superwork-tdd-core` for each behavior change
+- Use `$superwork-code-simplifier` only after green when cleanup is structural and non-behavioral
 - Run lint and typecheck before finishing
 
 **Step 9: Check Quality** `[AI]`
@@ -328,6 +329,7 @@ If yes, resume from the appropriate step (usually Step 7 or 8).
 | `$superwork-spec-plan` | Create a lightweight spec and plan before non-trivial changes |
 | `$superwork-execute-plan` | Implement an approved plan in verified steps |
 | `$superwork-tdd-core` | Drive a behavior change with Red-Green-Refactor |
+| `$superwork-code-simplifier` | Simplify recently touched code after green without changing behavior |
 | `$superwork-debug-root-cause` | Investigate bugs before fixing them |
 | `$superwork-finish-work` | Before committing changes |
 | `$superwork-record-session` | After completing a task |

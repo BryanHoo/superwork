@@ -12,6 +12,7 @@ const EXPECTED_SKILL_NAMES = [
   "superwork-break-loop",
   "superwork-check",
   "superwork-check-cross-layer",
+  "superwork-code-simplifier",
   "superwork-create-command",
   "superwork-debug-root-cause",
   "superwork-execute-plan",

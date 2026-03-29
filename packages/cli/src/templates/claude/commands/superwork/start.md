@@ -68,10 +68,10 @@ When user describes a task, classify it:
 |------|----------|----------|
 | **Question** | User asks about code, architecture, or how something works | Answer directly |
 | **Trivial Fix** | Typo fix, comment update, single-line change | Direct Edit |
-| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `/superwork:before-dev` → `/superwork:tdd-core` |
+| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `/superwork:before-dev` → `/superwork:tdd-core` → optional `/superwork:code-simplifier` |
 | **Planned Task** | Multiple files, behavior change, sequencing needed | `/superwork:spec-plan` → `/superwork:execute-plan` |
 | **Complex Task** | Vague goal, multiple files, architectural decisions | **`/superwork:brainstorm` → `/superwork:spec-plan` → `/superwork:execute-plan`** |
-| **Bug / Failure** | Regression, test failure, flaky or broken behavior | **`/superwork:debug-root-cause` → `/superwork:tdd-core` → verification** |
+| **Bug / Failure** | Regression, test failure, flaky or broken behavior | **`/superwork:debug-root-cause` → `/superwork:tdd-core` → optional `/superwork:code-simplifier` → verification** |
 
 ### Classification Signals
 
@@ -117,6 +117,7 @@ For simple, well-defined tasks:
    - Write PRD (Step 3)
    - Use `/superwork:before-dev`
    - Use `/superwork:tdd-core`
+   - Use `/superwork:code-simplifier` if cleanup after green is purely structural
    - Research codebase (Phase 2, Step 5)
    - Configure context (Step 6)
    - Activate task (Step 7)
@@ -368,6 +369,7 @@ If yes, resume from the appropriate step (usually Step 7 or 8).
 | `/superwork:spec-plan` | Create a lightweight spec and plan before non-trivial changes |
 | `/superwork:execute-plan` | Implement an approved plan in verified steps |
 | `/superwork:tdd-core` | Drive a behavior change with Red-Green-Refactor |
+| `/superwork:code-simplifier` | Simplify recently touched code after green without changing behavior |
 | `/superwork:debug-root-cause` | Investigate bugs before fixing them |
 | `/superwork:parallel` | Complex tasks needing isolated worktree |
 | `/superwork:finish-work` | Before committing changes |

@@ -63,6 +63,7 @@ const EXPECTED_COMMAND_NAMES = [
   "break-loop",
   "check-cross-layer",
   "check",
+  "code-simplifier",
   "create-command",
   "debug-root-cause",
   "execute-plan",

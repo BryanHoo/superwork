@@ -57,7 +57,7 @@ Even after injecting guidelines, AI has limited context window. As conversation 
 
 **The Problem**: AI starts following guidelines, but as the session progresses and context fills up, it "forgets" the rules and reverts to generic patterns.
 
-**The Solution**: The `/check-*` commands re-verify code against guidelines AFTER writing, catching drift that occurred during development. The `/superwork:finish-work` command does a final holistic review.
+**The Solution**: The `/check-*` commands re-verify code against guidelines AFTER writing, catching drift that occurred during development. The `/superwork:code-simplifier` command provides a safe, non-behavioral cleanup pass after green. The `/superwork:finish-work` command does a final holistic review.
 
 ---
 
@@ -162,6 +162,23 @@ AI context window has limited capacity. As conversation progresses, guidelines i
 
 ---
 
+### /superwork:code-simplifier - Safe Refactor After Green
+
+**WHY IT EXISTS**:
+Once behavior is correct, code can still be harder to read than it should be. Teams need a cleanup step that improves clarity without reopening feature scope.
+
+**WHAT IT ACTUALLY DOES**:
+1. Focuses on recently touched code
+2. Simplifies structure, naming, and duplication
+3. Keeps contracts and behavior unchanged
+4. Hands work back to `/superwork:check` or `/superwork:finish-work`
+
+**WHY THIS MATTERS**:
+- Without `/superwork:code-simplifier`: cleanup gets mixed into feature work or skipped entirely.
+- With `/superwork:code-simplifier`: refactors stay narrow, reviewable, and safe.
+
+---
+
 ### /superwork:check-cross-layer - Multi-Dimension Verification
 
 **WHY IT EXISTS**:
@@ -213,10 +230,11 @@ All the context AI built during this session will be lost when session ends. The
 **[2/8] python3 ./.superwork/scripts/task.py create "Fix bug" --slug fix-bug** - Track work for future reference
 **[3/8] /superwork:before-dev** - Inject project-specific development guidelines
 **[4/8] Investigate and fix the bug** - Actual development work
-**[5/8] /superwork:check** - Re-verify code against guidelines
-**[6/8] /superwork:finish-work** - Holistic cross-layer review
-**[7/8] Human tests and commits** - Human validates before code enters repo
-**[8/8] /superwork:record-session** - Persist memory for future sessions
+**[5/9] /superwork:code-simplifier (optional)** - Clean up structure after behavior is green
+**[6/9] /superwork:check** - Re-verify code against guidelines
+**[7/9] /superwork:finish-work** - Holistic cross-layer review
+**[8/9] Human tests and commits** - Human validates before code enters repo
+**[9/9] /superwork:record-session** - Persist memory for future sessions
 
 ### Example 2: Planning Session (No Code)
 
@@ -230,9 +248,10 @@ All the context AI built during this session will be lost when session ends. The
 **[1/6] /superwork:start** - Resume context from previous session
 **[2/6] /superwork:before-dev** - Re-inject guidelines before fixes
 **[3/6] Fix each CR issue** - Address feedback with guidelines in context
-**[4/6] /superwork:check** - Verify fixes did not introduce new issues
-**[5/6] /superwork:finish-work** - Document lessons from CR
-**[6/6] Commit after verification, then /superwork:record-session** - Preserve CR lessons
+**[4/7] /superwork:code-simplifier (optional)** - Do narrow readability cleanup after green
+**[5/7] /superwork:check** - Verify fixes did not introduce new issues
+**[6/7] /superwork:finish-work** - Document lessons from CR
+**[7/7] Commit after verification, then /superwork:record-session** - Preserve CR lessons
 
 ### Example 4: Large Refactoring
 
@@ -247,9 +266,10 @@ All the context AI built during this session will be lost when session ends. The
 **[1/6] /superwork:start** - See if this bug was investigated before
 **[2/6] /superwork:before-dev** - Guidelines might document known gotchas
 **[3/6] Investigation** - Actual debugging work
-**[4/6] /superwork:check** - Verify debug changes do not break other things
-**[5/6] /superwork:finish-work** - Debug findings might need documentation
-**[6/6] Commit after verification, then /superwork:record-session** - Debug knowledge is valuable
+**[4/7] /superwork:code-simplifier (optional)** - Simplify the fix once behavior is green
+**[5/7] /superwork:check** - Verify debug changes do not break other things
+**[6/7] /superwork:finish-work** - Debug findings might need documentation
+**[7/7] Commit after verification, then /superwork:record-session** - Debug knowledge is valuable
 
 ---
 

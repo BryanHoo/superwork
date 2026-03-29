@@ -82,6 +82,23 @@ When you've made similar changes to multiple files:
 2. **Search**: Run grep to find any missed
 3. **Consider**: Should this be abstracted?
 
+## Refinement Pass with `superwork-code-simplifier`
+
+When the behavior is already correct but the touched code is still awkward:
+
+1. Keep the scope to the code changed in the current task
+2. Simplify structure, naming, and duplication without changing behavior
+3. Re-run the narrowest checks
+4. Continue to the normal quality pass
+
+Use this for:
+
+- non-behavioral cleanup after green
+- reducing avoidable nesting
+- replacing awkward local abstractions with clearer code
+
+Do not use it to sneak in feature work or contract changes.
+
 ---
 
 ## Checklist Before Commit
