@@ -1,0 +1,3 @@
+{
+  "packages/cli/src/**/*.ts": ["pnpm --filter @mindfoldhq/superwork exec eslint --fix", "pnpm --filter @mindfoldhq/superwork exec prettier --write"]
+}
