@@ -68,8 +68,10 @@ When user describes a task, classify it:
 |------|----------|----------|
 | **Question** | User asks about code, architecture, or how something works | Answer directly |
 | **Trivial Fix** | Typo fix, comment update, single-line change | Direct Edit |
-| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → Implement |
-| **Complex Task** | Vague goal, multiple files, architectural decisions | **Brainstorm → Task Workflow** |
+| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `/superwork:before-dev` → `/superwork:tdd-core` |
+| **Planned Task** | Multiple files, behavior change, sequencing needed | `/superwork:spec-plan` → `/superwork:execute-plan` |
+| **Complex Task** | Vague goal, multiple files, architectural decisions | **`/superwork:brainstorm` → `/superwork:spec-plan` → `/superwork:execute-plan`** |
+| **Bug / Failure** | Regression, test failure, flaky or broken behavior | **`/superwork:debug-root-cause` → `/superwork:tdd-core` → verification** |
 
 ### Classification Signals
 
@@ -88,9 +90,9 @@ When user describes a task, classify it:
 
 ### Decision Rule
 
-> **If in doubt, use Brainstorm + Task Workflow.**
+> **If in doubt, use `/superwork:brainstorm` + `/superwork:spec-plan`.**
 >
-> Task Workflow ensures code-spec context is injected to agents, resulting in higher quality code.
+> Structured planning keeps the existing task workflow aligned with code-specs, tests, and verification.
 > The overhead is minimal, but the benefit is significant.
 
 ---
@@ -113,6 +115,8 @@ For simple, well-defined tasks:
 3. **If yes: execute ALL steps below without stopping. Do NOT ask for additional confirmation between steps.**
    - Create task directory (Phase 1 Path B, Step 2)
    - Write PRD (Step 3)
+   - Use `/superwork:before-dev`
+   - Use `/superwork:tdd-core`
    - Research codebase (Phase 2, Step 5)
    - Configure context (Step 6)
    - Activate task (Step 7)
@@ -133,7 +137,8 @@ See `/superwork:brainstorm` for the full process. Summary:
 3. **Ask questions one at a time** - Update PRD after each answer
 4. **Propose approaches** - For architectural decisions
 5. **Confirm final requirements** - Get explicit approval
-6. **Proceed to Task Workflow** - With clear requirements in PRD
+6. **Run `/superwork:spec-plan`** - Turn approved requirements into an implementation-ready plan
+7. **Proceed to `/superwork:execute-plan`** - Implement with TDD and verification
 
 > **Subtask Decomposition**: If brainstorm reveals multiple independent work items,
 > consider creating subtasks using `--parent` flag or `add-subtask` command.
@@ -307,6 +312,7 @@ Task(
   prompt: "Implement the task described in prd.md.
 
   Follow all code-spec files that have been injected into your context.
+  Use /superwork:tdd-core for each behavior change.
   Run lint and typecheck before finishing.",
   model: "opus"
 )
@@ -322,6 +328,7 @@ Task(
   prompt: "Review all code changes against the code-spec requirements.
 
   Fix any issues you find directly.
+  Run /superwork:check and /superwork:check-cross-layer when applicable.
   Ensure lint and typecheck pass.",
   model: "opus"
 )
@@ -358,6 +365,10 @@ If yes, resume from the appropriate step (usually Step 7 or 8).
 |---------|-------------|
 | `/superwork:start` | Begin a session (this command) |
 | `/superwork:brainstorm` | Clarify vague requirements (called from start) |
+| `/superwork:spec-plan` | Create a lightweight spec and plan before non-trivial changes |
+| `/superwork:execute-plan` | Implement an approved plan in verified steps |
+| `/superwork:tdd-core` | Drive a behavior change with Red-Green-Refactor |
+| `/superwork:debug-root-cause` | Investigate bugs before fixing them |
 | `/superwork:parallel` | Complex tasks needing isolated worktree |
 | `/superwork:finish-work` | Before committing changes |
 | `/superwork:record-session` | After completing a task |

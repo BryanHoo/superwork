@@ -89,10 +89,14 @@ const PLATFORM_FUNCTIONS: Record<AITool, PlatformFunctions> = {
     collectTemplates: () => {
       const files = new Map<string, string>();
       for (const skill of getCodexSkills()) {
-        files.set(`.agents/skills/${skill.name}/SKILL.md`, skill.content);
+        for (const file of skill.files) {
+          files.set(`.agents/skills/${skill.name}/${file.path}`, file.content);
+        }
       }
       for (const skill of getCodexPlatformSkills()) {
-        files.set(`.codex/skills/${skill.name}/SKILL.md`, skill.content);
+        for (const file of skill.files) {
+          files.set(`.codex/skills/${skill.name}/${file.path}`, file.content);
+        }
       }
       for (const agent of getCodexAgents()) {
         files.set(`.codex/agents/${agent.name}.toml`, agent.content);

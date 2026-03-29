@@ -64,12 +64,16 @@ const EXPECTED_COMMAND_NAMES = [
   "check-cross-layer",
   "check",
   "create-command",
+  "debug-root-cause",
+  "execute-plan",
   "finish-work",
   "integrate-skill",
   "onboard",
   "parallel",
   "record-session",
+  "spec-plan",
   "start",
+  "tdd-core",
   "update-spec",
 ];
 

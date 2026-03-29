@@ -67,6 +67,19 @@ superwork init --claude --codex -u your-name
   [Supported Platforms](https://docs.trysuperwork.app/guide/ch13-multi-platform) •
   [Real-World Scenarios](https://docs.trysuperwork.app/guide/ch08-real-world)
 
+### Default Workflow Entrypoints
+
+After initialization, the lightweight day-to-day flow is:
+
+- Claude Code small changes: `/superwork:before-dev` -> `/superwork:tdd-core` -> `/superwork:check`
+- Claude Code planned work: `/superwork:brainstorm` -> `/superwork:spec-plan` -> `/superwork:execute-plan`
+- Claude Code bugs: `/superwork:debug-root-cause` -> `/superwork:tdd-core` -> `/superwork:break-loop`
+- Codex small changes: `$before-dev` -> `$tdd-core` -> `$check`
+- Codex planned work: `$brainstorm` -> `$spec-plan` -> `$execute-plan`
+- Codex bugs: `$debug-root-cause` -> `$tdd-core` -> `$break-loop`
+
+Use `/superwork:finish-work` before commit in either tool.
+
 ## Use Cases
 
 ### Teach AI your project once
@@ -99,6 +112,12 @@ Superwork keeps the core workflow in `.superwork/` and generates the platform-sp
 ```
 
 Depending on the platforms you enable, Superwork also creates tool-specific integration files such as `.claude/`, `AGENTS.md`, `.agents/`, and `.codex/`. For Codex, Superwork installs both project skills under `.agents/skills/` and project-scoped config/custom agents under `.codex/`.
+
+Platform entrypoints stay aligned across tools:
+
+- Claude Code gets slash commands such as `/superwork:spec-plan`, `/superwork:execute-plan`, `/superwork:tdd-core`, and `/superwork:debug-root-cause`.
+- Codex gets the matching project skills `$spec-plan`, `$execute-plan`, `$tdd-core`, and `$debug-root-cause`.
+- Both tools still share the same `.superwork/` task model, specs, journals, and workflow rules.
 
 At a high level, the workflow is simple:
 

@@ -12,8 +12,8 @@ import { resolvePlaceholders } from "./shared.js";
 
 /**
  * Configure Codex by writing:
- * - .agents/skills/<skill-name>/SKILL.md   (shared, cross-platform)
- * - .codex/skills/<skill-name>/SKILL.md    (Codex-specific)
+ * - .agents/skills/<skill-name>/*   (shared, cross-platform)
+ * - .codex/skills/<skill-name>/*    (Codex-specific)
  * - .codex/agents/<agent-name>.toml
  * - .codex/hooks/session-start.py
  * - .codex/hooks.json
@@ -27,7 +27,11 @@ export async function configureCodex(cwd: string): Promise<void> {
   for (const skill of getAllSkills()) {
     const skillDir = path.join(sharedSkillsRoot, skill.name);
     ensureDir(skillDir);
-    await writeFile(path.join(skillDir, "SKILL.md"), skill.content);
+    for (const file of skill.files) {
+      const targetPath = path.join(skillDir, file.path);
+      ensureDir(path.dirname(targetPath));
+      await writeFile(targetPath, file.content);
+    }
   }
 
   const codexRoot = path.join(cwd, ".codex");
@@ -39,7 +43,11 @@ export async function configureCodex(cwd: string): Promise<void> {
   for (const skill of getAllCodexSkills()) {
     const skillDir = path.join(codexSkillsRoot, skill.name);
     ensureDir(skillDir);
-    await writeFile(path.join(skillDir, "SKILL.md"), skill.content);
+    for (const file of skill.files) {
+      const targetPath = path.join(skillDir, file.path);
+      ensureDir(path.dirname(targetPath));
+      await writeFile(targetPath, file.content);
+    }
   }
 
   // Custom agents → .codex/agents/

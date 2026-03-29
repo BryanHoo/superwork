@@ -1,6 +1,6 @@
 ---
 name: start
-description: "Initializes an AI development session by reading workflow guides, developer identity, git status, active tasks, and project guidelines from .superwork/. Classifies incoming tasks and routes to brainstorm, direct edit, or task workflow. Use when beginning a new coding session, resuming work, starting a new task, or re-establishing project context."
+description: "Initializes an AI development session by reading workflow guides, developer identity, git status, active tasks, and project guidelines from .superwork/. Classifies incoming tasks and routes to brainstorm, spec-plan, execute-plan, direct edit, or root-cause debugging. Use when beginning a new coding session, resuming work, starting a new task, or re-establishing project context."
 ---
 
 # Start Session
@@ -73,14 +73,16 @@ When user describes a task, classify it:
 |------|----------|----------|
 | **Question** | User asks about code, architecture, or how something works | Answer directly |
 | **Trivial Fix** | Typo fix, comment update, single-line change, < 5 minutes | Direct Edit |
-| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → Task Workflow |
-| **Complex Task** | Vague goal, multiple files, architectural decisions | **Brainstorm → Task Workflow** |
+| **Simple Task** | Clear goal, 1-2 files, well-defined scope | Quick confirm → `$before-dev` → `$tdd-core` |
+| **Planned Task** | Multiple files, behavior change, sequencing needed | `$spec-plan` → `$execute-plan` |
+| **Complex Task** | Vague goal, multiple files, architectural decisions | **`$brainstorm` → `$spec-plan` → `$execute-plan`** |
+| **Bug / Failure** | Regression, test failure, flaky or broken behavior | **`$debug-root-cause` → `$tdd-core` → verification** |
 
 ### Decision Rule
 
-> **If in doubt, use Brainstorm + Task Workflow.**
+> **If in doubt, use `$brainstorm` + `$spec-plan`.**
 >
-> Task Workflow ensures code-specs are injected to the right context, resulting in higher quality code.
+> Structured planning keeps the existing task workflow aligned with code-specs, tests, and verification.
 > The overhead is minimal, but the benefit is significant.
 
 > **Subtask Decomposition**: If brainstorm reveals multiple independent work items,
@@ -107,6 +109,8 @@ For simple, well-defined tasks:
 3. **If yes: execute ALL steps below without stopping. Do NOT ask for additional confirmation between steps.**
    - Create task directory (Phase 1 Path B, Step 2)
    - Write PRD (Step 3)
+   - Use `$before-dev`
+   - Use `$tdd-core`
    - Research codebase (Phase 2, Step 5)
    - Configure context (Step 6)
    - Activate task (Step 7)
@@ -127,7 +131,8 @@ See `$brainstorm` for the full process. Summary:
 3. **Ask questions one at a time** - Update PRD after each answer
 4. **Propose approaches** - For architectural decisions
 5. **Confirm final requirements** - Get explicit approval
-6. **Proceed to Task Workflow** - With clear requirements in PRD
+6. **Run `$spec-plan`** - Turn approved requirements into an implementation-ready plan
+7. **Proceed to `$execute-plan`** - Implement with TDD and verification
 
 ---
 
@@ -277,6 +282,7 @@ Implement the task described in `prd.md`.
 
 - Follow all specs injected into implement context
 - Keep changes scoped to requirements
+- Use `$tdd-core` for each behavior change
 - Run lint and typecheck before finishing
 
 **Step 9: Check Quality** `[AI]`
@@ -286,6 +292,8 @@ Run a quality pass against check context:
 - Review all code changes against the specs
 - Fix issues directly
 - Ensure lint and typecheck pass
+- Use `$check`
+- Use `$check-cross-layer` if the task changes contracts or spans layers
 
 **Step 10: Complete** `[AI]`
 
@@ -317,6 +325,10 @@ If yes, resume from the appropriate step (usually Step 7 or 8).
 | Skill | When to Use |
 |---------|-------------|
 | `$start` | Begin a session (this skill) |
+| `$spec-plan` | Create a lightweight spec and plan before non-trivial changes |
+| `$execute-plan` | Implement an approved plan in verified steps |
+| `$tdd-core` | Drive a behavior change with Red-Green-Refactor |
+| `$debug-root-cause` | Investigate bugs before fixing them |
 | `$finish-work` | Before committing changes |
 | `$record-session` | After completing a task |
 

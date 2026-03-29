@@ -30,6 +30,7 @@ import { init } from "../../src/commands/init.js";
 import { update } from "../../src/commands/update.js";
 import { VERSION } from "../../src/constants/version.js";
 import { DIR_NAMES, PATHS } from "../../src/constants/paths.js";
+import { compareVersions } from "../../src/utils/compare-versions.js";
 import { computeHash } from "../../src/utils/template-hash.js";
 
 // A managed template file that update always handles (Python script)
@@ -38,6 +39,31 @@ const MANAGED_FILE = `${PATHS.SCRIPTS}/get_context.py`;
 /** Remove a key from a hash object (avoids eslint no-dynamic-delete) */
 function removeHashEntry(obj: Record<string, unknown>, key: string): Record<string, unknown> {
   return Object.fromEntries(Object.entries(obj).filter(([k]) => k !== key));
+}
+
+/**
+ * Build an older project version relative to the current CLI version while
+ * keeping the same template set expectation for "version stamp only" updates.
+ */
+function getOlderEquivalentVersion(version: string): string {
+  const [baseVersion, prerelease] = version.split("-", 2);
+
+  if (!prerelease) {
+    return `${baseVersion}-rc.6`;
+  }
+
+  const parts = prerelease.split(".");
+  const lastPart = parts[parts.length - 1];
+  if (lastPart && /^\d+$/.test(lastPart)) {
+    const nextValue = Math.max(0, Number(lastPart) - 1);
+    parts[parts.length - 1] = String(nextValue);
+    const candidate = `${baseVersion}-${parts.join(".")}`;
+    if (compareVersions(candidate, version) < 0) {
+      return candidate;
+    }
+  }
+
+  return `${baseVersion}-0`;
 }
 
 describe("update() integration", () => {
@@ -287,9 +313,9 @@ describe("update() integration", () => {
   it("#12 prerelease→stable upgrade with no file changes still updates .version", async () => {
     await setupProject();
 
-    // Simulate a project at rc.6 (identical templates, just different version stamp)
+    // Simulate an older version with identical templates, just a stale version stamp.
     const versionPath = path.join(tmpDir, DIR_NAMES.WORKFLOW, ".version");
-    fs.writeFileSync(versionPath, "0.3.0-rc.6");
+    fs.writeFileSync(versionPath, getOlderEquivalentVersion(VERSION));
 
     await update({});
 
@@ -408,11 +434,11 @@ describe("update() integration", () => {
   it("#19 safe-file-delete handles missing deprecated files without crash", async () => {
     await setupProject();
 
-    // Simulate upgrading from an old version — deprecated files don't exist
+    // Simulate upgrading from an older equivalent version — deprecated files don't exist.
     // The manifest has safe-file-delete entries for .claude/commands/superwork/before-backend-dev.md etc.
     // but init() doesn't create them (templates removed). update() should not crash.
     const versionPath = path.join(tmpDir, DIR_NAMES.WORKFLOW, ".version");
-    fs.writeFileSync(versionPath, "0.3.7");
+    fs.writeFileSync(versionPath, getOlderEquivalentVersion(VERSION));
 
     // This should complete without errors even though deprecated files don't exist
     await update({ force: true });

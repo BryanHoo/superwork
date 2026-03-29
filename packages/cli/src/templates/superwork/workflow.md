@@ -212,6 +212,37 @@ python3 ./.superwork/scripts/task.py create "<title>" --slug <task-name>
    --> python3 ./.superwork/scripts/add_session.py --title "Title" --commit "hash"
 ```
 
+### Recommended Lightweight Workflow Entry Points
+
+Keep the existing Superwork task model and layer these lightweight Codex skills or Claude commands on top:
+
+```text
+Codex small change:
+  $before-dev -> $tdd-core -> $check -> /superwork:finish-work
+
+Claude small change:
+  /superwork:before-dev -> /superwork:tdd-core -> /superwork:check -> /superwork:finish-work
+
+Codex non-trivial feature or behavior change:
+  $brainstorm (if needed) -> $spec-plan -> $execute-plan -> /superwork:finish-work
+
+Claude non-trivial feature or behavior change:
+  /superwork:brainstorm (if needed) -> /superwork:spec-plan -> /superwork:execute-plan -> /superwork:finish-work
+
+Codex bug or regression:
+  $debug-root-cause -> $tdd-core -> $check -> $break-loop -> /superwork:finish-work
+
+Claude bug or regression:
+  /superwork:debug-root-cause -> /superwork:tdd-core -> /superwork:check -> /superwork:break-loop -> /superwork:finish-work
+```
+
+Guidance:
+- Prefer updating the existing task `prd.md` instead of creating separate design docs for every task.
+- Use `$spec-plan` when the work needs clear scope, sequencing, or verification before coding.
+- Use `$execute-plan` to keep implementation aligned with the plan and verification steps.
+- Use `$debug-root-cause` before fixing bugs so root-cause analysis happens before code changes.
+- The same flow applies to Claude via `/superwork:spec-plan`, `/superwork:execute-plan`, `/superwork:tdd-core`, and `/superwork:debug-root-cause`.
+
 ### Code Quality Checklist
 
 **Must pass before commit**:
@@ -331,6 +362,9 @@ python3 ./.superwork/scripts/task.py list-archive    # List archived tasks
 
 2. **During development**:
    - [!] **Follow** `.superwork/spec/` guidelines
+   - Use `$tdd-core` for behavior changes whenever a failing automated check can be written first
+   - Use `$spec-plan` for multi-file or cross-layer changes before coding
+   - Use `$debug-root-cause` before fixing regressions or flaky failures
    - For cross-layer features, use `/superwork:check-cross-layer`
    - Develop only one task at a time
    - Run lint and tests frequently
@@ -386,6 +420,17 @@ python3 ./.superwork/scripts/task.py create "<title>" # Create task
 /superwork:finish-work          # Pre-commit checklist
 /superwork:break-loop           # Post-debug analysis
 /superwork:check-cross-layer    # Cross-layer verification
+/superwork:spec-plan            # Write lightweight spec + execution plan
+/superwork:execute-plan         # Implement the approved plan
+/superwork:tdd-core             # Run Red-Green-Refactor
+/superwork:debug-root-cause     # Investigate before fixing
+
+# Codex skills
+$before-dev                     # Read relevant project guidelines
+$spec-plan                      # Write lightweight spec + execution plan
+$execute-plan                   # Implement the approved plan
+$tdd-core                       # Run Red-Green-Refactor
+$debug-root-cause               # Investigate before fixing
 ```
 
 ---

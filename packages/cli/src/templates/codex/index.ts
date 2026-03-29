@@ -43,8 +43,42 @@ function listFiles(dir: string): string[] {
   }
 }
 
+function listFilesRecursive(dir: string): string[] {
+  try {
+    return readdirSync(join(__dirname, dir), { withFileTypes: true })
+      .flatMap((entry) => {
+        const relativePath = `${dir}/${entry.name}`;
+        return entry.isDirectory()
+          ? listFilesRecursive(relativePath)
+          : [relativePath];
+      })
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+// Keep skill metadata fast to access while preserving any bundled files.
+function getSkillFiles(rootDir: string, skillName: string): SkillFileTemplate[] {
+  const baseDir = `${rootDir}/${skillName}`;
+  const prefix = `${baseDir}/`;
+
+  return listFilesRecursive(baseDir).map((relativePath) => ({
+    path: relativePath.startsWith(prefix)
+      ? relativePath.slice(prefix.length)
+      : relativePath,
+    content: readTemplate(relativePath),
+  }));
+}
+
 export interface SkillTemplate {
   name: string;
+  content: string;
+  files: SkillFileTemplate[];
+}
+
+export interface SkillFileTemplate {
+  path: string;
   content: string;
 }
 
@@ -62,8 +96,12 @@ export function getAllSkills(): SkillTemplate[] {
   const skills: SkillTemplate[] = [];
 
   for (const name of listDirectories("skills")) {
-    const content = readTemplate(`skills/${name}/SKILL.md`);
-    skills.push({ name, content });
+    const files = getSkillFiles("skills", name);
+    const skillFile = files.find((file) => file.path === "SKILL.md");
+    if (!skillFile) {
+      continue;
+    }
+    skills.push({ name, content: skillFile.content, files });
   }
 
   return skills;
@@ -92,8 +130,12 @@ export function getAllCodexSkills(): SkillTemplate[] {
   const skills: SkillTemplate[] = [];
 
   for (const name of listDirectories("codex-skills")) {
-    const content = readTemplate(`codex-skills/${name}/SKILL.md`);
-    skills.push({ name, content });
+    const files = getSkillFiles("codex-skills", name);
+    const skillFile = files.find((file) => file.path === "SKILL.md");
+    if (!skillFile) {
+      continue;
+    }
+    skills.push({ name, content: skillFile.content, files });
   }
 
   return skills;

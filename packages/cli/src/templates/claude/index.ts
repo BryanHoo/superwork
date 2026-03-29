@@ -25,7 +25,7 @@ function readTemplate(relativePath: string): string {
 
 function listFiles(dir: string): string[] {
   try {
-    return readdirSync(join(__dirname, dir));
+    return readdirSync(join(__dirname, dir)).sort();
   } catch {
     return [];
   }

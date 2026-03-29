@@ -456,7 +456,7 @@ Context / Decision / Consequences
 
 ## Integration with Start Workflow
 
-After brainstorm completes (Step 8 confirmation approved), the flow continues to the Task Workflow's **Phase 2: Prepare for Implementation**:
+After brainstorm completes (Step 8 confirmation approved), the flow continues through `/superwork:spec-plan` before implementation:
 
 ```text
 Brainstorm
@@ -465,16 +465,19 @@ Brainstorm
   Step 8: Final confirmation → user approves
   ↓
 Task Workflow Phase 2 (Prepare for Implementation)
-  Code-Spec Depth Check (if applicable)
-  → Research codebase (based on confirmed PRD)
+Spec Plan
+  Refine PRD into lightweight spec + execution plan
+  → Define verification
+  ↓
+Execute Plan
+  Research codebase (based on confirmed PRD)
   → Configure code-spec context (jsonl files)
   → Activate task
-  ↓
-Task Workflow Phase 3 (Execute)
-  Implement → Check → Complete
+  → Implement with TDD
+  → Check → Complete
 ```
 
-The task directory and PRD already exist from brainstorm, so Phase 1 of the Task Workflow is skipped entirely.
+The task directory and PRD already exist from brainstorm, so the planning work stays in the same task instead of branching into a separate document flow.
 
 ---
 
@@ -483,5 +486,7 @@ The task directory and PRD already exist from brainstorm, so Phase 1 of the Task
 | Command | When to Use |
 |---------|-------------|
 | `/superwork:start` | Entry point that triggers brainstorm |
+| `/superwork:spec-plan` | After requirements are approved, before coding |
+| `/superwork:execute-plan` | After the plan is ready |
 | `/superwork:finish-work` | After implementation is complete |
 | `/superwork:update-spec` | If new patterns emerge during work |

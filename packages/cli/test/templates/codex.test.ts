@@ -13,12 +13,16 @@ const EXPECTED_SKILL_NAMES = [
   "check",
   "check-cross-layer",
   "create-command",
+  "debug-root-cause",
+  "execute-plan",
   "finish-work",
   "improve-ut",
   "integrate-skill",
   "onboard",
   "record-session",
+  "spec-plan",
   "start",
+  "tdd-core",
   "update-spec",
 ];
 
@@ -43,6 +47,15 @@ describe("codex getAllSkills", () => {
       const nameMatch = skill.content.match(/^name:\s*(.+)$/m);
       expect(nameMatch?.[1]?.trim()).toBe(skill.name);
     }
+  });
+
+  it("preserves bundled skill files when present", () => {
+    const skills = getAllSkills();
+    const specPlan = skills.find((skill) => skill.name === "spec-plan");
+    expect(specPlan?.files.map((file) => file.path)).toContain("SKILL.md");
+    expect(specPlan?.files.map((file) => file.path)).toContain(
+      "agents/openai.yaml",
+    );
   });
 
   it("does not include unsupported platform-specific syntax", () => {
