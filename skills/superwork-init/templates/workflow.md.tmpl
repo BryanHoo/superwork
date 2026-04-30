@@ -1,0 +1,42 @@
+# Superwork Workflow
+
+## Overview
+
+This project uses `.superwork/` as the local workflow and spec runtime.
+
+## Package Map
+
+{{ package_map }}
+
+## Required Entry Points
+
+1. Use `superwork-init` when `.superwork/` is missing or incomplete.
+2. Use `superwork-start` at the beginning of every coding task.
+3. Route design-heavy or unclear feature work to `superwork-brainstorming`.
+4. Use `superwork-using-git-worktrees` before plan execution in isolated workspaces.
+5. Use `superwork-writing-plans` after design approval.
+6. Use `superwork-executing-plans` to execute written plans.
+7. Route direct feature work to `superwork-tdd` when scope is already clear, and require it to save `.superwork/plans/*.md` before any RED or implementation work starts.
+8. Route bug work to `superwork-debugging`.
+9. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why it is skipped.
+10. Run `superwork-check` only after that `superwork-code-simplifier` decision is explicit.
+11. Require `superwork-check` to make an explicit `superwork-update-spec` decision (`update/create/no-update`), and default to `no-update` when no durable rule or contract changed.
+
+## Tooling Paths
+
+- Context load: `superwork-start` (skill-internal tooling)
+- Design artifacts: `.superwork/prd/*.md`
+- Plan artifacts: `.superwork/plans/*.md`
+- Spec check: `superwork-check` (skill-internal tooling)
+- Spec update decision: `superwork-update-spec` (skill-internal tooling)
+- Never generate or copy `scripts/*.py` into this project as runtime output.
+
+## Default Verification Hints
+
+- Prefer `{{ package_manager }}` commands when Node tooling is present.
+- Use planning track for non-trivial feature scope: brainstorming -> worktrees -> writing-plans -> executing-plans.
+- Even on the direct feature path, save `.superwork/plans/*.md` before the first RED test; chat-only or memory-only plans do not count.
+- Use `superwork-code-simplifier` only after behavior is verified, never as a substitute for TDD or debugging.
+- If `superwork-code-simplifier` is skipped, state why the current diff does not need behavior-preserving cleanup before `superwork-check`.
+- Re-read the relevant spec indexes before implementation and before completion.
+- Update specs only when new durable rules, contracts, edge cases, or test requirements appear.

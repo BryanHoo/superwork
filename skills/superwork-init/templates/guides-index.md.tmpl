@@ -1,0 +1,29 @@
+# Guides Index
+
+## Scope
+
+Shared project-wide workflow rules used by all packages and layers.
+
+## Pre-Development Checklist
+
+- Read `.superwork/workflow.md`
+- Read the relevant package/layer `index.md`
+- Choose `superwork-brainstorming` for design-heavy feature work
+- Choose `superwork-tdd` for direct feature work, but save `.superwork/plans/*.md` before the first RED test
+- Choose `superwork-debugging` for bug work
+- Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green
+
+## Verification Checklist
+
+- Run fresh verification before any completion claim
+- Before final completion, make an explicit `superwork-code-simplifier` decision
+- If recently touched code still needs cleanup, run `superwork-code-simplifier` before final completion
+- If it is skipped, state why the current diff does not need behavior-preserving cleanup
+- Use project-local commands such as:
+{{ test_hints }}
+
+## Update Triggers
+
+- A new cross-package rule was introduced
+- A repeated bug pattern needs durable guidance
+- A verification requirement now applies across the project
