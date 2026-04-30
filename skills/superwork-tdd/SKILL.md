@@ -58,8 +58,7 @@ No exceptions:
 | Review | Verify the first executable task is RED | The plan starts with implementation or vague tasks |
 | Execute | Invoke `superwork-executing-plans` with the saved plan | You are about to start RED from memory, chat state, or an unsaved plan |
 | Verify | Let the plan drive targeted and broader checks | Verification is missing from the written tasks |
-| Simplify | Invoke `superwork-code-simplifier` if green code still needs cleanup, otherwise state why it is skipped | Cleanup starts before behavior is verified or is skipped silently |
-| Handoff | Route to `superwork-check` after plan execution | You are about to claim completion directly |
+| Completion | Keep the post-green handoff in the saved plan and finish through `superwork-check` | You are about to claim completion directly |
 
 ## Implementation
 
@@ -187,10 +186,9 @@ If more behavior remains, start a fresh RED cycle.
 
 Add the next behavior as a new checked task sequence in the same plan file or a follow-up plan file, then continue through `superwork-executing-plans`.
 
-When the requested behavior is complete, make an explicit `superwork-code-simplifier` decision before `superwork-check`.
+When the requested behavior is complete, follow the saved plan's post-green handoff and route to `superwork-check`.
 
-- invoke it when the recently touched code still needs behavior-preserving cleanup
-- otherwise, state why the current diff does not need `superwork-code-simplifier`
+`superwork-check` owns the exact `superwork-code-simplifier` and `superwork-update-spec` rules.
 
 Do not declare the work complete before the check stage.
 
@@ -225,6 +223,4 @@ If any of these happen, stop and return to the correct phase.
 - `superwork-start` should have already loaded the correct context
 - `superwork-writing-plans` provides the canonical file format for the saved plan
 - `superwork-executing-plans` is REQUIRED after saving the plan file
-- `superwork-code-simplifier` needs an explicit execute-or-skip decision after green verification
-- `superwork-check` is REQUIRED after completing the RED-GREEN-REFACTOR cycles
-- `superwork-update-spec` is handled by `superwork-check`, not by this skill directly
+- `superwork-check` owns completion verification, `superwork-code-simplifier` enforcement, and the `superwork-update-spec` decision

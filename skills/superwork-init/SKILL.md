@@ -87,16 +87,11 @@ When package boundaries are ambiguous, choose the simplest stable package map an
 
 `workflow.md` must explain:
 
-1. When to use `superwork-init`
-2. When to start with `superwork-start`
-3. When to use `superwork-brainstorming` for design-heavy feature work
-4. When to use `superwork-using-git-worktrees` for isolated execution
-5. When to use `superwork-writing-plans` and `superwork-executing-plans`
-6. Why direct feature implementation can still use `superwork-tdd`
-7. Why bugfix work defaults to `superwork-debugging`
-8. Why `superwork-code-simplifier` needs an explicit execute-or-skip decision before `superwork-check`
-9. Why completion requires `superwork-check`
-10. Why completion requires an explicit `superwork-update-spec` decision (`update/create/no-update`) instead of defaulting to doc updates
+1. Entry skills: `superwork-init` and `superwork-start`
+2. Planning track: `superwork-brainstorming`, `superwork-using-git-worktrees`, `superwork-writing-plans`, and `superwork-executing-plans`
+3. Direct feature path: `superwork-tdd`, including the saved-plan-before-RED rule
+4. Bug path: `superwork-debugging`
+5. Completion policy: medium or large diffs must run `superwork-code-simplifier`, only truly small diffs may skip it with an explicit reason before `superwork-check`, and `superwork-check` must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
 
 Keep it project-local and actionable. It should read like an operating manual, not a manifesto.
 

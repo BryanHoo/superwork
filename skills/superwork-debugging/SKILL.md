@@ -45,8 +45,7 @@ If you have not completed the investigation, you cannot propose or apply the fix
 | Hypothesis | Form one explanation and test it minimally | One cause is confirmed or rejected |
 | Regression Test | Capture the bug with a failing test | The test proves the bug exists |
 | Fix | Change one thing at the root cause | Bug is fixed without collateral damage |
-| Simplify | Invoke `superwork-code-simplifier` after the fix is green, or state why it is skipped | Cleanup starts before the regression is proven fixed or is skipped silently |
-| Handoff | Route to `superwork-check` | You are no longer relying on intuition |
+| Completion | Hand off to `superwork-check` after the fix is proven | You are about to call the bug fixed from intuition |
 
 ## Implementation
 
@@ -124,10 +123,7 @@ Verify:
 
 Then route automatically to `superwork-check`.
 
-Before `superwork-check`, make an explicit `superwork-code-simplifier` decision:
-
-- run it when the repaired area still needs behavior-preserving cleanup
-- otherwise, state why the current diff does not need `superwork-code-simplifier`
+That stage owns final cleanup, completion verification, and the `superwork-update-spec` decision.
 
 ## Common Rationalizations
 
@@ -152,6 +148,5 @@ If any of these appear, return to investigation.
 ## Integration
 
 - `superwork-start` should have routed bug work here
-- `superwork-code-simplifier` requires an explicit execute-or-skip decision after green verification
 - `superwork-check` is REQUIRED after the fix is verified
-- `superwork-update-spec` is triggered later through the check stage
+- `superwork-check` owns `superwork-code-simplifier` enforcement and the later `superwork-update-spec` decision

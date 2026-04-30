@@ -315,6 +315,25 @@ class LayeredSpecLayoutTest(unittest.TestCase):
         self.assertIn("state why", content)
         self.assertIn("before verification", content)
 
+    def test_medium_or_large_changes_must_run_simplifier(self) -> None:
+        workflow_content = (
+            REPO_ROOT / "skills" / "superwork-init" / "templates" / "workflow.md.tmpl"
+        ).read_text(encoding="utf-8")
+        guides_content = (
+            REPO_ROOT / "skills" / "superwork-init" / "templates" / "guides-index.md.tmpl"
+        ).read_text(encoding="utf-8")
+        simplifier_content = (
+            REPO_ROOT / "skills" / "superwork-code-simplifier" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        # 中大型改动不能只做口头跳过，规则源头和运行时模板都必须写死“必须执行”。
+        self.assertIn("medium or large", workflow_content)
+        self.assertIn("must run `superwork-code-simplifier`", workflow_content)
+        self.assertIn("medium or large", guides_content)
+        self.assertIn("must run `superwork-code-simplifier`", guides_content)
+        self.assertIn("medium or large", simplifier_content)
+        self.assertIn("must run this skill", simplifier_content)
+
 
 if __name__ == "__main__":
     unittest.main()

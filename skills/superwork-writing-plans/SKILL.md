@@ -42,7 +42,7 @@ Every plan starts with:
 - include exact file paths for each task
 - include concrete verification commands
 - include expected pass/fail signals
-- include an explicit post-green `superwork-code-simplifier` decision before `superwork-check`
+- include an explicit post-green completion step before `superwork-check`; require medium or large result diffs to run `superwork-code-simplifier`, and require truly small skips to explain why
 - keep DRY, YAGNI, and test-first sequencing
 - for `superwork-tdd`, make the first executable checklist item an explicit failing test step, and save the plan file before that step begins
 - do not treat a chat-only outline or inline tool plan as the saved plan artifact
@@ -73,5 +73,5 @@ After saving the plan:
 
 - Typically follows `superwork-brainstorming`
 - The same saved file format is reused by `superwork-tdd` for direct feature work
-- Must encode a post-green `superwork-code-simplifier` execute-or-skip decision when the workflow reaches final checks
+- Must encode the post-green completion handoff that `superwork-executing-plans` will follow
 - Must hand off to `superwork-executing-plans`

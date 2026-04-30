@@ -18,7 +18,7 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 6. Use `superwork-executing-plans` to execute written plans.
 7. Route direct feature work to `superwork-tdd` when scope is already clear, and require it to save `.superwork/plans/*.md` before any RED or implementation work starts.
 8. Route bug work to `superwork-debugging`.
-9. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why it is skipped.
+9. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: if the diff is medium or large, must run `superwork-code-simplifier`; otherwise, run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why the truly small diff is skipped.
 10. Run `superwork-check` only after that `superwork-code-simplifier` decision is explicit.
 11. Require `superwork-check` to make an explicit `superwork-update-spec` decision (`update/create/no-update`), and default to `no-update` when no durable rule or contract changed.
 
@@ -37,6 +37,6 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 - Use planning track for non-trivial feature scope: brainstorming -> worktrees -> writing-plans -> executing-plans.
 - Even on the direct feature path, save `.superwork/plans/*.md` before the first RED test; chat-only or memory-only plans do not count.
 - Use `superwork-code-simplifier` only after behavior is verified, never as a substitute for TDD or debugging.
-- If `superwork-code-simplifier` is skipped, state why the current diff does not need behavior-preserving cleanup before `superwork-check`.
+- follow the completion policy before `superwork-check`; let that stage enforce the final cleanup rule, fresh verification, and the explicit `superwork-update-spec` decision.
 - Re-read the relevant spec indexes before implementation and before completion.
 - Update specs only when new durable rules, contracts, edge cases, or test requirements appear.

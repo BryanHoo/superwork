@@ -1,6 +1,6 @@
 ---
 name: superwork-code-simplifier
-description: Use when recently modified code in a project that uses `.superwork/` needs behavior-preserving simplification after targeted verification is already green and before final completion.
+description: Use when recently modified code in a project that uses `.superwork/` needs behavior-preserving simplification after targeted verification is already green and before final completion, especially when the implementation diff is medium or large.
 ---
 
 # Superwork Code Simplifier
@@ -18,19 +18,21 @@ Use when:
 - Recently modified code still has avoidable complexity
 - You need a constrained cleanup before final completion
 - The task would benefit from clearer names, flatter flow, or less duplication
+- The current implementation diff is medium or large, even if it already passes tests
 
 Do not use when:
 - Behavior is still changing
 - The targeted verification is not green yet
 - You want to widen the scope into unrelated cleanup
 - The work is pure formatting with no meaningful simplification decision
+- The diff is truly small and you can explain why no simplification pass is needed
 
 ## Quick Reference
 
 | Phase | Required Action | Stop If |
 |---|---|---|
 | Context | Read the relevant `.superwork` guides and layer rules | You are simplifying against memory only |
-| Scope | Limit work to recently touched code | You start cleaning unrelated files |
+| Scope | Limit work to recently touched code and classify the diff as small vs medium or large | You call a medium or large diff "small" just to skip cleanup |
 | Baseline | Confirm targeted verification already passes | You cannot prove current behavior |
 | Simplify | Reduce complexity without changing outputs or contracts | You are adding new behavior or abstractions |
 | Re-verify | Re-run the relevant checks after simplification | Green status is assumed instead of checked |
@@ -59,6 +61,19 @@ Typical scope signals:
 - the smallest surrounding block required to make the simplification coherent
 
 Do not turn this skill into a repo-wide cleanup pass unless explicitly asked.
+
+Classify the current change size before deciding whether this skill can be skipped.
+
+Treat the diff as medium or large when any of these are true:
+
+- multiple files were changed for the same behavior slice
+- the change crosses package, layer, or API boundaries
+- control flow, branching, or helper structure changed in more than one place
+- GREEN introduced temporary duplication, awkward naming, or obvious wrapper code that still remains
+- the resulting diff takes real effort to scan end-to-end confidently
+
+When any medium or large signal is present, you must run this skill before `superwork-check`.
+Only a truly small diff may skip this skill, and the skip reason must explain why no behavior-preserving cleanup remains.
 
 ### Step 3: Confirm the Green Baseline
 
@@ -106,6 +121,7 @@ Once the code is simpler and the checks are green:
 
 - summarize only meaningful structural changes
 - route to `superwork-check`
+- if the diff was medium or large, do not describe this skill as "skipped"
 
 ## Common Rationalizations
 
@@ -116,6 +132,7 @@ Once the code is simpler and the checks are green:
 | "Shorter code is always simpler" | Dense code often hides logic and increases risk |
 | "This refactor is harmless" | Behavior-preserving changes still need verification |
 | "I'll do the cleanup before the feature works" | That mixes implementation and refinement into one unverified step |
+| "This change is probably small enough to skip" | Medium or large diffs must run this skill, not rationalize around it |
 
 ## Red Flags
 
@@ -123,6 +140,7 @@ Once the code is simpler and the checks are green:
 - editing unrelated files for opportunistic cleanup
 - replacing explicit flow with clever compact expressions
 - making contract changes under the label of simplification
+- classifying a medium or large diff as "small" without concrete evidence
 - saying "done" before `superwork-check`
 
 If any of these appear, stop and return to the correct workflow stage.

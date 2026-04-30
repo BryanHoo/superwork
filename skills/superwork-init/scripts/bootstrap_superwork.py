@@ -169,11 +169,10 @@ def workflow_template(package_manager: str, packages: list[dict[str, list[str] |
     )
 
 
-def guides_index_template(package_manager: str, test_hints: list[str]) -> str:
+def guides_index_template(test_hints: list[str]) -> str:
     hint_lines = "\n".join(f"- `{hint}`" for hint in test_hints)
     return render_template(
         "guides-index.md.tmpl",
-        package_manager=package_manager,
         test_hints=hint_lines,
     )
 
@@ -198,49 +197,10 @@ def package_guideline_template(package_name: str, layer: str) -> str:
     )
 
 
-def layered_guides_index_template() -> str:
-    return """# Thinking Guides
-
-## Scope
-
-Shared thinking guides that apply before implementation, debugging, and review.
-
-## Pre-Development Checklist
-
-- Read `.superwork/workflow.md`
-- Read the relevant layer `index.md`
-- Choose `superwork-brainstorming` for design-heavy feature work
-- Choose `superwork-tdd` for direct feature work, but save `.superwork/plans/*.md` before the first RED test
-- Choose `superwork-debugging` for bug work
-- Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green
-- Skim the guide that matches the current risk or design pressure
-
-## Verification Checklist
-
-- Run fresh verification before any completion claim
-- Before final completion, make an explicit `superwork-code-simplifier` decision
-- If recently touched code still needs cleanup, run `superwork-code-simplifier` before final completion
-- If it is skipped, state why the current diff does not need behavior-preserving cleanup
-
-## Available Guides
-
-| Guide | Purpose |
-|---|---|
-| [Code Reuse Thinking Guide](./code-reuse-thinking-guide.md) | Find existing patterns before adding new ones |
-| [Cross-Layer Thinking Guide](./cross-layer-thinking-guide.md) | Check contracts when data crosses layers |
-| [Cross-Platform Thinking Guide](./cross-platform-thinking-guide.md) | Keep scripts and tooling portable |
-
-## Update Triggers
-
-- A new repeated decision pattern appears across packages
-- A regression exposed a missing thinking checklist
-- A portability constraint now matters for daily work
-"""
-
-
-def layered_guides_files() -> dict[str, str]:
+def layered_guides_files(test_hints: list[str]) -> dict[str, str]:
     return {
-        ".superwork/spec/guides/index.md": layered_guides_index_template(),
+        # 运行时 guides index 统一从模板渲染，避免模板文件与内联文案双份漂移。
+        ".superwork/spec/guides/index.md": guides_index_template(test_hints),
         ".superwork/spec/guides/code-reuse-thinking-guide.md": """# Code Reuse Thinking Guide
 
 ## Goal
@@ -537,8 +497,10 @@ def layered_layer_runtime(scope_prefix: str, layer: str, scope_label: str) -> di
     return {f"{scope_prefix}/{name}": content for name, content in files.items()}
 
 
-def build_layered_runtime(packages: list[dict[str, list[str] | str]]) -> tuple[dict[str, str], str]:
-    runtime = layered_guides_files()
+def build_layered_runtime(
+    packages: list[dict[str, list[str] | str]], test_hints: list[str]
+) -> tuple[dict[str, str], str]:
+    runtime = layered_guides_files(test_hints)
     child_packages = [package for package in packages if str(package["name"]) != "root"]
 
     # 新布局在单仓库下直接使用 layer 目录；多包时再引入 package 目录。
@@ -568,12 +530,13 @@ def build_layered_runtime(packages: list[dict[str, list[str] | str]]) -> tuple[d
 
 def build_runtime_files(root: Path) -> tuple[dict[str, str], str]:
     package_manager = detect_package_manager(root)
+    test_hints = detect_test_hints(root, package_manager)
     packages = detect_packages(root)
 
     runtime: dict[str, str] = {
         ".superwork/workflow.md": workflow_template(package_manager, packages),
     }
-    layered_runtime, mode = build_layered_runtime(packages)
+    layered_runtime, mode = build_layered_runtime(packages, test_hints)
     runtime.update(layered_runtime)
     return runtime, mode
 

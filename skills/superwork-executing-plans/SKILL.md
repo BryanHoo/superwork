@@ -49,11 +49,11 @@ Do not guess or silently rewrite the plan intent.
 ### Step 5: Completion Handoff
 
 When all plan tasks pass verification:
-- make an explicit pre-check decision for `superwork-code-simplifier`
-- invoke it when the plan or resulting diff still needs behavior-preserving cleanup
-- otherwise, state why the current diff does not need `superwork-code-simplifier`
+- follow the post-green completion step already written in the plan
 - invoke `superwork-check`
-- let `superwork-check` trigger `superwork-update-spec`
+- let `superwork-check` own final cleanup and the `superwork-update-spec` decision
+
+If the plan does not contain an explicit post-green handoff, update the plan before claiming execution is complete.
 
 ## Common Mistakes
 
@@ -63,11 +63,12 @@ When all plan tasks pass verification:
 | Skip setup isolation | Branch state becomes hard to reason about | Use worktree skill first |
 | Execute from memory | Checklist state and verification history drift | Re-open and update the plan file |
 | Continue through blockers | Produces unverified drift | Stop and clarify |
+| Let the last task drift out of the plan | Completion rules move back into chat memory | Fix the plan's post-green handoff first |
 | Claim done before check stage | Workflow remains incomplete | Route to `superwork-check` |
 
 ## Integration
 
 - Consumes written plans from `superwork-writing-plans` or `superwork-tdd`
 - Uses `superwork-using-git-worktrees` for isolation
-- Must make an explicit `superwork-code-simplifier` decision before final checks
+- Expects the plan itself to encode the post-green cleanup/check handoff
 - Must hand off to `superwork-check`

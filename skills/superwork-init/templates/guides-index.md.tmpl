@@ -1,4 +1,4 @@
-# Guides Index
+# Thinking Guides
 
 ## Scope
 
@@ -16,9 +16,7 @@ Shared project-wide workflow rules used by all packages and layers.
 ## Verification Checklist
 
 - Run fresh verification before any completion claim
-- Before final completion, make an explicit `superwork-code-simplifier` decision
-- If recently touched code still needs cleanup, run `superwork-code-simplifier` before final completion
-- If it is skipped, state why the current diff does not need behavior-preserving cleanup
+- follow `superwork-check` before final completion: if the diff is medium or large, must run `superwork-code-simplifier`; if it is skipped, state why the current diff is truly small and does not need behavior-preserving cleanup
 - Use project-local commands such as:
 {{ test_hints }}
 

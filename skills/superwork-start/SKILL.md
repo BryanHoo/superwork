@@ -7,7 +7,7 @@ description: Use when beginning a coding session, resuming work, or switching ta
 
 ## Overview
 
-Load the project's workflow and spec context before deciding how to work.
+Load project context first, then route to the right workflow.
 
 **Core principle:** Context is read from `.superwork/`, not guessed from memory.
 
@@ -46,16 +46,6 @@ digraph superwork_start {
     "Needs design + planning track?" -> "Use `superwork-tdd`" [label="no"];
 }
 ```
-
-## Quick Reference
-
-| Input Signal | Route |
-|---|---|
-| Bug report, failing test, regression, unexpected behavior | `superwork-debugging` |
-| Feature request with unclear scope/architecture or multiple options | `superwork-brainstorming` |
-| New feature, behavior change, enhancement, scoped refactor | `superwork-tdd` |
-| `.superwork/` missing or broken | `superwork-init` first |
-| Mixed or unclear task | Default to `superwork-brainstorming` first |
 
 ## Implementation
 
@@ -111,30 +101,13 @@ Indexes are navigation plus checklists. If an index points to concrete docs, rea
 
 ### Step 5: Classify the Task
 
-Use the user request plus current context.
+Use the user request plus current context:
 
-Route to `superwork-debugging` when the work is primarily about:
+- bug, regression, broken test, or unexpected behavior -> `superwork-debugging`
+- unclear feature scope, design tradeoff, or architecture choice -> `superwork-brainstorming`
+- clear feature, behavior change, or scoped refactor -> `superwork-tdd`
 
-- a bug
-- a regression
-- a broken test
-- an unexpected runtime/build/integration failure
-
-Route to `superwork-tdd` when the work is primarily about:
-
-- adding behavior
-- changing behavior intentionally
-- implementing a feature
-- planned refactoring with preserved behavior
-
-This route means "enter the saved-plan-first TDD workflow."
-It does not authorize writing a RED test or implementation directly from chat state.
-
-Route to `superwork-brainstorming` first when feature work is non-trivial and still needs:
-
-- requirement clarification
-- architecture option comparison
-- explicit design approval before coding
+`superwork-start` stops at routing. Do not pull downstream execution rules up into this skill.
 
 ### Step 6: Route Automatically
 
@@ -142,7 +115,7 @@ Do not stop for an extra confirmation once the route is clear.
 
 - Bug path -> use `superwork-debugging`
 - Design-heavy feature path -> use `superwork-brainstorming`
-- Direct feature path -> use `superwork-tdd`, then save `.superwork/plans/*.md` before any RED or implementation work
+- Direct feature path -> use `superwork-tdd`
 
 If classification is ambiguous, default to `superwork-brainstorming`.
 
@@ -155,7 +128,7 @@ If classification is ambiguous, default to `superwork-brainstorming`.
 | Routing based on file count | Scope size does not tell you bug vs feature | Route based on problem type |
 | Asking for confirmation after routing | Breaks the automatic handoff design | Route directly once clear |
 | Treating missing `.superwork/` as a minor issue | Every later skill depends on it | Run `superwork-init` first |
-| Treating route-to-`superwork-tdd` as permission to start RED immediately | Skips the saved plan gate and breaks the workflow | Let `superwork-tdd` create the plan file first |
+| Pulling TDD/debugging/check details into session start | Repeats downstream rules and blurs ownership | Hand off immediately after routing |
 
 ## Red Flags
 
@@ -163,7 +136,7 @@ If classification is ambiguous, default to `superwork-brainstorming`.
 - "This probably doesn't need the spec indexes"
 - "The task mentions a failure, but I'll treat it as a feature to move faster"
 - "The repo shape is obvious, I don't need `get_context.py`"
-- "The route is clear, so I can write the failing test before the plan file exists"
+- "The route is clear, so I don't need to enter the destination skill"
 
 All of these mean the session start is incomplete.
 

@@ -10,6 +10,7 @@ description: Use when changes in a `.superwork` project are ready for verificati
 Verify that the changes satisfy fresh evidence requirements and the relevant `.superwork` specs before any completion claim.
 
 **Core principle:** No completion claims without fresh verification evidence and spec review.
+This stage owns the exact cleanup rule and the final `superwork-update-spec` decision.
 
 **Violating the letter of this rule is violating the spirit of this rule.**
 
@@ -37,7 +38,7 @@ If you did not run the relevant checks now, you cannot say the work is complete 
 
 | Claim | Required Evidence |
 |---|---|
-| "Skipped `superwork-code-simplifier`" | explicit reason the current diff does not need behavior-preserving cleanup |
+| "Skipped `superwork-code-simplifier`" | explicit reason the diff is truly small and does not need behavior-preserving cleanup |
 | "Tests pass" | fresh test command output |
 | "Bug is fixed" | regression test passes and original symptom is gone |
 | "Code follows project rules" | relevant spec indexes and docs reviewed against the diff |
@@ -51,8 +52,9 @@ If you did not run the relevant checks now, you cannot say the work is complete 
 Before running the check itself:
 
 - inspect the current diff and recently touched code
+- treat any medium or large diff as mandatory `superwork-code-simplifier` work
 - invoke `superwork-code-simplifier` if behavior-preserving cleanup is still needed
-- otherwise, state why the current diff does not need `superwork-code-simplifier`
+- only skip it for a truly small diff, and state why the current diff does not need `superwork-code-simplifier`
 
 Do not enter verification with this decision left implicit.
 
@@ -148,6 +150,7 @@ Do not default to doc updates. Use `no-update` when no durable rule/contract/edg
 | "I ran those commands earlier" | Earlier evidence is stale evidence |
 | "The diff is small, review is unnecessary" | Small diffs still violate contracts |
 | "The cleanup is probably unnecessary" | Then state why before verification instead of skipping silently |
+| "This medium diff is close enough to small" | Size classification is for risk control, not convenience |
 | "The user can decide whether to update specs later" | This workflow requires the decision now |
 | "I know the code is fine" | Confidence is not verification |
 
@@ -155,6 +158,7 @@ Do not default to doc updates. Use `no-update` when no durable rule/contract/edg
 
 - saying "done" before running fresh commands
 - entering `superwork-check` without a `superwork-code-simplifier` decision
+- relabeling a medium or large diff as "small" to avoid the simplifier pass
 - reading no spec files during a `.superwork` workflow
 - trusting only memory of earlier verification
 - reporting success before listing failures or risks

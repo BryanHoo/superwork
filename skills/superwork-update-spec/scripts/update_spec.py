@@ -88,6 +88,23 @@ DURABLE_SIGNAL_NAME_MARKERS = (
     "protocol",
     "config",
 )
+FRONTEND_DURABLE_PARTS = {
+    "components",
+    "component",
+    "hooks",
+    "hook",
+    "composables",
+    "store",
+    "stores",
+    "state",
+    "pages",
+    "app",
+    "routes",
+    "router",
+    "views",
+    "types",
+    "zod",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -215,6 +232,9 @@ def classify_change_for_spec(file_path: str) -> tuple[bool, str]:
         return True, "matched durable signal path"
     if any(marker in name for marker in DURABLE_SIGNAL_NAME_MARKERS):
         return True, "matched durable signal filename"
+    # 前端结构性改动通常会沉淀成可复用规则，和 check_specs 的文档落点保持一致。
+    if normalized_parts & FRONTEND_DURABLE_PARTS:
+        return True, "matched frontend durable pattern"
 
     # 其余代码改动默认不触发，交给技能最终人工判断是否例外更新。
     return False, "no durable signal for spec updates"
