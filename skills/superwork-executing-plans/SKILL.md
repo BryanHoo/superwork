@@ -1,74 +1,75 @@
 ---
 name: superwork-executing-plans
-description: Use when a written implementation plan in a `.superwork` project is ready to execute sequentially with verification checkpoints.
+description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
 ---
 
-# Superwork Executing Plans
+# Executing Plans
 
 ## Overview
 
-Load a written plan, validate it, execute it step-by-step, keep the file state current, and route to completion checks.
+Load plan, review critically, execute all tasks, report when complete.
 
-**Core principle:** Execute exactly, verify continuously, stop immediately on blockers.
+**Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-## Process
+## The Process
 
 ### Step 1: Load and Review Plan
 
-1. Read the plan file completely
-2. Identify gaps, contradictions, or missing prerequisites
-3. Confirm the checklist state is usable for execution tracking
-4. If major issues exist, stop and ask for clarification
+1. Read plan file，计划文件在 `.superwork/plans/<filename>.md`
+2. Review critically - identify any questions or concerns about the plan
+3. If concerns: Raise them with your human partner before starting
+4. If no concerns: Create TodoWrite and proceed
 
-### Step 2: Ensure Isolated Workspace
-
-Before task execution:
-- invoke `superwork-using-git-worktrees` if isolation is not already in place
-- confirm branch/worktree context and baseline status
-
-### Step 3: Execute Tasks Sequentially
+### Step 2: Execute Tasks
 
 For each task:
-1. mark in-progress in the plan file
-2. execute each checklist step in order
-3. run stated verification commands
-4. mark complete in the plan file only after verification passes
 
-The written plan remains the source of truth throughout execution. Do not drift into an unsaved side plan.
+1. Mark as in_progress
+2. Follow each step exactly (plan has bite-sized steps)
+3. Run verifications as specified
+4. Mark as completed
 
-### Step 4: Handle Blockers Correctly
+### Step 3: Complete Development
 
-Stop and ask for help when:
-- dependency/setup is missing
-- plan instruction is ambiguous
-- verification fails repeatedly
-- the real code differs from plan assumptions
+After all tasks complete and verified:
 
-Do not guess or silently rewrite the plan intent.
+- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use superwork-finishing-a-development-branch
+- Follow that skill to verify tests, present options, execute choice
 
-### Step 5: Completion Handoff
+## When to Stop and Ask for Help
 
-When all plan tasks pass verification:
-- follow the post-green completion step already written in the plan
-- invoke `superwork-check`
-- let `superwork-check` own final cleanup and the `superwork-update-spec` decision
+**STOP executing immediately when:**
 
-If the plan does not contain an explicit post-green handoff, update the plan before claiming execution is complete.
+- Hit a blocker (missing dependency, test fails, instruction unclear)
+- Plan has critical gaps preventing starting
+- You don't understand an instruction
+- Verification fails repeatedly
 
-## Common Mistakes
+**Ask for clarification rather than guessing.**
 
-| Mistake | Why It Fails | Correct Move |
-|---|---|---|
-| Skip plan review | Hidden gaps appear mid-implementation | Review before first edit |
-| Skip setup isolation | Branch state becomes hard to reason about | Use worktree skill first |
-| Execute from memory | Checklist state and verification history drift | Re-open and update the plan file |
-| Continue through blockers | Produces unverified drift | Stop and clarify |
-| Let the last task drift out of the plan | Completion rules move back into chat memory | Fix the plan's post-green handoff first |
-| Claim done before check stage | Workflow remains incomplete | Route to `superwork-check` |
+## When to Revisit Earlier Steps
+
+**Return to Review (Step 1) when:**
+
+- Partner updates the plan based on your feedback
+- Fundamental approach needs rethinking
+
+**Don't force through blockers** - stop and ask.
+
+## Remember
+
+- Review plan critically first
+- Follow plan steps exactly
+- Don't skip verifications
+- Reference skills when plan says to
+- Stop when blocked, don't guess
+- Never start implementation on main/master branch without explicit user consent
 
 ## Integration
 
-- Consumes written plans from `superwork-writing-plans` or `superwork-tdd`
-- Uses `superwork-using-git-worktrees` for isolation
-- Expects the plan itself to encode the post-green cleanup/check handoff
-- Must hand off to `superwork-check`
+**Required workflow skills:**
+
+- **superwork-using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superwork-writing-plans** - Creates the plan this skill executes
+- **superwork-finishing-a-development-branch** - Complete development after all tasks
