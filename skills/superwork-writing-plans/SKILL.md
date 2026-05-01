@@ -1,13 +1,13 @@
 ---
 name: superwork-writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: Use when a non-bug task in a project that uses `.superwork/` is medium-sized, or when a heavy task already has an approved design and needs a written implementation plan before execution.
 ---
 
 # Writing Plans
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans for the medium and heavy paths. Document everything the executor needs to know: which files to touch for each task, code, testing, docs they might need to check, and how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -15,7 +15,22 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `.superwork/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Required Inputs
+
+Before writing the plan, read these inputs explicitly:
+
+- the approved design doc or task requirements
+- `.superwork/workflow.md`
+- `.superwork/spec/guides/index.md`
+- the relevant package/layer spec indexes and linked concrete docs under `.superwork/spec/**`
+
+If the relevant spec files are not obvious, use the project's scope-aware context discovery flow and read the spec paths it recommends before decomposing tasks.
+
+Keep a short list of the exact spec paths you used. You will write that list into the generated plan document as recommended pre-read material for execution.
+
 ## Scope Check
+
+If the task is still light enough for `superwork-tdd` (single-file or small-scope change, config/copy tweak, small test addition, or local doc update), do not write a saved plan. Reroute to `superwork-tdd`.
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
@@ -50,6 +65,10 @@ This structure informs the task decomposition. Each task should produce self-con
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superwork-executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
+
+**Suggested Spec Reads:**
+- `.superwork/spec/guides/index.md` — shared workflow rules and project-wide checklists
+- `.superwork/spec/<relevant-path>.md` — package/layer rule, contract, or verification checklist used by this plan
 
 **Architecture:** [2-3 sentences about approach]
 
@@ -116,6 +135,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 ## Remember
 
 - Exact file paths always
+- Carry forward the exact spec paths that shaped the plan
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
@@ -126,16 +146,25 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
 
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+**2. Suggested spec reads:** Check that every path in `Suggested Spec Reads` is real, relevant, and useful to the executor. Remove stale paths and add missing ones.
 
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+**3. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+
+**4. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, route execution explicitly:
 
-**"Plan complete and saved to `.superwork/plans/<filename>.md`. Two execution options:**
+1. Announce: "Plan complete and saved to `.superwork/plans/<filename>.md`. I'm using `superwork-executing-plans` and starting execution from this saved plan now."
+2. Continue immediately with `superwork-executing-plans`. Do not add any extra approval, review, or reassurance pause once self-review passes.
+3. If the work is being handed off or parked for later, save the path and tell the next executor to start with `superwork-executing-plans`.
 
-Execute tasks in this session using superwork-executing-plans, batch execution with checkpoints
+Use this handoff wording:
+
+**"Plan complete and saved to `.superwork/plans/<filename>.md`. I'm using `superwork-executing-plans` and starting execution from this saved plan now.**
+
+- **Immediate path:** continue in this session with `superwork-executing-plans`.
+- **Later path:** resume from this saved file with `superwork-executing-plans` in a future session."

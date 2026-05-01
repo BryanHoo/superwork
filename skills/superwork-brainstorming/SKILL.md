@@ -1,16 +1,16 @@
 ---
 name: superwork-brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: Use when a project that uses `.superwork/` needs explicit design exploration before implementation, or when the user explicitly wants to brainstorm, compare approaches, or write a design doc before planning.
 ---
 
 # Brainstorming Ideas Into Designs
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+Use this to turn broad, ambiguous, or manually selected work into a constrained design and spec before planning.
 
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it.
 </HARD-GATE>
 
 ## Checklist
@@ -18,11 +18,11 @@ Do NOT invoke any implementation skill, write any code, scaffold any project, or
 You MUST create a task for each of these items and complete them in order:
 
 1. **Explore project context** — check files, docs, recent commits
-2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
+2. **Read workflow + relevant spec indexes** — read `.superwork/workflow.md`, `.superwork/spec/guides/index.md`, and the relevant `.superwork/spec/**` docs before asking detailed questions
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `.superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Write design doc** — save to `.superwork/prd/YYYY-MM-DD-<topic>-design.md` and commit
 7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
 9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
@@ -32,6 +32,7 @@ You MUST create a task for each of these items and complete them in order:
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
+    "Read workflow + spec indexes" [shape=box];
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
@@ -41,6 +42,8 @@ digraph brainstorming {
     "User reviews spec?" [shape=diamond];
     "Invoke writing-plans skill" [shape=doublecircle];
 
+    "Explore project context" -> "Read workflow + spec indexes";
+    "Read workflow + spec indexes" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
@@ -60,6 +63,11 @@ digraph brainstorming {
 **Understanding the idea:**
 
 - Check out the current project state first (files, docs, recent commits)
+- You may have entered this skill because `superwork-start` auto-routed a heavy task, or because the user explicitly asked to brainstorm first. Both are valid.
+- Read `.superwork/workflow.md` before deep discovery. It is the project-local source of truth for how specs, PRDs, plans, and checks are organized.
+- Read `.superwork/spec/guides/index.md` plus the relevant package/layer index docs under `.superwork/spec/**` before asking detailed questions.
+- If the relevant spec files are not obvious, use the same scope-aware context loading flow as `superwork-start`: read the paths recommended by project context, then follow any linked concrete docs that define rules, contracts, or verification checklists.
+- Keep a short list of the spec paths you actually read. You will write these paths into the generated design doc as recommended follow-up reading for planning and implementation.
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
@@ -98,7 +106,28 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `.superwork/specs/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design doc to `.superwork/prd/YYYY-MM-DD-<topic>-design.md`
+- Include a `Suggested Spec Reads` section near the top of the document with exact `.superwork/spec/**` paths and a one-line reason for each path
+- At minimum, list `.superwork/spec/guides/index.md` plus every spec file that materially shaped the design
+
+**Design Doc Header Template:**
+
+```markdown
+# [Feature Name] Design
+
+**Goal:** [One sentence describing the design target]
+
+**Suggested Spec Reads:**
+
+- `.superwork/spec/guides/index.md` — shared workflow rules and project-wide checklists
+- `.superwork/spec/<relevant-path>.md` — package/layer constraint that affects this design
+
+**Context:**
+[Short summary of the existing codebase or problem]
+
+**Recommended Approach:**
+[Short summary of the chosen design direction]
+```
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:

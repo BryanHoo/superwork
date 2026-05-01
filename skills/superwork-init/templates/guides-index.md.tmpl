@@ -8,9 +8,12 @@ Shared project-wide workflow rules used by all packages and layers.
 
 - Read `.superwork/workflow.md`
 - Read the relevant package/layer `index.md`
-- Choose `superwork-brainstorming` for design-heavy feature work
-- Choose `superwork-tdd` for direct feature work, but save `.superwork/plans/*.md` before the first RED test
 - Choose `superwork-debugging` for bug work
+- Choose light / medium / heavy for non-bug work by the shortest path that still meets quality requirements
+- Choose `superwork-tdd` for light work; keep the TDD plan inline and do not require `.superwork/plans/*.md`
+- Choose `superwork-writing-plans` then `superwork-executing-plans` for medium work
+- Choose `superwork-brainstorming` then `superwork-writing-plans` then `superwork-executing-plans` as the default heavy-work path
+- Allow manual `superwork-brainstorming` use on other non-bug tasks when extra design work is useful
 - Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green
 
 ## Verification Checklist

@@ -147,7 +147,7 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertNotIn("docs/superwork/specs", workflow_content)
             self.assertNotIn("docs/superwork/plans", workflow_content)
 
-    def test_workflow_and_guides_require_saved_plan_before_red(self) -> None:
+    def test_workflow_and_guides_define_task_sizing_routes(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             self.create_single_repo_fixture(root)
@@ -158,10 +158,70 @@ class LayeredSpecLayoutTest(unittest.TestCase):
                 encoding="utf-8"
             )
 
-            # direct feature 路径也必须先落盘计划，不能直接开始 RED。
-            self.assertIn("before any RED or implementation work starts", workflow_content)
-            self.assertIn("before the first RED test", workflow_content)
-            self.assertIn("before the first RED test", guides_content)
+            # 非 bug 任务必须按轻 / 中 / 重分级，并走对应链路。
+            self.assertIn("light, medium, or heavy", workflow_content)
+            self.assertIn("Route light tasks to `superwork-tdd`", workflow_content)
+            self.assertIn("Route medium tasks to `superwork-writing-plans`", workflow_content)
+            self.assertIn("Route heavy tasks by default to `superwork-brainstorming`", workflow_content)
+            self.assertIn("Users may still invoke `superwork-brainstorming` manually", workflow_content)
+            self.assertIn("Choose light / medium / heavy", guides_content)
+            self.assertIn("Choose `superwork-tdd` for light work", guides_content)
+            self.assertIn(
+                "Choose `superwork-writing-plans` then `superwork-executing-plans` for medium work",
+                guides_content,
+            )
+            self.assertIn(
+                "Choose `superwork-brainstorming` then `superwork-writing-plans` then `superwork-executing-plans` as the default heavy-work path",
+                guides_content,
+            )
+            self.assertIn("Allow manual `superwork-brainstorming` use", guides_content)
+
+    def test_workflow_requires_route_announcement_with_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+
+            workflow_content = (root / ".superwork" / "workflow.md").read_text(encoding="utf-8")
+
+            # `superwork-start` 路由后必须显式说出路由和一句理由，不能静默切换。
+            self.assertIn("must explicitly state the chosen route", workflow_content)
+            self.assertIn("one short reason", workflow_content)
+
+    def test_workflow_and_execution_do_not_reference_worktrees(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+
+            workflow_content = (root / ".superwork" / "workflow.md").read_text(encoding="utf-8")
+            executing_content = (
+                REPO_ROOT / "skills" / "superwork-executing-plans" / "SKILL.md"
+            ).read_text(encoding="utf-8")
+            init_content = (REPO_ROOT / "skills" / "superwork-init" / "SKILL.md").read_text(
+                encoding="utf-8"
+            )
+
+            # 所有任务都应直接在当前分支开发，不再要求或提及 worktree。
+            self.assertNotIn("superwork-using-git-worktrees", workflow_content)
+            self.assertNotIn("worktree", workflow_content)
+            self.assertNotIn("superwork-using-git-worktrees", executing_content)
+            self.assertNotIn("worktree", executing_content)
+            self.assertNotIn("superwork-using-git-worktrees", init_content)
+
+    def test_light_task_path_uses_inline_tdd_without_saved_plan(self) -> None:
+        workflow_content = (
+            REPO_ROOT / "skills" / "superwork-init" / "templates" / "workflow.md.tmpl"
+        ).read_text(encoding="utf-8")
+        tdd_content = (REPO_ROOT / "skills" / "superwork-tdd" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+
+        # 轻量任务必须走内联 TDD，而不是再强制落盘计划。
+        self.assertIn("inline TDD plan", workflow_content)
+        self.assertIn("do not require `.superwork/plans/*.md`", workflow_content)
+        self.assertIn("without creating a saved plan document", tdd_content)
+        self.assertIn("Do not create `.superwork/plans/*.md`", tdd_content)
 
     def test_superwork_skills_do_not_reference_docs_superwork_paths(self) -> None:
         skill_paths = [
@@ -333,6 +393,21 @@ class LayeredSpecLayoutTest(unittest.TestCase):
         self.assertIn("must run `superwork-code-simplifier`", guides_content)
         self.assertIn("medium or large", simplifier_content)
         self.assertIn("must run this skill", simplifier_content)
+
+    def test_executing_plans_completes_through_superwork_completion_stack(self) -> None:
+        content = (
+            REPO_ROOT / "skills" / "superwork-executing-plans" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        # 执行计划完成后必须回到 superwork 的收尾链路，不能跳去外部 finishing skill。
+        self.assertNotIn("finishing-a-development-branch", content)
+        self.assertIn("superwork-code-simplifier", content)
+        self.assertIn("medium or large", content)
+        self.assertIn("state why", content)
+        self.assertIn("superwork-check", content)
+        self.assertIn("superwork-update-spec", content)
+        self.assertLess(content.index("superwork-code-simplifier"), content.index("superwork-check"))
+        self.assertNotIn("Finish the `superwork-code-simplifier` stage before entering final verification", content)
 
 
 if __name__ == "__main__":

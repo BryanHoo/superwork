@@ -83,7 +83,7 @@ Before editing:
 - confirm the current code is behaviorally correct
 - keep the simplification anchored to that proven behavior
 
-If the code is not verified yet, return to `superwork-tdd` or `superwork-debugging` first.
+If the code is not verified yet, return to `superwork-tdd`, `superwork-executing-plans`, or `superwork-debugging` first.
 
 ### Step 4: Apply Behavior-Preserving Simplification
 
@@ -147,6 +147,6 @@ If any of these appear, stop and return to the correct workflow stage.
 
 ## Integration
 
-- Usually follows `superwork-tdd` or `superwork-debugging`
+- Usually follows `superwork-tdd`, `superwork-executing-plans`, or `superwork-debugging`
 - Can be included as a planned refactor step inside `superwork-writing-plans`
 - Must finish with `superwork-check`

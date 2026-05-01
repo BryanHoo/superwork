@@ -7,7 +7,7 @@ description: Use when beginning a coding session, resuming work, or switching ta
 
 ## Overview
 
-Load project context first, then route to the right workflow.
+Load project context first, then choose the shortest workflow path that still meets the quality bar.
 
 **Core principle:** Context is read from `.superwork/`, not guessed from memory.
 
@@ -32,18 +32,22 @@ digraph superwork_start {
     "Use `superwork-init`" [shape=box];
     "Read workflow + context" [shape=box];
     "Bug / failing test / unexpected behavior?" [shape=diamond];
-    "Needs design + planning track?" [shape=diamond];
+    "Light task?" [shape=diamond];
+    "Medium task?" [shape=diamond];
     "Use `superwork-debugging`" [shape=box];
-    "Use `superwork-brainstorming`" [shape=box];
     "Use `superwork-tdd`" [shape=box];
+    "Use `superwork-writing-plans`" [shape=box];
+    "Use `superwork-brainstorming`" [shape=box];
 
     "`.superwork/` exists?" -> "Use `superwork-init`" [label="no"];
     "`.superwork/` exists?" -> "Read workflow + context" [label="yes"];
     "Read workflow + context" -> "Bug / failing test / unexpected behavior?";
     "Bug / failing test / unexpected behavior?" -> "Use `superwork-debugging`" [label="yes"];
-    "Bug / failing test / unexpected behavior?" -> "Needs design + planning track?" [label="no"];
-    "Needs design + planning track?" -> "Use `superwork-brainstorming`" [label="yes"];
-    "Needs design + planning track?" -> "Use `superwork-tdd`" [label="no"];
+    "Bug / failing test / unexpected behavior?" -> "Light task?" [label="no"];
+    "Light task?" -> "Use `superwork-tdd`" [label="yes"];
+    "Light task?" -> "Medium task?" [label="no"];
+    "Medium task?" -> "Use `superwork-writing-plans`" [label="yes"];
+    "Medium task?" -> "Use `superwork-brainstorming`" [label="no"];
 }
 ```
 
@@ -101,11 +105,22 @@ Indexes are navigation plus checklists. If an index points to concrete docs, rea
 
 ### Step 5: Classify the Task
 
+Classify the task by the shortest path that still meets quality requirements.
+
 Use the user request plus current context:
 
 - bug, regression, broken test, or unexpected behavior -> `superwork-debugging`
-- unclear feature scope, design tradeoff, or architecture choice -> `superwork-brainstorming`
-- clear feature, behavior change, or scoped refactor -> `superwork-tdd`
+- light task -> `superwork-tdd`
+- medium task -> `superwork-writing-plans`
+- heavy task -> `superwork-brainstorming`
+
+Use these task-size rules for non-bug work:
+
+- light task: single-file or small-scope change, config or copy adjustment, small test addition, or local documentation update
+- medium task: clear requirements, clear boundaries, controllable multi-file change across related code, with explicit business logic or multi-component coordination
+- heavy task: any other non-bug task that is not light or medium
+
+Do not optimize for the fewest process steps. Optimize for the shortest path that still preserves quality.
 
 `superwork-start` stops at routing. Do not pull downstream execution rules up into this skill.
 
@@ -113,11 +128,24 @@ Use the user request plus current context:
 
 Do not stop for an extra confirmation once the route is clear.
 
-- Bug path -> use `superwork-debugging`
-- Design-heavy feature path -> use `superwork-brainstorming`
-- Direct feature path -> use `superwork-tdd`
+Before entering the destination skill, explicitly output:
 
-If classification is ambiguous, default to `superwork-brainstorming`.
+- the chosen route
+- one short reason tied to the task classification
+
+Use a direct format such as:
+
+- `Routing to superwork-debugging: the request is about a failing test.`
+- `Routing to superwork-tdd: this is a single-file light task.`
+- `Routing to superwork-writing-plans: this is a clear multi-file medium task.`
+- `Routing to superwork-brainstorming: this task is heavy and still needs design reduction.`
+
+- Bug path -> use `superwork-debugging`
+- Light task path -> use `superwork-tdd`
+- Medium task path -> use `superwork-writing-plans`, then continue through `superwork-executing-plans`
+- Heavy task default path -> use `superwork-brainstorming`, then continue through `superwork-writing-plans` and `superwork-executing-plans`
+
+If the task could fit two buckets, choose the lighter one only when it still gives enough structure and verification discipline. Otherwise move up one level.
 
 ## Common Mistakes
 
@@ -125,7 +153,10 @@ If classification is ambiguous, default to `superwork-brainstorming`.
 |---|---|---|
 | Skipping `workflow.md` because the workflow is "already known" | Misses project-local differences | Read the workflow every session start |
 | Reading only one index | Misses package-specific rules | Read guides plus relevant package/layer indexes |
-| Routing based on file count | Scope size does not tell you bug vs feature | Route based on problem type |
+| Routing based on file count alone | File count does not tell you whether the shortest quality-preserving path is light, medium, or heavy | Classify by scope clarity, coordination needs, and risk |
+| Treating every feature as brainstorming work | Heavy process on small changes slows delivery without improving quality | Send light work to `superwork-tdd` and medium work to `superwork-writing-plans` |
+| Treating every clear task as light | Some clear tasks still need a saved plan because they coordinate multiple files or components | Escalate to medium when the change has real multi-step structure |
+| Routing silently | The next skill handoff becomes implicit and hard to audit | State the exact route and one short reason before handoff |
 | Asking for confirmation after routing | Breaks the automatic handoff design | Route directly once clear |
 | Treating missing `.superwork/` as a minor issue | Every later skill depends on it | Run `superwork-init` first |
 | Pulling TDD/debugging/check details into session start | Repeats downstream rules and blurs ownership | Hand off immediately after routing |
@@ -137,6 +168,9 @@ If classification is ambiguous, default to `superwork-brainstorming`.
 - "The task mentions a failure, but I'll treat it as a feature to move faster"
 - "The repo shape is obvious, I don't need `get_context.py`"
 - "The route is clear, so I don't need to enter the destination skill"
+- "The route is obvious, so I do not need to say it out loud"
+- "Every non-bug task should go through brainstorming just to be safe"
+- "This touches multiple files, but I can still force it into the light path"
 
 All of these mean the session start is incomplete.
 
@@ -144,5 +178,6 @@ All of these mean the session start is incomplete.
 
 - `superwork-init` is REQUIRED when `.superwork/` is missing
 - `superwork-debugging` is the automatic bug path
-- `superwork-brainstorming` is the design-heavy feature path
-- `superwork-tdd` is the direct feature path when scope is already clear
+- `superwork-tdd` is the light-task path
+- `superwork-writing-plans` is the medium-task path entry
+- `superwork-brainstorming` is the default heavy-task path entry, but users may invoke it manually

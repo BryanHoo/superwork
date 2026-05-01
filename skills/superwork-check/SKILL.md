@@ -18,6 +18,7 @@ This stage owns the exact cleanup rule and the final `superwork-update-spec` dec
 
 Use when:
 - finishing a feature cycle from `superwork-tdd`
+- finishing a written-plan execution from `superwork-executing-plans`
 - finishing a bugfix from `superwork-debugging`
 - preparing to report work as complete
 - preparing to hand off work for review or commit
@@ -168,5 +169,5 @@ Any of these means the check is incomplete.
 
 ## Integration
 
-- `superwork-tdd` and `superwork-debugging` both hand off here
+- `superwork-tdd`, `superwork-executing-plans`, and `superwork-debugging` all hand off here
 - `superwork-update-spec` decision is REQUIRED at the end of this stage

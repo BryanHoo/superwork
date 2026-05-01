@@ -28,7 +28,7 @@ Do not use when:
 
 | Artifact | Minimum Result |
 |---|---|
-| `.superwork/workflow.md` | Explains init, start, brainstorming, worktrees, writing-plans, executing-plans, tdd, debugging, code-simplifier, check, update-spec |
+| `.superwork/workflow.md` | Explains init, start, light/medium/heavy routing, brainstorming, writing-plans, executing-plans, tdd, debugging, code-simplifier, check, update-spec |
 | `.superwork/spec/guides/` | Shared principles, thinking guides, and global checklists |
 | `.superwork/spec/<layer>/index.md` | Single-repo layer guide entry with linked sub-guides |
 | `.superwork/spec/<package>/<layer>/index.md` | Multi-package layer guide entry with linked sub-guides |
@@ -88,10 +88,12 @@ When package boundaries are ambiguous, choose the simplest stable package map an
 `workflow.md` must explain:
 
 1. Entry skills: `superwork-init` and `superwork-start`
-2. Planning track: `superwork-brainstorming`, `superwork-using-git-worktrees`, `superwork-writing-plans`, and `superwork-executing-plans`
-3. Direct feature path: `superwork-tdd`, including the saved-plan-before-RED rule
-4. Bug path: `superwork-debugging`
-5. Completion policy: medium or large diffs must run `superwork-code-simplifier`, only truly small diffs may skip it with an explicit reason before `superwork-check`, and `superwork-check` must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
+2. Bug path: `superwork-debugging`
+3. Non-bug task classification rule: choose light / medium / heavy by the shortest path that still meets quality requirements
+4. Light task path: `superwork-tdd`, using an inline TDD plan and no saved plan document
+5. Medium task path: `superwork-writing-plans` and `superwork-executing-plans`
+6. Heavy task path: `superwork-brainstorming`, then `superwork-writing-plans` and `superwork-executing-plans`
+7. Completion policy: medium or large diffs must run `superwork-code-simplifier`, only truly small diffs may skip it with an explicit reason before `superwork-check`, and `superwork-check` must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
 
 Keep it project-local and actionable. It should read like an operating manual, not a manifesto.
 

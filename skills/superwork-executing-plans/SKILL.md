@@ -1,24 +1,27 @@
 ---
 name: superwork-executing-plans
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: Use when a medium or heavy non-bug task in a project that uses `.superwork/` already has a written implementation plan ready to execute, whether continuing immediately after saving it or resuming later.
 ---
 
 # Executing Plans
 
 ## Overview
 
-Load plan, review critically, execute all tasks, report when complete.
+Announce the skill, load the saved plan file, start executing it immediately, and report when complete. This skill consumes written plans from the medium or heavy path, not light-task inline TDD work.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
 ## The Process
 
-### Step 1: Load and Review Plan
+### Step 1: Announce and Enter Execution
 
 1. Read plan file，计划文件在 `.superwork/plans/<filename>.md`
-2. Review critically - identify any questions or concerns about the plan
-3. If concerns: Raise them with your human partner before starting
-4. If no concerns: Create TodoWrite and proceed
+2. Announce the exact plan path you are executing from
+3. Create TodoWrite from the saved tasks
+4. Start the first task immediately
+
+This is an execution entry step, not a review gate. Do not pause for approval, reassurance, or pre-execution debate once the saved plan exists.
+If you notice doubts while loading the plan, record them briefly and keep moving into execution. Only stop once a real blocker prevents the next step from running.
 
 ### Step 2: Execute Tasks
 
@@ -33,16 +36,18 @@ For each task:
 
 After all tasks complete and verified:
 
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use superwork-finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+- Announce: "I'm routing completion through the superwork completion stack."
+- Make the `superwork-code-simplifier` decision explicit before final verification
+- Run `superwork-code-simplifier` when the diff is medium or large, or when a smaller diff still needs behavior-preserving cleanup
+- If the diff is truly small and no simplification pass is needed, state why before entering `superwork-check`
+- **REQUIRED SUB-SKILL:** Use `superwork-check`
+- Complete the explicit `superwork-update-spec` decision required at the end of `superwork-check`
 
 ## When to Stop and Ask for Help
 
 **STOP executing immediately when:**
 
 - Hit a blocker (missing dependency, test fails, instruction unclear)
-- Plan has critical gaps preventing starting
 - You don't understand an instruction
 - Verification fails repeatedly
 
@@ -50,7 +55,7 @@ After all tasks complete and verified:
 
 ## When to Revisit Earlier Steps
 
-**Return to Review (Step 1) when:**
+**Return to the saved plan file when:**
 
 - Partner updates the plan based on your feedback
 - Fundamental approach needs rethinking
@@ -59,7 +64,7 @@ After all tasks complete and verified:
 
 ## Remember
 
-- Review plan critically first
+- Announce the execution handoff, then start from the saved plan immediately
 - Follow plan steps exactly
 - Don't skip verifications
 - Reference skills when plan says to
@@ -70,6 +75,7 @@ After all tasks complete and verified:
 
 **Required workflow skills:**
 
-- **superwork-using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **superwork-writing-plans** - Creates the plan this skill executes
-- **superwork-finishing-a-development-branch** - Complete development after all tasks
+- **superwork-writing-plans** - Creates the plan this skill executes, either for immediate continuation or later handoff
+- **superwork-code-simplifier** - REQUIRED before `superwork-check` for medium or large diffs, or when smaller diffs still need behavior-preserving cleanup
+- **superwork-check** - REQUIRED final verification stage after implementation tasks
+- **superwork-update-spec** - REQUIRED explicit decision at the end of `superwork-check`

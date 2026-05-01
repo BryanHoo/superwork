@@ -12,15 +12,17 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 
 1. Use `superwork-init` when `.superwork/` is missing or incomplete.
 2. Use `superwork-start` at the beginning of every coding task.
-3. Route design-heavy or unclear feature work to `superwork-brainstorming`.
-4. Use `superwork-using-git-worktrees` before plan execution in isolated workspaces.
-5. Use `superwork-writing-plans` after design approval.
-6. Use `superwork-executing-plans` to execute written plans.
-7. Route direct feature work to `superwork-tdd` when scope is already clear, and require it to save `.superwork/plans/*.md` before any RED or implementation work starts.
-8. Route bug work to `superwork-debugging`.
-9. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: if the diff is medium or large, must run `superwork-code-simplifier`; otherwise, run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why the truly small diff is skipped.
-10. Run `superwork-check` only after that `superwork-code-simplifier` decision is explicit.
-11. Require `superwork-check` to make an explicit `superwork-update-spec` decision (`update/create/no-update`), and default to `no-update` when no durable rule or contract changed.
+3. Route bug work to `superwork-debugging`.
+4. For non-bug work, classify the task as light, medium, or heavy by the shortest path that still meets quality requirements.
+5. Route light tasks to `superwork-tdd`; use an inline TDD plan and do not require `.superwork/plans/*.md`.
+6. Route medium tasks to `superwork-writing-plans`, save `.superwork/plans/*.md`, then continue with `superwork-executing-plans`.
+7. Route heavy tasks by default to `superwork-brainstorming`, then `superwork-writing-plans`, then `superwork-executing-plans`.
+8. Users may still invoke `superwork-brainstorming` manually on other non-bug tasks when extra design work is useful.
+9. After `superwork-start` decides the route, it must explicitly state the chosen route and one short reason before handoff.
+10. Execute all work directly on the current branch unless the user explicitly says otherwise.
+11. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: if the diff is medium or large, must run `superwork-code-simplifier`; otherwise, run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why the truly small diff is skipped.
+12. Run `superwork-check` only after that `superwork-code-simplifier` decision is explicit.
+13. Require `superwork-check` to make an explicit `superwork-update-spec` decision (`update/create/no-update`), and default to `no-update` when no durable rule or contract changed.
 
 ## Tooling Paths
 
@@ -34,8 +36,12 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 ## Default Verification Hints
 
 - Prefer `{{ package_manager }}` commands when Node tooling is present.
-- Use planning track for non-trivial feature scope: brainstorming -> worktrees -> writing-plans -> executing-plans.
-- Even on the direct feature path, save `.superwork/plans/*.md` before the first RED test; chat-only or memory-only plans do not count.
+- Choose light / medium / heavy by the shortest path that still meets quality requirements.
+- After `superwork-start` classifies the task, state the chosen route and one short reason before invoking the next skill.
+- Use `superwork-tdd` for light work: single-file or small-scope changes, config or copy tweaks, small test additions, or local doc updates. Keep the plan inline and do not force a saved plan file.
+- Use `superwork-writing-plans` -> `superwork-executing-plans` for medium work that has clear scope but real multi-file coordination.
+- Use `superwork-brainstorming` -> `superwork-writing-plans` -> `superwork-executing-plans` as the default heavy-work path when work is large, cross-cutting, or still needs design reduction.
+- `superwork-brainstorming` can also be invoked manually on other non-bug tasks when the user wants extra design exploration before planning.
 - Use `superwork-code-simplifier` only after behavior is verified, never as a substitute for TDD or debugging.
 - follow the completion policy before `superwork-check`; let that stage enforce the final cleanup rule, fresh verification, and the explicit `superwork-update-spec` decision.
 - Re-read the relevant spec indexes before implementation and before completion.
