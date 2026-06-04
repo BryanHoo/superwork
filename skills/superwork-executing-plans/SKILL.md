@@ -36,11 +36,9 @@ For each task:
 
 After all tasks complete and verified:
 
-- Announce: "I'm routing completion through the superwork completion stack."
-- Make the `superwork-code-simplifier` decision explicit before final verification
-- Run `superwork-code-simplifier` when the diff is medium or large, or when a smaller diff still needs behavior-preserving cleanup
-- If the diff is truly small and no simplification pass is needed, state why before entering `superwork-check`
-- **REQUIRED SUB-SKILL:** Use `superwork-check`
+- Announce: "I'm routing completion through `superwork-check`."
+- Route directly to `superwork-check`
+- Let `superwork-check` decide whether `superwork-code-simplifier` must run
 - Complete the explicit `superwork-update-spec` decision required at the end of `superwork-check`
 
 ## When to Stop and Ask for Help
@@ -69,13 +67,13 @@ After all tasks complete and verified:
 - Don't skip verifications
 - Reference skills when plan says to
 - Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+- Work on the current branch unless the user explicitly says otherwise
 
 ## Integration
 
 **Required workflow skills:**
 
 - **superwork-writing-plans** - Creates the plan this skill executes, either for immediate continuation or later handoff
-- **superwork-code-simplifier** - REQUIRED before `superwork-check` for medium or large diffs, or when smaller diffs still need behavior-preserving cleanup
+- **superwork-code-simplifier** - May be invoked by `superwork-check` when medium or large diffs, or smaller diffs with cleanup needs, require a behavior-preserving simplification pass
 - **superwork-check** - REQUIRED final verification stage after implementation tasks
 - **superwork-update-spec** - REQUIRED explicit decision at the end of `superwork-check`

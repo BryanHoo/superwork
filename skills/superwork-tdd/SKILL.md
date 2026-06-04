@@ -155,10 +155,9 @@ For local docs or copy-only tasks, replace the failing test with the smallest fa
 
 After GREEN and targeted verification:
 
-- make the `superwork-code-simplifier` decision explicit
-- run `superwork-code-simplifier` when the diff is medium or large, or when cleanup is still needed
-- otherwise state why the diff is truly small
-- enter `superwork-check`
+- route directly to `superwork-check`
+- let `superwork-check` decide whether `superwork-code-simplifier` must run
+- let `superwork-check` handle final verification and the `superwork-update-spec` decision
 
 ## Why Order Matters
 
@@ -195,7 +194,7 @@ Before handing off to `superwork-check`:
 - [ ] The targeted verification failed first for the expected reason
 - [ ] The implementation stayed within the original light-task boundary
 - [ ] No production code from before RED was kept for adaptation
-- [ ] Completion routed through `superwork-code-simplifier` decision and `superwork-check`
+- [ ] Completion routed directly to `superwork-check`
 
 Cannot check every box? The TDD cycle is incomplete.
 

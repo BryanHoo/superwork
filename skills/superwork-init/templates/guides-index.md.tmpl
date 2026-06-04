@@ -14,12 +14,12 @@ Shared project-wide workflow rules used by all packages and layers.
 - Choose `superwork-writing-plans` then `superwork-executing-plans` for medium work
 - Choose `superwork-brainstorming` then `superwork-writing-plans` then `superwork-executing-plans` as the default heavy-work path
 - Allow manual `superwork-brainstorming` use on other non-bug tasks when extra design work is useful
-- Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green
+- Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green, and let `superwork-check` decide whether it must run
 
 ## Verification Checklist
 
 - Run fresh verification before any completion claim
-- follow `superwork-check` before final completion: if the diff is medium or large, must run `superwork-code-simplifier`; if it is skipped, state why the current diff is truly small and does not need behavior-preserving cleanup
+- follow `superwork-check` before final completion: that stage owns the `superwork-code-simplifier` decision, must run `superwork-code-simplifier` for medium or large diffs, and must state why when the current diff is truly small enough to skip it
 - Use project-local commands such as:
 {{ test_hints }}
 

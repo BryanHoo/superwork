@@ -7,7 +7,7 @@ description: Use when a non-bug task in a project that uses `.superwork/` is med
 
 ## Overview
 
-Write comprehensive implementation plans for the medium and heavy paths. Document everything the executor needs to know: which files to touch for each task, code, testing, docs they might need to check, and how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans for the medium path and for heavy tasks that already have an approved design doc. Document everything the executor needs to know: which files to touch for each task, code, testing, docs they might need to check, and how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -19,7 +19,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 Before writing the plan, read these inputs explicitly:
 
-- the approved design doc or task requirements
+- the approved design doc from `.superwork/prd/*.md` or task requirements
 - `.superwork/workflow.md`
 - `.superwork/spec/guides/index.md`
 - the relevant package/layer spec indexes and linked concrete docs under `.superwork/spec/**`
@@ -28,11 +28,17 @@ If the relevant spec files are not obvious, use the project's scope-aware contex
 
 Keep a short list of the exact spec paths you used. You will write that list into the generated plan document as recommended pre-read material for execution.
 
+Artifact roles stay strict:
+
+- `.superwork/prd/*.md` stores heavy-task design docs from `superwork-brainstorming`
+- `.superwork/spec/**/*.md` stores durable project rules, contracts, and verification guidance
+- `.superwork/plans/*.md` stores executable implementation plans for `superwork-executing-plans`
+
 ## Scope Check
 
 If the task is still light enough for `superwork-tdd` (single-file or small-scope change, config/copy tweak, small test addition, or local doc update), do not write a saved plan. Reroute to `superwork-tdd`.
 
-If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+If the approved design doc or task requirements cover multiple independent subsystems, they should have been broken into separate design docs during brainstorming. If they were not, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
 ## File Structure
 
@@ -117,7 +123,7 @@ Expected: PASS
 
 ```bash
 git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
+git commit -m "feat(example): 添加具体功能" -m $'- 添加失败测试覆盖目标行为\n- 更新最小实现以通过验证'
 ```
 ````
 
@@ -138,6 +144,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Carry forward the exact spec paths that shaped the plan
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
+- Commit examples must follow the global Conventional Commit rule: `type(scope): subject`, Chinese subject, and Chinese bullet body when a body is included
 - DRY, YAGNI, TDD, frequent commits
 
 ## Self-Review
@@ -161,6 +168,10 @@ After saving the plan, route execution explicitly:
 1. Announce: "Plan complete and saved to `.superwork/plans/<filename>.md`. I'm using `superwork-executing-plans` and starting execution from this saved plan now."
 2. Continue immediately with `superwork-executing-plans`. Do not add any extra approval, review, or reassurance pause once self-review passes.
 3. If the work is being handed off or parked for later, save the path and tell the next executor to start with `superwork-executing-plans`.
+
+For heavy work, the handoff order is fixed:
+
+`superwork-brainstorming` -> design doc in `.superwork/prd/*.md` -> `superwork-writing-plans` -> plan in `.superwork/plans/*.md` -> `superwork-executing-plans`
 
 Use this handoff wording:
 

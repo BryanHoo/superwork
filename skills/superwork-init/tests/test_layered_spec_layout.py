@@ -126,8 +126,12 @@ class LayeredSpecLayoutTest(unittest.TestCase):
                 encoding="utf-8"
             )
 
-            # 检查前不能静默跳过 simplifier；未执行时必须说明原因。
-            self.assertIn("before `superwork-check`", workflow_content)
+            # simplifier 决策归 `superwork-check`，且未执行时必须说明原因。
+            self.assertIn("Route finished implementation and bugfix work to `superwork-check`", workflow_content)
+            self.assertIn(
+                "Require `superwork-check` to own the explicit `superwork-code-simplifier` decision",
+                workflow_content,
+            )
             self.assertIn("state why", workflow_content)
             self.assertIn("before final completion", guides_content)
             self.assertIn("state why", guides_content)
@@ -146,6 +150,24 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertNotIn(".superwork/specs/*.md", workflow_content)
             self.assertNotIn("docs/superwork/specs", workflow_content)
             self.assertNotIn("docs/superwork/plans", workflow_content)
+
+    def test_workflow_distinguishes_design_docs_specs_and_plans(self) -> None:
+        workflow_content = (
+            REPO_ROOT / "skills" / "superwork-init" / "templates" / "workflow.md.tmpl"
+        ).read_text(encoding="utf-8")
+        brainstorming_content = (
+            REPO_ROOT / "skills" / "superwork-brainstorming" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        writing_plans_content = (
+            REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Design docs: `.superwork/prd/*.md`", workflow_content)
+        self.assertIn("Durable rules and contracts: `.superwork/spec/**/*.md`", workflow_content)
+        self.assertIn("Plan artifacts: `.superwork/plans/*.md`", workflow_content)
+        self.assertIn("stores heavy-task design docs", brainstorming_content)
+        self.assertIn("stores durable project rules", brainstorming_content)
+        self.assertIn("stores executable implementation plans", writing_plans_content)
 
     def test_workflow_and_guides_define_task_sizing_routes(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -208,6 +230,9 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertNotIn("superwork-using-git-worktrees", executing_content)
             self.assertNotIn("worktree", executing_content)
             self.assertNotIn("superwork-using-git-worktrees", init_content)
+            self.assertIn("current branch", workflow_content)
+            self.assertIn("current branch", executing_content)
+            self.assertNotIn("main/master", executing_content)
 
     def test_light_task_path_uses_inline_tdd_without_saved_plan(self) -> None:
         workflow_content = (
@@ -337,6 +362,68 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             targets = {item["path"]: item["action"] for item in payload["targets"]}
             self.assertEqual(targets.get(".superwork/spec/frontend/component-guidelines.md"), "update")
 
+    def test_update_spec_falls_back_to_existing_index_when_leaf_doc_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.init_git_repo(root)
+
+            missing_guide = root / ".superwork" / "spec" / "frontend" / "component-guidelines.md"
+            missing_guide.unlink()
+            self.write_file(
+                root / "src" / "components" / "Button.tsx",
+                "export const Button = () => 'changed';\n",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(UPDATE_SPEC_SCRIPT),
+                "--root",
+                str(root),
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["decision"], "update")
+            targets = {item["path"]: item["action"] for item in payload["targets"]}
+            self.assertEqual(targets.get(".superwork/spec/frontend/index.md"), "update")
+            self.assertNotIn(".superwork/spec/frontend/component-guidelines.md", targets)
+
+    def test_update_spec_falls_back_to_existing_layer_doc_when_index_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.init_git_repo(root)
+
+            index_path = root / ".superwork" / "spec" / "frontend" / "index.md"
+            guide_path = root / ".superwork" / "spec" / "frontend" / "component-guidelines.md"
+            index_path.unlink()
+            guide_path.unlink()
+            self.write_file(
+                root / "src" / "components" / "Button.tsx",
+                "export const Button = () => 'changed';\n",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(UPDATE_SPEC_SCRIPT),
+                "--root",
+                str(root),
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["decision"], "update")
+            self.assertEqual(len(payload["targets"]), 1)
+            self.assertEqual(payload["targets"][0]["path"], ".superwork/spec/frontend/directory-structure.md")
+            self.assertEqual(payload["targets"][0]["action"], "update")
+
     def test_update_spec_returns_no_update_for_test_only_change(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -370,8 +457,9 @@ class LayeredSpecLayoutTest(unittest.TestCase):
     def test_superwork_check_requires_simplifier_decision_before_verification(self) -> None:
         content = (REPO_ROOT / "skills" / "superwork-check" / "SKILL.md").read_text(encoding="utf-8")
 
-        # `superwork-check` 本身也必须要求显式执行或解释 simplifier 的跳过原因。
+        # `superwork-check` 本身必须拥有 simplifier 决策权，并要求显式执行或解释跳过原因。
         self.assertIn("`superwork-code-simplifier`", content)
+        self.assertIn("owns the `superwork-code-simplifier` decision", content)
         self.assertIn("state why", content)
         self.assertIn("before verification", content)
 
@@ -402,12 +490,36 @@ class LayeredSpecLayoutTest(unittest.TestCase):
         # 执行计划完成后必须回到 superwork 的收尾链路，不能跳去外部 finishing skill。
         self.assertNotIn("finishing-a-development-branch", content)
         self.assertIn("superwork-code-simplifier", content)
-        self.assertIn("medium or large", content)
-        self.assertIn("state why", content)
+        self.assertIn("Let `superwork-check` decide whether `superwork-code-simplifier` must run", content)
         self.assertIn("superwork-check", content)
         self.assertIn("superwork-update-spec", content)
-        self.assertLess(content.index("superwork-code-simplifier"), content.index("superwork-check"))
         self.assertNotIn("Finish the `superwork-code-simplifier` stage before entering final verification", content)
+
+    def test_heavy_path_orders_brainstorming_then_planning_then_execution(self) -> None:
+        brainstorming_content = (
+            REPO_ROOT / "skills" / "superwork-brainstorming" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        writing_plans_content = (
+            REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "`superwork-writing-plans` is the next step, and `superwork-executing-plans` starts only after that saved plan exists",
+            brainstorming_content,
+        )
+        self.assertIn(
+            "`superwork-brainstorming` -> design doc in `.superwork/prd/*.md` -> `superwork-writing-plans` -> plan in `.superwork/plans/*.md` -> `superwork-executing-plans`",
+            writing_plans_content,
+        )
+
+    def test_writing_plans_commit_example_matches_global_commit_rule(self) -> None:
+        content = (REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('git commit -m "feat(example): 添加具体功能"', content)
+        self.assertIn("Chinese subject", content)
+        self.assertNotIn('git commit -m "feat: add specific feature"', content)
 
 
 if __name__ == "__main__":

@@ -93,7 +93,7 @@ When package boundaries are ambiguous, choose the simplest stable package map an
 4. Light task path: `superwork-tdd`, using an inline TDD plan and no saved plan document
 5. Medium task path: `superwork-writing-plans` and `superwork-executing-plans`
 6. Heavy task path: `superwork-brainstorming`, then `superwork-writing-plans` and `superwork-executing-plans`
-7. Completion policy: medium or large diffs must run `superwork-code-simplifier`, only truly small diffs may skip it with an explicit reason before `superwork-check`, and `superwork-check` must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
+7. Completion policy: route finished implementation and bugfix work into `superwork-check`; that stage owns the `superwork-code-simplifier` decision, must run it for medium or large diffs, may skip it only with an explicit reason for a truly small diff, and must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
 
 Keep it project-local and actionable. It should read like an operating manual, not a manifesto.
 

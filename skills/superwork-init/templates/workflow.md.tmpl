@@ -20,15 +20,16 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 8. Users may still invoke `superwork-brainstorming` manually on other non-bug tasks when extra design work is useful.
 9. After `superwork-start` decides the route, it must explicitly state the chosen route and one short reason before handoff.
 10. Execute all work directly on the current branch unless the user explicitly says otherwise.
-11. Before `superwork-check`, make an explicit `superwork-code-simplifier` decision: if the diff is medium or large, must run `superwork-code-simplifier`; otherwise, run it after targeted verification is green when recently touched code needs behavior-preserving cleanup, or state why the truly small diff is skipped.
-12. Run `superwork-check` only after that `superwork-code-simplifier` decision is explicit.
+11. Route finished implementation and bugfix work to `superwork-check`.
+12. Require `superwork-check` to own the explicit `superwork-code-simplifier` decision: if the diff is medium or large, it must run `superwork-code-simplifier`; otherwise it may skip only with an explicit reason and must state why.
 13. Require `superwork-check` to make an explicit `superwork-update-spec` decision (`update/create/no-update`), and default to `no-update` when no durable rule or contract changed.
 
 ## Tooling Paths
 
 - Context load: `superwork-start` (skill-internal tooling)
-- Design artifacts: `.superwork/prd/*.md`
-- Plan artifacts: `.superwork/plans/*.md`
+- Design docs: `.superwork/prd/*.md` (heavy-task design handoff from `superwork-brainstorming`)
+- Durable rules and contracts: `.superwork/spec/**/*.md`
+- Plan artifacts: `.superwork/plans/*.md` (implementation plans consumed by `superwork-executing-plans`)
 - Spec check: `superwork-check` (skill-internal tooling)
 - Spec update decision: `superwork-update-spec` (skill-internal tooling)
 - Never generate or copy `scripts/*.py` into this project as runtime output.
@@ -42,7 +43,7 @@ This project uses `.superwork/` as the local workflow and spec runtime.
 - Use `superwork-writing-plans` -> `superwork-executing-plans` for medium work that has clear scope but real multi-file coordination.
 - Use `superwork-brainstorming` -> `superwork-writing-plans` -> `superwork-executing-plans` as the default heavy-work path when work is large, cross-cutting, or still needs design reduction.
 - `superwork-brainstorming` can also be invoked manually on other non-bug tasks when the user wants extra design exploration before planning.
-- Use `superwork-code-simplifier` only after behavior is verified, never as a substitute for TDD or debugging.
-- follow the completion policy before `superwork-check`; let that stage enforce the final cleanup rule, fresh verification, and the explicit `superwork-update-spec` decision.
+- Use `superwork-code-simplifier` only after behavior is verified, never as a substitute for TDD or debugging, and let `superwork-check` decide whether it must run.
+- follow the completion policy through `superwork-check`; that stage owns the simplifier decision, fresh verification, and the explicit `superwork-update-spec` decision.
 - Re-read the relevant spec indexes before implementation and before completion.
 - Update specs only when new durable rules, contracts, edge cases, or test requirements appear.

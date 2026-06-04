@@ -205,6 +205,48 @@ def resolve_package_name(spec_root: Path, parts: tuple[str, ...]) -> str | None:
     return "root" if "root" in package_names else None
 
 
+def list_existing_layer_docs(layer_dir: Path) -> list[Path]:
+    if not layer_dir.exists():
+        return []
+    return [
+        path
+        for path in sorted(layer_dir.iterdir())
+        if path.is_file() and path.suffix.lower() == ".md"
+    ]
+
+
+def resolve_spec_target(
+    spec_root: Path,
+    layout: dict[str, str],
+    file_path: str,
+) -> tuple[Path, str]:
+    parts = Path(file_path).parts
+    layer = detect_layer(parts)
+    if layout["mode"] == "layer-root":
+        layer_dir = spec_root / layer
+    else:
+        package = resolve_package_name(spec_root, parts) or (parts[0] if len(parts) > 1 else "root")
+        layer_dir = spec_root / package / layer
+
+    guide_name = guess_layer_doc(layer, parts)
+    guide_path = layer_dir / guide_name
+    index_path = layer_dir / "index.md"
+
+    # 先复用已经存在的具体规范；不要因为某个叶子文档缺失就直接误判 create。
+    if guide_path.exists():
+        return guide_path, f"matched existing {guide_name} for {file_path}"
+    if index_path.exists():
+        return index_path, f"fallback to existing index for {file_path} because {guide_name} is missing"
+
+    existing_docs = list_existing_layer_docs(layer_dir)
+    if existing_docs:
+        fallback_doc = existing_docs[0]
+        return fallback_doc, f"fallback to existing {fallback_doc.name} for {file_path} because index is missing"
+
+    # 只有该 layer/package 完全没有可更新的 spec 文档时，才把建议升级为 create。
+    return index_path, f"no existing spec docs for {file_path}; create layer index first"
+
+
 def classify_change_for_spec(file_path: str) -> tuple[bool, str]:
     parts = Path(file_path).parts
     if not parts:
@@ -274,15 +316,7 @@ def main() -> int:
         if not can_update:
             ignored_changes.append({"path": file_path, "reason": reason})
             continue
-        layer = detect_layer(parts)
-        if layout["mode"] == "layer-root":
-            # 单仓库新布局：直接写到 layer 目录下。
-            target_path = spec_root / layer / guess_layer_doc(layer, parts)
-        else:
-            # 多包或旧布局：先确定 package，再决定规范文档落点。
-            package = resolve_package_name(spec_root, parts) or (parts[0] if len(parts) > 1 else "root")
-            guide_name = guess_layer_doc(layer, parts) if layout["type"] == "layered" else f"{layer}-guidelines.md"
-            target_path = spec_root / package / layer / guide_name
+        target_path, target_reason = resolve_spec_target(spec_root, layout, file_path)
         rel = str(target_path.relative_to(root))
         if rel in seen:
             continue
@@ -291,7 +325,7 @@ def main() -> int:
             {
                 "path": rel,
                 "action": "update" if target_path.exists() else "create",
-                "reason": f"changed file {file_path} may introduce durable {layer} rules",
+                "reason": target_reason,
             }
         )
 

@@ -181,3 +181,4 @@ All of these mean the session start is incomplete.
 - `superwork-tdd` is the light-task path
 - `superwork-writing-plans` is the medium-task path entry
 - `superwork-brainstorming` is the default heavy-task path entry, but users may invoke it manually
+- branch policy stays project-local: work on the current branch unless the user explicitly says otherwise

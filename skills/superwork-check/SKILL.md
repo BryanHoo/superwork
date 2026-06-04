@@ -10,7 +10,7 @@ description: Use when changes in a `.superwork` project are ready for verificati
 Verify that the changes satisfy fresh evidence requirements and the relevant `.superwork` specs before any completion claim.
 
 **Core principle:** No completion claims without fresh verification evidence and spec review.
-This stage owns the exact cleanup rule and the final `superwork-update-spec` decision.
+This stage owns the `superwork-code-simplifier` decision, the exact cleanup rule, and the final `superwork-update-spec` decision.
 
 **Violating the letter of this rule is violating the spirit of this rule.**
 
@@ -52,6 +52,7 @@ If you did not run the relevant checks now, you cannot say the work is complete 
 
 Before running the check itself:
 
+- treat upstream stages as direct handoffs into this skill, not as places to pre-decide cleanup policy
 - inspect the current diff and recently touched code
 - treat any medium or large diff as mandatory `superwork-code-simplifier` work
 - invoke `superwork-code-simplifier` if behavior-preserving cleanup is still needed
@@ -158,7 +159,7 @@ Do not default to doc updates. Use `no-update` when no durable rule/contract/edg
 ## Red Flags
 
 - saying "done" before running fresh commands
-- entering `superwork-check` without a `superwork-code-simplifier` decision
+- skipping the `superwork-code-simplifier` decision inside `superwork-check`
 - relabeling a medium or large diff as "small" to avoid the simplifier pass
 - reading no spec files during a `.superwork` workflow
 - trusting only memory of earlier verification
