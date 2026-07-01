@@ -5,11 +5,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 from pathlib import Path
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
+WORKFLOW_BLOCK_RE = re.compile(
+    r"^\[(superwork-route|superwork-state):([a-z0-9_-]+)\]\s*$"
+    r"(?P<body>.*?)"
+    r"^\[/\1:\2\]\s*$",
+    re.MULTILINE | re.DOTALL,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -104,6 +111,45 @@ def load_layout(spec_root: Path) -> dict[str, str]:
     if top_dirs and all(name in KNOWN_LAYERS for name in top_dirs):
         return {"type": "layered", "mode": "layer-root"}
     return {"type": "legacy", "mode": "package-layer"}
+
+
+def parse_key_value_block(block_text: str) -> dict[str, str]:
+    data: dict[str, str] = {}
+    for raw_line in block_text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def load_workflow_contract(root: Path) -> dict[str, object] | None:
+    workflow_path = root / ".superwork" / "workflow.md"
+    if not workflow_path.exists():
+        return None
+
+    content = workflow_path.read_text(encoding="utf-8")
+    routes: dict[str, dict[str, str]] = {}
+    states: dict[str, dict[str, str]] = {}
+
+    # workflow.md 既给人读，也给工具读；这里优先提取标记块里的结构化约束。
+    for match in WORKFLOW_BLOCK_RE.finditer(content):
+        block_kind = match.group(1)
+        block_name = match.group(2)
+        payload = parse_key_value_block(match.group("body"))
+        if block_kind == "superwork-route":
+            routes[block_name] = payload
+        else:
+            states[block_name] = payload
+
+    return {
+        "path": str(workflow_path.relative_to(root)),
+        "routes": routes,
+        "states": states,
+    }
 
 
 def collect_layer_root_context(
@@ -237,6 +283,7 @@ def main() -> int:
             "testHints": detect_test_hints(root, package_manager),
             "packages": packages,
         },
+        "workflow": load_workflow_contract(root),
         "spec": {
             "layout": load_layout(spec_root) if spec_root.exists() else None,
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,

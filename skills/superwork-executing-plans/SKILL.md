@@ -7,7 +7,7 @@ description: Use when a medium or heavy non-bug task in a project that uses `.su
 
 ## Overview
 
-Announce the skill, load the saved plan file, start executing it immediately, and report when complete. This skill consumes written plans from the medium or heavy path, not light-task inline TDD work.
+Announce the skill, load the saved plan file, run one execution preflight pass against the plan and relevant specs, then start executing it immediately and report when complete. This skill consumes written plans from the medium or heavy path, not light-task inline TDD work.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
@@ -17,11 +17,26 @@ Announce the skill, load the saved plan file, start executing it immediately, an
 
 1. Read plan file，计划文件在 `.superwork/plans/<filename>.md`
 2. Announce the exact plan path you are executing from
-3. Create TodoWrite from the saved tasks
-4. Start the first task immediately
+3. Run the execution preflight once before any code changes
+4. Create TodoWrite from the saved tasks
+5. Start the first task immediately
 
-This is an execution entry step, not a review gate. Do not pause for approval, reassurance, or pre-execution debate once the saved plan exists.
-If you notice doubts while loading the plan, record them briefly and keep moving into execution. Only stop once a real blocker prevents the next step from running.
+Use the skill-internal preflight script:
+
+`<skill_dir>` means the directory containing this `SKILL.md`.
+
+```bash
+python3 <skill_dir>/scripts/preflight_plan.py --root . --plan .superwork/plans/<filename>.md --format json
+```
+
+The preflight owns one fast pass over:
+
+- internal plan contradictions
+- conflicts between `Global Constraints`, task `Interfaces`, and referenced spec paths
+- obvious non-executable plan issues such as missing required sections, placeholders, or missing spec files
+
+This is an execution entry step, not a human approval gate. Do not pause for approval, reassurance, or pre-execution debate once the saved plan exists.
+If the preflight reports blocking issues, fix the plan or reroute before editing code. If it passes, move straight into execution.
 
 ### Step 2: Execute Tasks
 
@@ -56,6 +71,7 @@ After all tasks complete and verified:
 **Return to the saved plan file when:**
 
 - Partner updates the plan based on your feedback
+- Preflight finds a structural or spec-alignment issue that must be repaired
 - Fundamental approach needs rethinking
 
 **Don't force through blockers** - stop and ask.
@@ -63,6 +79,7 @@ After all tasks complete and verified:
 ## Remember
 
 - Announce the execution handoff, then start from the saved plan immediately
+- Run one execution preflight before the first task
 - Follow plan steps exactly
 - Don't skip verifications
 - Reference skills when plan says to

@@ -28,7 +28,7 @@ Do not use when:
 
 | Artifact | Minimum Result |
 |---|---|
-| `.superwork/workflow.md` | Explains init, start, light/medium/heavy routing, brainstorming, writing-plans, executing-plans, tdd, debugging, code-simplifier, check, update-spec |
+| `.superwork/workflow.md` | Explains init, start, light/medium/heavy routing, brainstorming, writing-plans, executing-plans, tdd, debugging, code-simplifier, check, update-spec, and carries machine-readable route/state blocks |
 | `.superwork/spec/guides/` | Shared principles, thinking guides, and global checklists |
 | `.superwork/spec/<layer>/index.md` | Single-repo layer guide entry with linked sub-guides |
 | `.superwork/spec/<package>/<layer>/index.md` | Multi-package layer guide entry with linked sub-guides |
@@ -94,6 +94,12 @@ When package boundaries are ambiguous, choose the simplest stable package map an
 5. Medium task path: `superwork-writing-plans` and `superwork-executing-plans`
 6. Heavy task path: `superwork-brainstorming`, then `superwork-writing-plans` and `superwork-executing-plans`
 7. Completion policy: route finished implementation and bugfix work into `superwork-check`; that stage owns the `superwork-code-simplifier` decision, must run it for medium or large diffs, may skip it only with an explicit reason for a truly small diff, and must end with an explicit `superwork-update-spec` decision (`update/create/no-update`)
+
+`workflow.md` must also carry machine-readable blocks that tooling can parse for:
+
+1. route rules
+2. phase or execution states
+3. next-step hints
 
 Keep it project-local and actionable. It should read like an operating manual, not a manifesto.
 

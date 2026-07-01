@@ -72,6 +72,8 @@ cat .superwork/workflow.md
 
 This is the project's local source of truth. Do not skip it because the workflow "looks familiar".
 
+When the file includes tagged `superwork-route` and `superwork-state` blocks, treat those machine-readable blocks as the routing and next-step source of truth. The surrounding prose explains the same contract for humans.
+
 ### Step 3: Load Structured Context
 
 Run:

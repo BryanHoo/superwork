@@ -10,6 +10,9 @@ BOOTSTRAP_SCRIPT = REPO_ROOT / "skills" / "superwork-init" / "scripts" / "bootst
 GET_CONTEXT_SCRIPT = REPO_ROOT / "skills" / "superwork-start" / "scripts" / "get_context.py"
 CHECK_SPECS_SCRIPT = REPO_ROOT / "skills" / "superwork-check" / "scripts" / "check_specs.py"
 UPDATE_SPEC_SCRIPT = REPO_ROOT / "skills" / "superwork-update-spec" / "scripts" / "update_spec.py"
+PREFLIGHT_PLAN_SCRIPT = (
+    REPO_ROOT / "skills" / "superwork-executing-plans" / "scripts" / "preflight_plan.py"
+)
 
 
 class LayeredSpecLayoutTest(unittest.TestCase):
@@ -520,6 +523,165 @@ class LayeredSpecLayoutTest(unittest.TestCase):
         self.assertIn('git commit -m "feat(example): 添加具体功能"', content)
         self.assertIn("Chinese subject", content)
         self.assertNotIn('git commit -m "feat: add specific feature"', content)
+
+    def test_writing_plans_requires_global_constraints_and_interfaces(self) -> None:
+        content = (REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("## Global Constraints", content)
+        self.assertIn("**Interfaces:**", content)
+        self.assertIn("Consumes:", content)
+        self.assertIn("Produces:", content)
+        self.assertIn("Interface consistency", content)
+
+    def test_workflow_template_contains_machine_readable_routes_and_states(self) -> None:
+        content = (
+            REPO_ROOT / "skills" / "superwork-init" / "templates" / "workflow.md.tmpl"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("[superwork-route:light]", content)
+        self.assertIn("[superwork-route:medium]", content)
+        self.assertIn("[superwork-state:no_task]", content)
+        self.assertIn("[superwork-state:plan_execution]", content)
+        self.assertIn("machine-readable source of truth", content)
+
+    def test_get_context_exposes_workflow_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+
+            result = self.run_command(
+                "python3",
+                str(GET_CONTEXT_SCRIPT),
+                "--root",
+                str(root),
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["workflow"]["path"], ".superwork/workflow.md")
+            self.assertEqual(payload["workflow"]["routes"]["light"]["skill"], "superwork-tdd")
+            self.assertEqual(
+                payload["workflow"]["states"]["plan_execution"]["next"],
+                "run-plan-preflight-then-start-task-1",
+            )
+
+    def test_preflight_plan_passes_for_valid_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.write_file(
+                root / ".superwork" / "plans" / "2026-06-24-demo.md",
+                """# Demo Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superwork-executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build the demo change
+
+**Suggested Spec Reads:**
+- `.superwork/spec/guides/index.md` — shared workflow rules
+- `.superwork/spec/frontend/index.md` — frontend rules
+
+**Architecture:** Keep the change local.
+
+**Tech Stack:** TypeScript
+
+## Global Constraints
+
+- Keep the API shape unchanged.
+- Run `pnpm test` before completion.
+
+---
+
+### Task 1: Update button contract
+
+**Files:**
+
+- Modify: `src/components/Button.tsx:1-10`
+- Test: `tests/button.test.ts`
+
+**Interfaces:**
+
+- Consumes: `ButtonProps { label: string }`
+- Produces: `ButtonProps { label: string; tone?: "primary" | "secondary" }`
+
+- [ ] **Step 1: Write the failing test**
+
+```ts
+it("supports tone", () => {})
+```
+""",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(PREFLIGHT_PLAN_SCRIPT),
+                "--root",
+                str(root),
+                "--plan",
+                ".superwork/plans/2026-06-24-demo.md",
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertTrue(payload["ok"], payload)
+
+    def test_preflight_plan_fails_without_interfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.write_file(
+                root / ".superwork" / "plans" / "2026-06-24-bad.md",
+                """# Bad Implementation Plan
+
+**Goal:** Break structure
+
+**Suggested Spec Reads:**
+- `.superwork/spec/guides/index.md` — shared workflow rules
+
+**Architecture:** Minimal
+
+**Tech Stack:** TypeScript
+
+## Global Constraints
+
+- Keep naming consistent.
+
+---
+
+### Task 1: Missing interface section
+
+**Files:**
+
+- Modify: `src/components/Button.tsx:1-10`
+
+- [ ] **Step 1: Write the failing test**
+""",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(PREFLIGHT_PLAN_SCRIPT),
+                "--root",
+                str(root),
+                "--plan",
+                ".superwork/plans/2026-06-24-bad.md",
+                "--format",
+                "json",
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            payload = json.loads(result.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertIn("Task 1 is missing `**Interfaces:**`", str(payload["issues"]))
 
 
 if __name__ == "__main__":

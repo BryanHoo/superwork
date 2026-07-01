@@ -7,7 +7,7 @@ description: Use when a non-bug task in a project that uses `.superwork/` is med
 
 ## Overview
 
-Write comprehensive implementation plans for the medium path and for heavy tasks that already have an approved design doc. Document everything the executor needs to know: which files to touch for each task, code, testing, docs they might need to check, and how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans for the medium path and for heavy tasks that already have an approved design doc. Document everything the executor needs to know: which files to touch for each task, the global constraints that bind every task, the interfaces each task consumes and produces, code, testing, docs they might need to check, and how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -27,6 +27,14 @@ Before writing the plan, read these inputs explicitly:
 If the relevant spec files are not obvious, use the project's scope-aware context discovery flow and read the spec paths it recommends before decomposing tasks.
 
 Keep a short list of the exact spec paths you used. You will write that list into the generated plan document as recommended pre-read material for execution.
+
+Before decomposing tasks, extract the binding project-wide constraints from those inputs. Capture only rules that every executor must preserve, such as:
+
+- exact version floors
+- dependency limits
+- naming or copy rules
+- required verification gates
+- exact values, formats, and compatibility constraints
 
 Artifact roles stay strict:
 
@@ -80,6 +88,11 @@ This structure informs the task decomposition. Each task should produce self-con
 
 **Tech Stack:** [Key technologies/libraries]
 
+## Global Constraints
+
+- [Exact project-wide rule copied from the spec or requirements]
+- [Exact project-wide rule copied from the spec or requirements]
+
 ---
 ```
 
@@ -93,6 +106,11 @@ This structure informs the task decomposition. Each task should produce self-con
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
+
+**Interfaces:**
+
+- Consumes: [exact function, type, file contract, or artifact this task depends on]
+- Produces: [exact function, type, file contract, or artifact later tasks depend on]
 
 - [ ] **Step 1: Write the failing test**
 
@@ -138,10 +156,18 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
 
+Global Constraints and Interfaces are part of "no placeholders" too. Do not write:
+
+- "follow existing constraints" without listing them
+- "consume previous output" without naming the exact output
+- "same interface as above" instead of repeating the exact signature or contract
+
 ## Remember
 
 - Exact file paths always
 - Carry forward the exact spec paths that shaped the plan
+- Copy project-wide constraints verbatim into `## Global Constraints`
+- Give every task explicit `Consumes` and `Produces` interface lines
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - Commit examples must follow the global Conventional Commit rule: `type(scope): subject`, Chinese subject, and Chinese bullet body when a body is included
@@ -155,9 +181,13 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **2. Suggested spec reads:** Check that every path in `Suggested Spec Reads` is real, relevant, and useful to the executor. Remove stale paths and add missing ones.
 
-**3. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+**3. Global constraints audit:** Check that `## Global Constraints` contains only truly binding project-wide rules, copied with exact values where relevant. Remove vague reminders and add any missing hard constraints from the spec.
 
-**4. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+**4. Interface consistency:** Do the `Consumes` and `Produces` lines line up across tasks? If Task 2 says it produces `buildPayload(input: RawItem): Payload`, later tasks cannot consume `createPayload(item)` without explanation.
+
+**5. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
+
+**6. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
