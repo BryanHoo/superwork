@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Writing Plans"
+  short_description: "Write bounded implementation plans"
+  default_prompt: "Use $superwork-writing-plans to create a bounded implementation plan."
+policy:
+  allow_implicit_invocation: false

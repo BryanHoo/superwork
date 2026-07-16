@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Debugging"
+  short_description: "Confirm root cause before bug repair"
+  default_prompt: "Use $superwork-debugging to confirm the root cause before repair."
+policy:
+  allow_implicit_invocation: false

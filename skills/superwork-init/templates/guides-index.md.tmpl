@@ -2,24 +2,18 @@
 
 ## Scope
 
-Shared project-wide workflow rules used by all packages and layers.
+Shared project-wide engineering rules used by all packages and layers.
 
 ## Pre-Development Checklist
 
-- Read `.superwork/workflow.md`
+- Read `.superwork/config.json`
 - Read the relevant package/layer `index.md`
-- Choose `superwork-debugging` for bug work
-- Choose light / medium / heavy for non-bug work by the shortest path that still meets quality requirements
-- Choose `superwork-tdd` for light work; keep the TDD plan inline and do not require `.superwork/plans/*.md`
-- Choose `superwork-writing-plans` then `superwork-executing-plans` for medium work
-- Choose `superwork-brainstorming` then `superwork-writing-plans` then `superwork-executing-plans` as the default heavy-work path
-- Allow manual `superwork-brainstorming` use on other non-bug tasks when extra design work is useful
-- Reserve `superwork-code-simplifier` for behavior-preserving cleanup after the change is already green, and let `superwork-check` decide whether it must run
+- Read applicable `AGENTS.md` instructions before changing files
+- Keep project-specific contracts in `.superwork/spec/`, not in generated workflow copies
 
 ## Verification Checklist
 
 - Run fresh verification before any completion claim
-- follow `superwork-check` before final completion: that stage owns the `superwork-code-simplifier` decision, must run `superwork-code-simplifier` for medium or large diffs, and must state why when the current diff is truly small enough to skip it
 - Use project-local commands such as:
 {{ test_hints }}
 

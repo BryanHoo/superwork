@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Check"
+  short_description: "Finalize changes with fresh evidence"
+  default_prompt: "Use $superwork-check to finalize these changes with fresh evidence."
+policy:
+  allow_implicit_invocation: false

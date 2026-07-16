@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork TDD"
+  short_description: "Implement one behavior with RED and GREEN"
+  default_prompt: "Use $superwork-tdd to implement this behavior with RED and GREEN."
+policy:
+  allow_implicit_invocation: false

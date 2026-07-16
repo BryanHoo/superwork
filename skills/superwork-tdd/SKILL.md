@@ -1,232 +1,65 @@
 ---
 name: superwork-tdd
-description: Use when a non-bug task in a project that uses `.superwork/` is light enough for an inline TDD plan, such as a single-file or small-scope change, config or copy adjustment, small test addition, or local documentation update.
+description: Implements one bounded behavior slice with RED, GREEN, and behavior-preserving REFACTOR. It is called by light-task routing, saved-plan execution, or confirmed bug repair; it does not investigate root cause, choose planning depth, or finalize the whole task.
 ---
 
 # Superwork TDD
 
-## Overview
+## Purpose
 
-Use this as the light-task path: load the rules, write a short inline TDD plan, then execute it step by step in the same session without creating a saved plan document.
+Provide one implementation method for every code behavior change. TDD is not limited to light tasks; task size only determines how much design and planning happens before this method is called.
 
-**Core principle:** For light tasks, the disciplined path is an inline TDD plan plus real RED/GREEN verification, not a heavyweight plan artifact.
+## Inputs
 
-**Violating the letter of the rules is violating the spirit of this skill.**
+The caller provides:
 
-## When to Use
+- one bounded behavior slice
+- relevant files, contracts, and project rules
+- a falsifiable expected outcome
+- the verification command or the smallest reliable way to derive it
+- the caller identity: `superwork-start`, `superwork-executing-plans`, or `superwork-debugging`
 
-Use when:
+Do not use this skill while root cause is unknown or architecture is unresolved. Return those cases to debugging or design/planning.
 
-- Making a single-file or small-scope code change
-- Adjusting config or user-facing copy in a bounded area
-- Adding or updating a small test in support of a light change
-- Updating local documentation that belongs to a small implementation slice
-- Delivering a scoped behavior change that does not need cross-file execution planning
+## Method
 
-Do not use when:
+### 1. Define the proof
 
-- The work is still investigating a bug or failing test
-- The task needs a saved execution artifact across multiple related files
-- The task is large, cross-cutting, or still needs design reduction
-- The project has not been initialized with `.superwork/`
-- The change is pure formatting with no behavior impact
+State the smallest observable behavior that distinguishes success from failure. For code behavior, prefer an automated test. For documentation, configuration, or copy, use a focused lint, render, build, snapshot, schema check, or search assertion.
 
-If the task stops being light, reroute immediately:
+### 2. Establish RED
 
-- medium task -> `superwork-writing-plans`, then `superwork-executing-plans`
-- heavy task -> `superwork-brainstorming`, then `superwork-writing-plans`, then `superwork-executing-plans`
-- investigation or root-cause hunting -> `superwork-debugging`
+Write the smallest proof and run it. Confirm it fails for the intended missing or broken behavior, not because of syntax, fixture, environment, or unrelated failures.
 
-## The Iron Law
+Do not keep production implementation written before a valid RED.
 
-```text
-NO LIGHT-TASK EXECUTION WITHOUT AN INLINE TDD PLAN FIRST
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
-```
+### 3. Reach minimal GREEN
 
-Inline means a real step list in the active session or task tracker.
+Implement only what the current proof requires. Do not add speculative flags, abstractions, compatibility branches, or unrelated cleanup.
 
-These do not count:
+Run the targeted proof again and confirm it passes.
 
-- a remembered step list
-- "I'll just keep the plan in my head"
-- jumping from context loading straight to code
-- creating a heavyweight `.superwork/plans/*.md` file just to satisfy process on a light task
+### 4. REFACTOR on green
 
-Write test code or production code before the inline plan exists? Delete it. Start over from the inline-planning phase.
+Improve names, duplication, nesting, or local structure only when the result is clearer and behavior remains unchanged. Re-run the targeted proof after each meaningful refactor.
 
-Write production code before the failing test? Delete it. Re-implement from RED.
+### 5. Return to the caller
 
-No exceptions:
+Return:
 
-- not for "obvious" changes
-- not for "just wiring"
-- not by drafting production code as "reference"
-- not by skipping the inline plan because the task feels tiny
-- not by creating a saved plan document when the work is still light
-- not by keeping pre-RED code around to "adapt later"
+- RED command and intended failure reason
+- GREEN command and pass signal
+- files changed
+- any refactor performed
+- remaining risks or broader checks still owned by the caller
 
-## Quick Reference
+`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`.
 
-| Phase | Required Action | Stop If |
-|---|---|---|
-| Context | Read relevant `.superwork` indexes and rules | You have not loaded the required reads |
-| Fit Check | Confirm the work is still light | The task now needs cross-file planning or design |
-| Inline Plan | Write a short TDD step list in-session | You are about to code from memory with no explicit steps |
-| RED | Write and run the smallest failing test or equivalent proof | The failure never happened for the intended reason |
-| GREEN | Implement the minimum change to make RED pass | You are broadening scope or adding speculative structure |
-| Verify | Re-run the targeted checks and route to completion | You are about to call the task done without fresh evidence |
+## Stop Conditions
 
-## Inline TDD Cycle
+- RED cannot be made to fail for the intended reason.
+- The behavior slice requires unresolved architecture or additional independent behavior.
+- A failure is flaky, environmental, or contradicts the confirmed debugging hypothesis.
+- GREEN requires widening the approved scope.
 
-```dot
-digraph superwork_tdd_cycle {
-    rankdir=LR;
-    context [label="Context\nLoad rules", shape=box];
-    fit [label="Fit check\nStill light?", shape=diamond];
-    plan [label="Inline plan\n3-6 steps", shape=box];
-    red [label="RED\nwatch it fail", shape=box];
-    green [label="GREEN\nminimal change", shape=box];
-    verify [label="Verify\nthen completion stack", shape=ellipse];
-
-    context -> fit;
-    fit -> plan [label="yes"];
-    fit -> context [label="reroute"];
-    plan -> red;
-    red -> green;
-    green -> verify;
-}
-```
-
-## Implementation
-
-### Step 1: Load the Relevant Rules
-
-Before planning, read:
-
-- `.superwork/spec/guides/index.md`
-- the package/layer index files identified by `superwork-start`
-- any concrete spec docs listed by those indexes
-
-Do not rely only on memory from a prior session.
-
-### Step 2: Confirm the Task Is Still Light
-
-Light task signals include:
-
-- one file or a tightly bounded local area
-- configuration or copy changes with obvious blast radius
-- a small test addition or update
-- a local documentation change tied to one implementation slice
-
-Escalate instead when any of these appear:
-
-- multiple related files that need coordination
-- explicit business logic across components
-- architecture or product-shape questions
-- the smallest quality-preserving path now needs a saved plan or design document
-
-### Step 3: Write the Inline TDD Plan
-
-Write a short execution plan in-session before RED.
-
-Keep it short and concrete:
-
-- 3-6 steps
-- each step is one action
-- include RED, fail verification, GREEN, pass verification, and completion handoff
-- use TodoWrite or an equivalent visible checklist when helpful
-
-Do not create `.superwork/plans/*.md` for a task that still fits the light path.
-
-### Step 4: Execute the Plan Step by Step
-
-Execute from the inline step list, not from memory.
-
-- Write the failing test first.
-- Run it and confirm it fails for the intended reason.
-- Implement the smallest change that makes it pass.
-- Re-run the targeted verification.
-- Keep the scope inside the original light-task boundary.
-
-For local docs or copy-only tasks, replace the failing test with the smallest falsifiable proof available, such as a focused render, lint, build, snapshot, or search-based check. The point is still to prove the change before and after editing.
-
-### Step 5: Route Completion Through the Superwork Stack
-
-After GREEN and targeted verification:
-
-- route directly to `superwork-check`
-- let `superwork-check` decide whether `superwork-code-simplifier` must run
-- let `superwork-check` handle final verification and the `superwork-update-spec` decision
-
-## Why Order Matters
-
-- Tests written after code answer "what did I build" instead of "what should this do"
-- Even light tasks drift when the steps stay implicit
-- Manual testing is ad-hoc and cannot be replayed reliably during later changes
-- If a test or equivalent proof never failed for the expected reason, it has not proved anything yet
-
-## Common Rationalizations
-
-| Excuse                                                           | Reality                                                           |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------- |
-| "This is too small for TDD"                                      | Small changes still regress behavior                              |
-| "This is too small for an inline plan"                           | Hidden steps drift even faster on small changes                   |
-| "I'll write tests after the code"                                | Tests-after cannot prove the test catches the change              |
-| "Tests after achieve the same goal"                              | Tests-after are biased by the implementation you already chose    |
-| "The API is obvious, I'll just scaffold first"                   | Scaffolding production code before RED is still a violation       |
-| "I already manually tested it"                                   | Manual testing is not repeatable evidence                         |
-| "I already know which files to edit"                             | Knowing the file is not the same as proving the behavior          |
-| "The plan can stay in my head"                                   | Hidden plans drift immediately                                    |
-| "I'll write a full plan doc to be safe"                          | Light tasks should use the shortest quality-preserving path       |
-| "This grew a bit, but I'll keep it light to move faster"         | Once the task needs more structure, reroute                       |
-| "I can keep the existing code as reference"                      | You will adapt it. Delete means delete                            |
-| "Deleting the first attempt wastes time"                         | Keeping untrusted code wastes more time later                     |
-| "This is different because I already understand the fix"         | Understanding the fix does not replace proof                      |
-
-## Verification Checklist
-
-Before handing off to `superwork-check`:
-
-- [ ] The task still fit the light-task definition when execution started
-- [ ] An inline TDD plan existed before RED
-- [ ] The first executable step was RED or an equivalent falsifiable proof
-- [ ] The targeted verification failed first for the expected reason
-- [ ] The implementation stayed within the original light-task boundary
-- [ ] No production code from before RED was kept for adaptation
-- [ ] Completion routed directly to `superwork-check`
-
-Cannot check every box? The TDD cycle is incomplete.
-
-## Red Flags
-
-- writing production code before the inline plan exists
-- writing test code before the inline plan exists
-- skipping the inline plan and doing RED/GREEN from memory
-- creating a saved plan doc for a task that is still clearly light
-- a first executable step that is implementation, not RED
-- writing production code before the failing test
-- keeping pre-RED code around as "reference"
-- adding options, flags, or abstractions not required by the current test
-- saying "I already manually tested it"
-- quietly letting a light task sprawl into medium territory
-- saying "done" before `superwork-check`
-
-If any of these happen, stop, discard the invalid slice, and return to the correct phase.
-
-## When Stuck
-
-| Problem | Correct Move |
-|---|---|
-| Do not know how to start the test | Write the wished-for behavior first, then assert the smallest visible outcome |
-| The test needs too much setup | The task is probably not light anymore; reroute to `superwork-writing-plans` |
-| You must touch several related files | Escalate to the medium path before continuing |
-| You must compare multiple architecture options | Escalate to `superwork-brainstorming` |
-| The failure is flaky or unexplained | Switch to `superwork-debugging` and reproduce the issue cleanly |
-
-## Integration
-
-- `superwork-start` should have already loaded the correct context
-- `superwork-writing-plans` and `superwork-executing-plans` own the medium-task path, not this skill
-- `superwork-brainstorming` is the default heavy-task path before planning and remains available for manual design work
-- `superwork-check` owns completion verification, `superwork-code-simplifier` enforcement, and the `superwork-update-spec` decision
+Stop and return evidence to the caller instead of guessing.

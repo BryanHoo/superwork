@@ -136,6 +136,12 @@ def main() -> int:
             issues.append({"severity": "error", "message": f"Task {index} is missing `**Interfaces:**`"})
             continue
 
+        stop_conditions = extract_task_section(task_text, "Stop Conditions")
+        if not stop_conditions:
+            issues.append({"severity": "error", "message": f"Task {index} is missing `**Stop Conditions:**`"})
+        if "Expected:" not in task_text:
+            issues.append({"severity": "error", "message": f"Task {index} is missing an `Expected:` verification signal"})
+
         interface_lines = extract_bullets(interfaces_section)
         consumes = [line.removeprefix("Consumes:").strip() for line in interface_lines if line.startswith("Consumes:")]
         produces = [line.removeprefix("Produces:").strip() for line in interface_lines if line.startswith("Produces:")]

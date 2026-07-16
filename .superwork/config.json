@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "packageManager": "none",
+  "packages": [
+    {
+      "name": "root",
+      "layers": [
+        "shared"
+      ]
+    }
+  ],
+  "artifactPaths": {
+    "designs": ".superwork/prd",
+    "plans": ".superwork/plans",
+    "specs": ".superwork/spec"
+  },
+  "verification": [
+    "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+    "python3 -m unittest discover -s skills/superwork-init/tests -p 'test_*.py' -v"
+  ]
+}

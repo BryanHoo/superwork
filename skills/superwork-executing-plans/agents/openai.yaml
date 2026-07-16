@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Executing Plans"
+  short_description: "Execute saved plans with TDD slices"
+  default_prompt: "Use $superwork-executing-plans to execute the saved plan."
+policy:
+  allow_implicit_invocation: false

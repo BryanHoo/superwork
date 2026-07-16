@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Start"
+  short_description: "Route work by problem type and planning depth"
+  default_prompt: "Use $superwork-start to route this repository task safely."
+policy:
+  allow_implicit_invocation: true

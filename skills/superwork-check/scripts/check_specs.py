@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
+RUNTIME_SCHEMA_VERSION = 2
 
 
 def parse_args() -> argparse.Namespace:
@@ -17,6 +18,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--format", choices=("text", "json"), default="text")
     return parser.parse_args()
+
+
+def load_runtime(root: Path) -> tuple[str, list[str]]:
+    config_path = root / ".superwork" / "config.json"
+    if not config_path.exists():
+        return "missing", []
+    try:
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return "unsupported-schema", []
+    if not isinstance(payload, dict) or payload.get("schemaVersion") != RUNTIME_SCHEMA_VERSION:
+        return "unsupported-schema", []
+    verification = payload.get("verification")
+    hints = [item for item in verification if isinstance(item, str)] if isinstance(verification, list) else []
+    return "ready", hints
 
 
 def git_changed_files(root: Path) -> list[str]:
@@ -221,10 +237,13 @@ def main() -> int:
     root = args.root.resolve()
     changed_files = git_changed_files(root)
     relevant_specs = collect_relevant_specs(root, changed_files)
+    runtime_status, configured_hints = load_runtime(root)
     payload = {
+        "runtimeStatus": runtime_status,
         "changedFiles": changed_files,
         "relevantSpecs": relevant_specs,
-        "verificationHints": [
+        "verificationHints": configured_hints
+        or [
             "run related unit tests",
             "run lint for the changed package when available",
         ],

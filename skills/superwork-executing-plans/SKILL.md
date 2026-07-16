@@ -1,96 +1,54 @@
 ---
 name: superwork-executing-plans
-description: Use when a medium or heavy non-bug task in a project that uses `.superwork/` already has a written implementation plan ready to execute, whether continuing immediately after saving it or resuming later.
+description: Executes a preflighted saved plan. It tracks task order and plan drift, invokes `superwork-tdd` for code behavior slices, and hands completed work to one final check.
 ---
 
-# Executing Plans
+# Superwork Executing Plans
 
-## Overview
+## Purpose
 
-Announce the skill, load the saved plan file, run one execution preflight pass against the plan and relevant specs, then start executing it immediately and report when complete. This skill consumes written plans from the medium or heavy path, not light-task inline TDD work.
+Coordinate a saved implementation plan without redefining design, TDD, debugging, or completion rules.
 
-**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+## Entry
 
-## The Process
+1. Read the exact saved plan path.
+2. Run:
 
-### Step 1: Announce and Enter Execution
+   ```bash
+   python3 <skill_dir>/scripts/preflight_plan.py --root . --plan <plan-path> --format json
+   ```
 
-1. Read plan file，计划文件在 `.superwork/plans/<filename>.md`
-2. Announce the exact plan path you are executing from
-3. Run the execution preflight once before any code changes
-4. Create TodoWrite from the saved tasks
-5. Start the first task immediately
+3. Continue when `ok` is `true`.
+4. Create task tracking from the saved task order and resume completed checkboxes instead of restarting work.
 
-Use the skill-internal preflight script:
+## Execute Tasks
 
-`<skill_dir>` means the directory containing this `SKILL.md`.
+For each dependency-ready task:
 
-```bash
-python3 <skill_dir>/scripts/preflight_plan.py --root . --plan .superwork/plans/<filename>.md --format json
-```
+1. Mark it in progress.
+2. Re-read that task's files, interfaces, expected signal, and stop conditions.
+3. For a code behavior slice, invoke `superwork-tdd` and wait for its RED/GREEN/REFACTOR evidence.
+4. For a non-code slice, execute its smallest falsifiable proof before and after the edit.
+5. Run the task-level verification from the plan.
+6. Mark the task complete only after the expected signal is observed.
 
-The preflight owns one fast pass over:
+After all tasks pass, route once to `superwork-check`.
 
-- internal plan contradictions
-- conflicts between `Global Constraints`, task `Interfaces`, and referenced spec paths
-- obvious non-executable plan issues such as missing required sections, placeholders, or missing spec files
+## Plan Drift
 
-This is an execution entry step, not a human approval gate. Do not pause for approval, reassurance, or pre-execution debate once the saved plan exists.
-If the preflight reports blocking issues, fix the plan or reroute before editing code. If it passes, move straight into execution.
+Stop execution and repair the saved plan when:
 
-### Step 2: Execute Tasks
+- a referenced file, interface, or constraint is wrong
+- implementation requires an unplanned independent behavior
+- requirements or explicit user instructions changed
+- verification repeatedly fails for a reason outside the current slice
 
-For each task:
+Do not force execution through an invalid plan and do not silently redesign during implementation.
 
-1. Mark as in_progress
-2. Follow each step exactly (plan has bite-sized steps)
-3. Run verifications as specified
-4. Mark as completed
+## Boundaries
 
-### Step 3: Complete Development
-
-After all tasks complete and verified:
-
-- Announce: "I'm routing completion through `superwork-check`."
-- Route directly to `superwork-check`
-- Let `superwork-check` decide whether `superwork-code-simplifier` must run
-- Complete the explicit `superwork-update-spec` decision required at the end of `superwork-check`
-
-## When to Stop and Ask for Help
-
-**STOP executing immediately when:**
-
-- Hit a blocker (missing dependency, test fails, instruction unclear)
-- You don't understand an instruction
-- Verification fails repeatedly
-
-**Ask for clarification rather than guessing.**
-
-## When to Revisit Earlier Steps
-
-**Return to the saved plan file when:**
-
-- Partner updates the plan based on your feedback
-- Preflight finds a structural or spec-alignment issue that must be repaired
-- Fundamental approach needs rethinking
-
-**Don't force through blockers** - stop and ask.
-
-## Remember
-
-- Announce the execution handoff, then start from the saved plan immediately
-- Run one execution preflight before the first task
-- Follow plan steps exactly
-- Don't skip verifications
-- Reference skills when plan says to
-- Stop when blocked, don't guess
-- Work on the current branch unless the user explicitly says otherwise
-
-## Integration
-
-**Required workflow skills:**
-
-- **superwork-writing-plans** - Creates the plan this skill executes, either for immediate continuation or later handoff
-- **superwork-code-simplifier** - May be invoked by `superwork-check` when medium or large diffs, or smaller diffs with cleanup needs, require a behavior-preserving simplification pass
-- **superwork-check** - REQUIRED final verification stage after implementation tasks
-- **superwork-update-spec** - REQUIRED explicit decision at the end of `superwork-check`
+- Work on the current branch unless the user explicitly requests another Git operation.
+- Preserve unrelated user changes.
+- Do not add commit steps unless requested by the user or project policy.
+- Do not reproduce TDD internals; call the TDD method.
+- Do not call completion more than once.

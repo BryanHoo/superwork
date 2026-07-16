@@ -5,18 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import subprocess
 from pathlib import Path
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
-WORKFLOW_BLOCK_RE = re.compile(
-    r"^\[(superwork-route|superwork-state):([a-z0-9_-]+)\]\s*$"
-    r"(?P<body>.*?)"
-    r"^\[/\1:\2\]\s*$",
-    re.MULTILINE | re.DOTALL,
-)
+RUNTIME_SCHEMA_VERSION = 2
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,7 +27,7 @@ def detect_package_manager(root: Path) -> str:
         return "npm"
     if (root / "yarn.lock").exists():
         return "yarn"
-    return "pnpm"
+    return "npm"
 
 
 def detect_test_hints(root: Path, package_manager: str) -> list[str]:
@@ -46,8 +40,7 @@ def detect_test_hints(root: Path, package_manager: str) -> list[str]:
             scripts = {}
         for name in ("test", "test:run", "lint", "typecheck", "build"):
             if name in scripts:
-                command = package_manager if name == "test" else f"{package_manager} {name}"
-                hints.append(command)
+                hints.append(f"{package_manager} {name}")
     if not hints:
         hints.append(f"{package_manager} test")
     return hints
@@ -113,43 +106,30 @@ def load_layout(spec_root: Path) -> dict[str, str]:
     return {"type": "legacy", "mode": "package-layer"}
 
 
-def parse_key_value_block(block_text: str) -> dict[str, str]:
-    data: dict[str, str] = {}
-    for raw_line in block_text.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        data[key.strip()] = value.strip()
-    return data
+def load_runtime_config(root: Path) -> dict[str, object]:
+    config_path = root / ".superwork" / "config.json"
+    relative_path = ".superwork/config.json"
+    if not config_path.exists():
+        return {"status": "missing", "path": relative_path, "config": None}
 
+    try:
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        return {
+            "status": "unsupported-schema",
+            "path": relative_path,
+            "config": None,
+            "error": str(error),
+        }
 
-def load_workflow_contract(root: Path) -> dict[str, object] | None:
-    workflow_path = root / ".superwork" / "workflow.md"
-    if not workflow_path.exists():
-        return None
+    if not isinstance(payload, dict) or payload.get("schemaVersion") != RUNTIME_SCHEMA_VERSION:
+        return {
+            "status": "unsupported-schema",
+            "path": relative_path,
+            "config": payload if isinstance(payload, dict) else None,
+        }
 
-    content = workflow_path.read_text(encoding="utf-8")
-    routes: dict[str, dict[str, str]] = {}
-    states: dict[str, dict[str, str]] = {}
-
-    # workflow.md 既给人读，也给工具读；这里优先提取标记块里的结构化约束。
-    for match in WORKFLOW_BLOCK_RE.finditer(content):
-        block_kind = match.group(1)
-        block_name = match.group(2)
-        payload = parse_key_value_block(match.group("body"))
-        if block_kind == "superwork-route":
-            routes[block_name] = payload
-        else:
-            states[block_name] = payload
-
-    return {
-        "path": str(workflow_path.relative_to(root)),
-        "routes": routes,
-        "states": states,
-    }
+    return {"status": "ready", "path": relative_path, "config": payload}
 
 
 def collect_layer_root_context(
@@ -241,7 +221,24 @@ def derive_package_layer_scope(spec_root: Path, changed_files: list[str]) -> tup
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
-    package_manager = detect_package_manager(root)
+    runtime = load_runtime_config(root)
+    runtime_config = runtime.get("config")
+    configured_package_manager = (
+        runtime_config.get("packageManager") if isinstance(runtime_config, dict) else None
+    )
+    package_manager = (
+        configured_package_manager
+        if isinstance(configured_package_manager, str)
+        else detect_package_manager(root)
+    )
+    configured_verification = (
+        runtime_config.get("verification") if isinstance(runtime_config, dict) else None
+    )
+    test_hints = (
+        [item for item in configured_verification if isinstance(item, str)]
+        if isinstance(configured_verification, list)
+        else detect_test_hints(root, package_manager)
+    )
     spec_root = root / ".superwork" / "spec"
     changed_files = git_changed_files(root)
     packages: list[dict[str, object]] = []
@@ -253,7 +250,7 @@ def main() -> int:
     if guides_index.exists():
         recommended_reads.append(str(guides_index.relative_to(root)))
 
-    # 从 `.superwork/spec` 反推布局，兼容旧结构和新的分层结构。
+    # 从 `.superwork/spec` 反推布局，并按当前变更收敛推荐阅读。
     if spec_root.exists():
         layout = load_layout(spec_root)
         if layout["mode"] == "layer-root":
@@ -280,10 +277,10 @@ def main() -> int:
     payload = {
         "project": {
             "packageManager": package_manager,
-            "testHints": detect_test_hints(root, package_manager),
+            "testHints": test_hints,
             "packages": packages,
         },
-        "workflow": load_workflow_contract(root),
+        "runtime": runtime,
         "spec": {
             "layout": load_layout(spec_root) if spec_root.exists() else None,
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,
@@ -298,6 +295,7 @@ def main() -> int:
         return 0
 
     print("Superwork context")
+    print(f"- runtime: {runtime['status']}")
     print(f"- packageManager: {package_manager}")
     print("- packages:")
     for package in packages:

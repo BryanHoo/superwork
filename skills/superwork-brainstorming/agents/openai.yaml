@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Brainstorming"
+  short_description: "Design heavy changes before planning"
+  default_prompt: "Use $superwork-brainstorming to design this change before planning."
+policy:
+  allow_implicit_invocation: false

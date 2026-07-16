@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Init"
+  short_description: "Initialize project-local Superwork runtime"
+  default_prompt: "Use $superwork-init to initialize this repository for Superwork."
+policy:
+  allow_implicit_invocation: false

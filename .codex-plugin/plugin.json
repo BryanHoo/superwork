@@ -1,0 +1,37 @@
+{
+  "name": "superwork",
+  "version": "0.1.0",
+  "description": "Continuous design, planning, TDD, debugging, and verification workflows for coding agents.",
+  "author": {
+    "name": "bryanhu",
+    "email": "hushao599@gmail.com",
+    "url": "https://github.com/BryanHoo"
+  },
+  "homepage": "https://github.com/BryanHoo/superwork",
+  "repository": "https://github.com/BryanHoo/superwork",
+  "keywords": [
+    "workflow",
+    "planning",
+    "tdd",
+    "debugging",
+    "verification"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Superwork",
+    "shortDescription": "Structured development workflows that continue by default.",
+    "longDescription": "Route repository work through design, planning, TDD, debugging, and fresh verification, stopping early only when the user explicitly asks.",
+    "developerName": "bryanhu",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Start a repository task with the appropriate Superwork workflow.",
+      "Design and plan this change without implementing it yet.",
+      "Diagnose and fix this bug with regression evidence."
+    ]
+  }
+}

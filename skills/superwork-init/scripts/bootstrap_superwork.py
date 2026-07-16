@@ -56,7 +56,7 @@ def detect_package_manager(root: Path) -> str:
         return "npm"
     if (root / "yarn.lock").exists():
         return "yarn"
-    return "pnpm"
+    return "npm"
 
 
 def detect_test_hints(root: Path, package_manager: str) -> list[str]:
@@ -157,16 +157,20 @@ def build_spec_metadata(layout_type: str, mode: str) -> str:
     ) + "\n"
 
 
-def workflow_template(package_manager: str, packages: list[dict[str, list[str] | str]]) -> str:
-    package_map = "\n".join(
-        f"- `{item['name']}`: {', '.join(item['layers'])}" for item in packages
+def config_template(
+    package_manager: str,
+    packages: list[dict[str, list[str] | str]],
+    verification: list[str],
+) -> str:
+    content = render_template(
+        "config.json.tmpl",
+        package_manager=json.dumps(package_manager, ensure_ascii=False),
+        packages=json.dumps(packages, ensure_ascii=False, indent=2),
+        verification=json.dumps(verification, ensure_ascii=False, indent=2),
     )
-    # workflow 仅输出项目运行时文档，不暴露或要求项目内存在技能脚本路径。
-    return render_template(
-        "workflow.md.tmpl",
-        package_manager=package_manager,
-        package_map=package_map,
-    )
+    # 写入前用标准库重新解析，避免模板替换生成无效 JSON。
+    payload = json.loads(content)
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
 
 
 def guides_index_template(test_hints: list[str]) -> str:
@@ -534,7 +538,7 @@ def build_runtime_files(root: Path) -> tuple[dict[str, str], str]:
     packages = detect_packages(root)
 
     runtime: dict[str, str] = {
-        ".superwork/workflow.md": workflow_template(package_manager, packages),
+        ".superwork/config.json": config_template(package_manager, packages, test_hints),
     }
     layered_runtime, mode = build_layered_runtime(packages, test_hints)
     runtime.update(layered_runtime)

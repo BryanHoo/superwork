@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "implicitEntry": "superwork-start",
+  "skills": [
+    "superwork-init",
+    "superwork-start",
+    "superwork-brainstorming",
+    "superwork-writing-plans",
+    "superwork-executing-plans",
+    "superwork-tdd",
+    "superwork-debugging",
+    "superwork-check"
+  ],
+  "continuationPolicy": {
+    "default": "complete",
+    "stopCondition": "explicit-user-instruction"
+  },
+  "routes": {
+    "analysis": "direct-response",
+    "bug": "superwork-debugging",
+    "light": "superwork-tdd",
+    "medium": "superwork-writing-plans",
+    "heavy": "superwork-brainstorming",
+    "verification": "superwork-check"
+  },
+  "phaseTransitions": [
+    {
+      "from": "superwork-start",
+      "to": "superwork-debugging"
+    },
+    {
+      "from": "superwork-start",
+      "to": "superwork-writing-plans"
+    },
+    {
+      "from": "superwork-start",
+      "to": "superwork-brainstorming"
+    },
+    {
+      "from": "superwork-start",
+      "to": "superwork-check"
+    },
+    {
+      "from": "superwork-start",
+      "to": "superwork-executing-plans"
+    },
+    {
+      "from": "superwork-brainstorming",
+      "to": "superwork-writing-plans"
+    },
+    {
+      "from": "superwork-writing-plans",
+      "to": "superwork-executing-plans"
+    },
+    {
+      "from": "superwork-executing-plans",
+      "to": "superwork-check"
+    },
+    {
+      "from": "superwork-debugging",
+      "to": "superwork-check"
+    }
+  ],
+  "methodCalls": [
+    {
+      "caller": "superwork-start",
+      "method": "superwork-tdd",
+      "returnsTo": "superwork-start"
+    },
+    {
+      "caller": "superwork-executing-plans",
+      "method": "superwork-tdd",
+      "returnsTo": "superwork-executing-plans"
+    },
+    {
+      "caller": "superwork-debugging",
+      "method": "superwork-tdd",
+      "returnsTo": "superwork-debugging"
+    }
+  ],
+  "completionSkill": "superwork-check"
+}

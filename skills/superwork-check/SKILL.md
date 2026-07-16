@@ -1,174 +1,91 @@
 ---
 name: superwork-check
-description: Use when changes in a `.superwork` project are ready for verification, before claiming completion, handing off work, or moving to the next task.
+description: Finalizes completed repository changes exactly once by reviewing simplification, running fresh verification, deciding durable spec updates, validating changed specs, and reporting evidence. It does not route to another completion skill.
 ---
 
 # Superwork Check
 
-## Overview
+## Purpose
 
-Verify that the changes satisfy fresh evidence requirements and the relevant `.superwork` specs before any completion claim.
+Produce trustworthy completion evidence in one internal sequence. Enter after implementation/debugging or when the user explicitly requests final verification of existing changes.
 
-**Core principle:** No completion claims without fresh verification evidence and spec review.
-This stage owns the `superwork-code-simplifier` decision, the exact cleanup rule, and the final `superwork-update-spec` decision.
+## Change Policy
 
-**Violating the letter of this rule is violating the spirit of this rule.**
+Apply necessary in-scope simplification and durable spec updates, then re-verify the resulting artifacts. For an explicit read-only request or an explicit instruction not to modify files, report recommended changes without applying them.
 
-## When to Use
+## Finalization Sequence
 
-Use when:
-- finishing a feature cycle from `superwork-tdd`
-- finishing a written-plan execution from `superwork-executing-plans`
-- finishing a bugfix from `superwork-debugging`
-- preparing to report work as complete
-- preparing to hand off work for review or commit
-
-Do not use when:
-- the implementation or debugging loop is still actively incomplete
-- the project has not been initialized with `.superwork/`
-
-## The Iron Law
-
-```text
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE AND SPEC REVIEW
-```
-
-If you did not run the relevant checks now, you cannot say the work is complete now.
-
-## Quick Reference
-
-| Claim | Required Evidence |
-|---|---|
-| "Skipped `superwork-code-simplifier`" | explicit reason the diff is truly small and does not need behavior-preserving cleanup |
-| "Tests pass" | fresh test command output |
-| "Bug is fixed" | regression test passes and original symptom is gone |
-| "Code follows project rules" | relevant spec indexes and docs reviewed against the diff |
-| "Ready to hand off" | verification commands completed and risks reported |
-| "Done" | all above, plus `superwork-update-spec` decision completed |
-
-## Implementation
-
-### Step 1: Decide `superwork-code-simplifier` Before Verification
-
-Before running the check itself:
-
-- treat upstream stages as direct handoffs into this skill, not as places to pre-decide cleanup policy
-- inspect the current diff and recently touched code
-- treat any medium or large diff as mandatory `superwork-code-simplifier` work
-- invoke `superwork-code-simplifier` if behavior-preserving cleanup is still needed
-- only skip it for a truly small diff, and state why the current diff does not need `superwork-code-simplifier`
-
-Do not enter verification with this decision left implicit.
-
-### Step 2: Gather Structured Spec Context
+### Step 1: Gather context
 
 Run:
-
-`<skill_dir>` means the directory containing this `SKILL.md` (skill root).
 
 ```bash
 python3 <skill_dir>/scripts/check_specs.py --root . --format json
 ```
 
-Use it to identify:
+Use its changed files, relevant specs, verification hints, runtime status, and risks. Read applicable spec indexes and concrete linked docs before judging the diff.
 
-- changed files
-- relevant spec indexes or docs
-- verification hints
-- risk hints
+### Step 2: Inspect the diff
 
-If the script cannot provide JSON, use the human-readable output and note that the bootstrap needs repair later.
+Review all current-task changes against the selected design or saved plan, project instructions, interfaces, and relevant specs. Separate unrelated user changes and preserve them.
 
-If the bootstrap tooling itself is missing or misplaced, switch to `superwork-init` and repair `.superwork/` there.
+Identify missing behavior, tests, edge cases, contract drift, and scope expansion before reporting success.
 
-### Step 3: Read the Relevant Specs
+### Step 3: Review simplification
 
-Read:
+Read [references/simplification-review.md](references/simplification-review.md). Record exactly one outcome:
 
-- `.superwork/spec/guides/index.md`
-- each relevant package/layer index from `<skill_dir>/scripts/check_specs.py`
-- each concrete spec doc referenced by those indexes that applies to the changed area
+- `no-change`
+- `changed`, followed by targeted re-verification
+- `blocked`, returned to implementation or debugging with evidence
 
-Do not treat the index alone as enough if it points to deeper docs.
+Diff size controls review depth, not whether code must change. This review never re-enters `superwork-check`.
 
-### Step 4: Run Fresh Verification
+During an explicitly read-only check, do not apply cleanup; report the concrete finding instead.
 
-Run the commands that actually prove the claims you want to make.
+### Step 4: Run fresh verification
 
-Typical categories:
+Run the commands that prove the claims being made now:
 
-- targeted tests
-- broader regression tests when needed
-- lint
-- typecheck
-- build or packaging checks when relevant
+- targeted behavior or regression tests
+- broader tests when the change crosses boundaries
+- lint, typecheck, build, schema, packaging, or render checks when applicable
 
-Use project-local commands and package manager hints from `<skill_dir>/scripts/get_context.py`.
+Use project commands from `.superwork/config.json` and relevant spec checklists. Earlier output is not fresh completion evidence.
 
-### Step 5: Review Against the Specs
+### Step 5: Decide spec
 
-Compare the actual diff and behavior against:
+Read [references/spec-update.md](references/spec-update.md), then run:
 
-- required rules
-- contracts
-- examples
-- verification checklist items
+```bash
+python3 <skill_dir>/scripts/update_spec.py --root . --format json
+```
 
-Look specifically for:
+Use the script as a target suggestion, not the final judgment. Choose `update`, `create`, or `no-update` and state the reason. Do not record transient implementation details as durable rules.
 
-- spec violations
-- missing tests
-- uncovered edge cases
-- cross-layer contract drift
+During an explicitly read-only check, do not edit specs. Report an `update` or `create` recommendation as unapplied, or choose `no-update` when no durable knowledge changed.
 
-### Step 6: Report Findings First
+### Step 6: Validate spec artifacts
 
-If you find issues, report them before summaries.
+After `update` or `create`, confirm the document is reachable from the relevant index, contains concrete rules or verification guidance, and passes available documentation or structure checks.
 
-Include:
+If spec files change after code verification, run the checks needed to validate those final artifacts before completion.
 
-- what failed
-- what was verified successfully
-- what remains risky
+### Step 7: Report
 
-Do not hide uncertainty behind positive phrasing.
+Report findings before summary:
 
-### Step 7: Complete `superwork-update-spec` Decision
+- failures or unresolved risks
+- simplification outcome
+- fresh commands and observed results
+- spec outcome and changed spec paths
+- remaining unverified surfaces
 
-Do not stop after verification.
+Do not claim completion when a required check failed, was skipped without reason, or remains stale.
 
-After the check is complete, run `superwork-update-spec` once to force an explicit decision:
-- `update`
-- `create`
-- `no-update`
+## Boundaries
 
-Do not default to doc updates. Use `no-update` when no durable rule/contract/edge-case/test requirement was introduced.
-
-## Common Rationalizations
-
-| Excuse | Reality |
-|---|---|
-| "The targeted test passed, so we're done" | One check does not prove spec compliance or broader readiness |
-| "I ran those commands earlier" | Earlier evidence is stale evidence |
-| "The diff is small, review is unnecessary" | Small diffs still violate contracts |
-| "The cleanup is probably unnecessary" | Then state why before verification instead of skipping silently |
-| "This medium diff is close enough to small" | Size classification is for risk control, not convenience |
-| "The user can decide whether to update specs later" | This workflow requires the decision now |
-| "I know the code is fine" | Confidence is not verification |
-
-## Red Flags
-
-- saying "done" before running fresh commands
-- skipping the `superwork-code-simplifier` decision inside `superwork-check`
-- relabeling a medium or large diff as "small" to avoid the simplifier pass
-- reading no spec files during a `.superwork` workflow
-- trusting only memory of earlier verification
-- reporting success before listing failures or risks
-- stopping before `superwork-update-spec` decision
-
-Any of these means the check is incomplete.
-
-## Integration
-
-- `superwork-tdd`, `superwork-executing-plans`, and `superwork-debugging` all hand off here
-- `superwork-update-spec` decision is REQUIRED at the end of this stage
+- Enter finalization once per completed task or plan.
+- Do not call another completion skill and do not re-enter this skill.
+- Do not force cleanup when the correct simplification outcome is `no-change`.
+- Do not force a spec edit when the correct decision is `no-update`.
