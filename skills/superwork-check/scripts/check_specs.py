@@ -21,17 +21,30 @@ def parse_args() -> argparse.Namespace:
 
 def git_changed_files(root: Path) -> list[str]:
     try:
-        completed = subprocess.run(
+        commands = [
             ["git", "-C", str(root), "diff", "--name-only", "HEAD"],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+            ["git", "-C", str(root), "ls-files", "--others", "--exclude-standard"],
+        ]
+        files: list[str] = []
+        seen: set[str] = set()
+        for command in commands:
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            if completed.returncode != 0:
+                return []
+            # 同时纳入已跟踪改动和未跟踪文件，避免新增文件漏掉规范匹配。
+            for line in completed.stdout.splitlines():
+                file_path = line.strip()
+                if file_path and file_path not in seen:
+                    files.append(file_path)
+                    seen.add(file_path)
     except FileNotFoundError:
         return []
-    if completed.returncode != 0:
-        return []
-    return [line for line in completed.stdout.splitlines() if line.strip()]
+    return files
 
 
 def detect_layer(file_path: str) -> str:

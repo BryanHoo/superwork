@@ -339,6 +339,35 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertIn(".superwork/spec/frontend/index.md", relevant_paths)
             self.assertIn(".superwork/spec/frontend/component-guidelines.md", relevant_paths)
 
+    def test_check_specs_matches_layered_docs_for_untracked_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.init_git_repo(root)
+
+            # 回归约束：新增未跟踪文件也必须参与规范匹配。
+            self.write_file(
+                root / "src" / "components" / "Input.tsx",
+                "export const Input = () => null;\n",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(CHECK_SPECS_SCRIPT),
+                "--root",
+                str(root),
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertIn("src/components/Input.tsx", payload["changedFiles"])
+            relevant_paths = {item["path"] for item in payload["relevantSpecs"]}
+            self.assertIn(".superwork/spec/frontend/index.md", relevant_paths)
+            self.assertIn(".superwork/spec/frontend/component-guidelines.md", relevant_paths)
+
     def test_update_spec_targets_layered_guideline_file(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
