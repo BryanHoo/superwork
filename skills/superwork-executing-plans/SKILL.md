@@ -1,6 +1,6 @@
 ---
 name: superwork-executing-plans
-description: Executes a preflighted saved plan. It tracks task order and plan drift, invokes `superwork-tdd` for code behavior slices, and hands completed work to one final check.
+description: Use this skill to execute or resume a preflighted Superwork plan from its first unchecked task. Preserve serial task state, stop on plan drift, use TDD for each code behavior slice, and hand the completed plan to final verification once.
 ---
 
 # Superwork Executing Plans
@@ -19,20 +19,20 @@ Coordinate a saved implementation plan without redefining design, TDD, debugging
    ```
 
 3. Continue when `ok` is `true`.
-4. Create task tracking from the saved task order and resume completed checkboxes instead of restarting work.
+4. Create task tracking from the returned task list and resume from the first unchecked task in document order.
 
 ## Execute Tasks
 
-For each dependency-ready task:
+For each unchecked task in document order:
 
 1. Mark it in progress.
 2. Re-read that task's files, interfaces, expected signal, and stop conditions.
-3. For a code behavior slice, invoke `superwork-tdd` and wait for its RED/GREEN/REFACTOR evidence.
+3. For a code behavior slice, read `../superwork-tdd/SKILL.md` in full, pass the structured handoff, and wait for its RED/GREEN/REFACTOR evidence.
 4. For a non-code slice, execute its smallest falsifiable proof before and after the edit.
 5. Run the task-level verification from the plan.
-6. Mark the task complete only after the expected signal is observed.
+6. Change its `Task Status` checkbox to completed only after the expected signal is observed.
 
-After all tasks pass, route once to `superwork-check`.
+After all tasks pass, read `../superwork-check/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, including plan completion and verification evidence.
 
 ## Plan Drift
 

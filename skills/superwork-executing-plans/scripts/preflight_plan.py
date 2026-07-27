@@ -19,7 +19,15 @@ PLACEHOLDER_PATTERNS = (
     "handle edge cases",
     "Similar to Task",
 )
-TASK_BLOCK_RE = re.compile(r"^### Task .+?(?=^### Task |\Z)", re.MULTILINE | re.DOTALL)
+TASK_HEADING_FORMAT = "### Task <number>: <title>"
+TASK_BLOCK_RE = re.compile(
+    r"^### (?P<id>Task \d+): (?P<title>.+?)\s*$\n(?P<body>.*?)(?=^### Task \d+: |\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+TASK_STATUS_RE = re.compile(
+    r"^- \[(?P<checked>[ xX])\] \*\*Task Status:\*\* (?P<status>pending|completed)\s*$",
+    re.MULTILINE,
+)
 SECTION_RE_TEMPLATE = r"^## {title}\s*$\n(?P<body>.*?)(?=^## |\Z)"
 SPEC_PATH_RE = re.compile(r"`(\.superwork/spec/[^`]+)`")
 
@@ -100,13 +108,13 @@ def main() -> int:
 
     if not plan_path.exists():
         issues.append({"severity": "error", "message": f"plan file not found: {plan_path}"})
-        return emit(args.format, plan_path, issues, warnings)
+        return emit(args.format, plan_path, issues, warnings, [])
 
     plan_text = plan_path.read_text(encoding="utf-8")
 
     suggested_reads = extract_bullets(extract_labeled_block(plan_text, "Suggested Spec Reads"))
     constraint_lines = extract_bullets(extract_section(plan_text, "Global Constraints"))
-    task_blocks = TASK_BLOCK_RE.findall(plan_text)
+    task_matches = list(TASK_BLOCK_RE.finditer(plan_text))
 
     if not suggested_reads:
         issues.append({"severity": "error", "message": "missing `Suggested Spec Reads` section or bullet entries"})
@@ -121,14 +129,38 @@ def main() -> int:
         if placeholder in plan_text:
             issues.append({"severity": "error", "message": f"placeholder text found: {placeholder}"})
 
-    if not task_blocks:
-        issues.append({"severity": "error", "message": "plan contains no `### Task` blocks"})
+    if not task_matches:
+        issues.append(
+            {
+                "severity": "error",
+                "message": f"plan contains no task blocks; expected `{TASK_HEADING_FORMAT}`",
+            }
+        )
 
     produced_map: dict[str, set[str]] = {}
+    tasks: list[dict[str, str]] = []
 
-    for index, task_text in enumerate(task_blocks, start=1):
+    for index, task_match in enumerate(task_matches, start=1):
+        task_text = task_match.group(0)
+        task_id = task_match.group("id")
+        task_title = task_match.group("title").strip()
         files_section = extract_task_section(task_text, "Files")
         interfaces_section = extract_task_section(task_text, "Interfaces")
+
+        # 状态同时用于结构校验和中断后的唯一恢复位置。
+        status_matches = list(TASK_STATUS_RE.finditer(task_text))
+        if not status_matches:
+            issues.append({"severity": "error", "message": f"Task {index} is missing `Task Status` checkbox"})
+        elif len(status_matches) > 1:
+            issues.append({"severity": "error", "message": f"Task {index} has multiple `Task Status` checkboxes"})
+        else:
+            status_match = status_matches[0]
+            status = status_match.group("status")
+            checked = status_match.group("checked").lower() == "x"
+            if checked != (status == "completed"):
+                issues.append({"severity": "error", "message": f"Task {index} has inconsistent `Task Status` checkbox"})
+            else:
+                tasks.append({"id": task_id, "title": task_title, "status": status})
 
         if not files_section:
             issues.append({"severity": "error", "message": f"Task {index} is missing `**Files:**`"})
@@ -184,7 +216,7 @@ def main() -> int:
                 }
             )
 
-    return emit(args.format, plan_path, issues, warnings)
+    return emit(args.format, plan_path, issues, warnings, tasks)
 
 
 def emit(
@@ -192,12 +224,14 @@ def emit(
     plan_path: Path,
     issues: list[dict[str, str]],
     warnings: list[dict[str, str]],
+    tasks: list[dict[str, str]],
 ) -> int:
     payload = {
         "plan": str(plan_path),
         "ok": not issues,
         "issues": issues,
         "warnings": warnings,
+        "tasks": tasks,
     }
     if output_format == "json":
         print(json.dumps(payload, ensure_ascii=False, indent=2))

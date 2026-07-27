@@ -106,6 +106,71 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertFalse((root / ".superwork" / "workflow.md").exists())
             self.assertIn(".superwork/config.json", payload["created"])
 
+    def test_bootstrap_python_repo_uses_python_verification(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.write_file(root / "pyproject.toml", "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n")
+            self.write_file(
+                root / "tests" / "test_demo.py",
+                "import unittest\n\nclass DemoTest(unittest.TestCase):\n    pass\n",
+            )
+
+            self.bootstrap_spec(root)
+
+            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["packageManager"], "none")
+            self.assertEqual(
+                config["verification"],
+                ["python3 -m unittest discover -s tests -p 'test_*.py' -v"],
+            )
+
+    def test_bootstrap_empty_repo_does_not_invent_node_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+
+            self.bootstrap_spec(root)
+
+            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["packageManager"], "none")
+            self.assertEqual(config["verification"], [])
+
+    def test_bootstrap_prefers_declared_node_package_manager(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.write_file(
+                root / "package.json",
+                json.dumps(
+                    {
+                        "name": "declared-manager",
+                        "packageManager": "yarn@4.2.0",
+                        "scripts": {"test": "vitest", "lint": "eslint ."},
+                    }
+                ),
+            )
+            self.write_file(root / "package-lock.json", "{}\n")
+
+            self.bootstrap_spec(root)
+
+            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["packageManager"], "yarn")
+            self.assertEqual(config["verification"], ["yarn test", "yarn run lint"])
+
+    def test_bootstrap_uses_uv_for_pyproject_pytest(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.write_file(
+                root / "pyproject.toml",
+                "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n\n[tool.pytest.ini_options]\naddopts = \"-q\"\n",
+            )
+            self.write_file(root / "uv.lock", "version = 1\n")
+            self.write_file(root / "tests" / "test_demo.py", "def test_demo():\n    assert True\n")
+
+            self.bootstrap_spec(root)
+
+            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["packageManager"], "uv")
+            self.assertEqual(config["verification"], ["uv run python3 -m pytest"])
+
     def test_generated_guides_do_not_copy_generic_workflow(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -187,6 +252,37 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertIn(".superwork/spec/guides/index.md", recommended_reads)
             self.assertIn(".superwork/spec/frontend/index.md", recommended_reads)
             self.assertNotIn(".superwork/spec/backend/index.md", recommended_reads)
+
+    def test_get_context_includes_untracked_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.init_git_repo(root)
+            self.write_file(root / "server" / "new_handler.ts", "export const handler = true;\n")
+
+            result = self.run_command(
+                "python3", str(GET_CONTEXT_SCRIPT), "--root", str(root), "--format", "json"
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertIn("server/new_handler.ts", payload["spec"]["changedFiles"])
+            self.assertEqual(payload["changeDetection"]["status"], "ready")
+
+    def test_get_context_reports_git_detection_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+
+            result = self.run_command(
+                "python3", str(GET_CONTEXT_SCRIPT), "--root", str(root), "--format", "json"
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["changeDetection"]["status"], "unavailable")
+            self.assertTrue(payload["changeDetection"]["error"])
 
     def test_check_specs_matches_untracked_frontend_file(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -305,7 +401,7 @@ class LayeredSpecLayoutTest(unittest.TestCase):
 
 - Stop if the interface is unclear.
 
-- [ ] **Step 1: Verify the behavior**
+- [ ] **Task Status:** pending
 
 Run: `npm test`
 Expected: PASS
@@ -326,6 +422,10 @@ Expected: PASS
             self.assertEqual(result.returncode, 0, result.stdout)
             payload = json.loads(result.stdout)
             self.assertTrue(payload["ok"])
+            self.assertEqual(
+                payload["tasks"],
+                [{"id": "Task 1", "title": "Update button", "status": "pending"}],
+            )
             self.assertNotIn("authorizedUntil", payload)
             self.assertNotIn("executionAllowed", payload)
 
@@ -375,6 +475,58 @@ Expected: PASS
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing `**Stop Conditions:**`", result.stdout)
+
+    def test_preflight_plan_rejects_missing_task_status(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            self.write_file(
+                root / ".superwork" / "plans" / "missing-status.md",
+                """# Missing Status Plan
+
+**Goal:** Reject a plan that cannot be resumed
+
+**Suggested Spec Reads:**
+- `.superwork/spec/guides/index.md` - shared rules
+
+## Global Constraints
+
+- Keep behavior stable.
+
+### Task 1: Update button
+
+**Files:**
+
+- Modify: `src/components/Button.tsx`
+
+**Interfaces:**
+
+- Consumes: `ButtonProps`
+- Produces: `ButtonResult`
+
+**Stop Conditions:**
+
+- Stop if the interface is unclear.
+
+Run: `npm test`
+Expected: PASS
+""",
+            )
+
+            result = self.run_command(
+                "python3",
+                str(PREFLIGHT_PLAN_SCRIPT),
+                "--root",
+                str(root),
+                "--plan",
+                ".superwork/plans/missing-status.md",
+                "--format",
+                "json",
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing `Task Status` checkbox", result.stdout)
 
 
 if __name__ == "__main__":

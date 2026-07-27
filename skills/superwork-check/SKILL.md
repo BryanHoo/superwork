@@ -1,6 +1,6 @@
 ---
 name: superwork-check
-description: Finalizes completed repository changes exactly once by reviewing simplification, running fresh verification, deciding durable spec updates, validating changed specs, and reporting evidence. It does not route to another completion skill.
+description: Use this skill to finalize completed repository changes or answer an explicit readiness request. Apply necessary in-scope simplification and durable spec updates by default, run fresh verification, validate final artifacts, and report completion evidence exactly once unless the user explicitly requires read-only checking.
 ---
 
 # Superwork Check

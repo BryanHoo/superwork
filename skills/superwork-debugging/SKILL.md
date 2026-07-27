@@ -1,6 +1,6 @@
 ---
 name: superwork-debugging
-description: Reproduces a bug, gathers boundary evidence, and confirms one root-cause hypothesis before repair. After confirmation it invokes `superwork-tdd`; it does not own implementation sequencing or final verification.
+description: Use this skill to diagnose a bug, regression, failing test, or unexpected behavior before repair. Reproduce the symptom, confirm one root cause with boundary evidence, then hand the smallest regression behavior to TDD and final verification.
 ---
 
 # Superwork Debugging
@@ -25,9 +25,9 @@ Do not propose or apply a repair before the root cause is confirmed.
 After confirmation:
 
 - define the smallest regression behavior that must remain fixed
-- invoke `superwork-tdd` to create the failing regression proof and implement the repair
+- read `../superwork-tdd/SKILL.md` in full and pass the structured handoff defined by `superwork-start` to create the failing regression proof and implement the repair
 - do not stack unrelated fixes or opportunistic refactors
-- after TDD returns green, confirm the original symptom is gone and route once to `superwork-check`
+- after TDD returns green, confirm the original symptom is gone, then read `../superwork-check/SKILL.md` in full and pass the finalization handoff once
 
 This skill does not write the regression test itself; TDD owns RED, GREEN, and REFACTOR. Debugging owns the evidence and hypothesis that make that RED trustworthy.
 

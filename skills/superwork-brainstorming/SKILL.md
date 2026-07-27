@@ -1,6 +1,6 @@
 ---
 name: superwork-brainstorming
-description: Produces a bounded design for heavy or explicitly design-oriented work after `superwork-start` routes here. It hands the design to planning by default and never implements code itself.
+description: Use this skill to resolve architecture, requirements, scope, or cross-system trade-offs for a heavy Superwork change. Produce one bounded design, continue to planning by default, and stop after design only when the user explicitly limits the outcome.
 ---
 
 # Superwork Brainstorming
@@ -46,7 +46,7 @@ Do not auto-commit the design document.
 
 ## Continuation Policy
 
-Continue by default by invoking `superwork-writing-plans` after the design is self-reviewed. If the user explicitly asks to stop after design or says not to plan or implement, save and report the design without invoking the next skill.
+Continue by default after the design is self-reviewed: read `../superwork-writing-plans/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, with the design path and self-review evidence. If the user explicitly asks to stop after design or says not to plan or implement, save and report the design without loading the next skill.
 
 ## Boundaries
 

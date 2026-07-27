@@ -11,7 +11,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+if str(SKILLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SKILLS_ROOT))
+
+from _shared.repository import detect_package_manager, detect_verification_commands  # noqa: E402
 
 
 IGNORED_DIRS = {
@@ -26,6 +33,9 @@ IGNORED_DIRS = {
     "tmp",
     ".next",
     ".turbo",
+    ".venv",
+    "target",
+    "venv",
 }
 
 KNOWN_LAYERS = ("frontend", "backend", "shared")
@@ -47,32 +57,6 @@ def parse_args() -> argparse.Namespace:
         help="Preview generated files without writing them.",
     )
     return parser.parse_args()
-
-
-def detect_package_manager(root: Path) -> str:
-    if (root / "pnpm-lock.yaml").exists() or (root / "pnpm-workspace.yaml").exists():
-        return "pnpm"
-    if (root / "package-lock.json").exists():
-        return "npm"
-    if (root / "yarn.lock").exists():
-        return "yarn"
-    return "npm"
-
-
-def detect_test_hints(root: Path, package_manager: str) -> list[str]:
-    package_json = root / "package.json"
-    hints: list[str] = []
-    if package_json.exists():
-        try:
-            scripts = json.loads(package_json.read_text(encoding="utf-8")).get("scripts", {})
-        except json.JSONDecodeError:
-            scripts = {}
-        for name in ("test", "test:run", "lint", "typecheck", "build"):
-            if name in scripts:
-                hints.append(f"{package_manager} {name}")
-    if not hints:
-        hints.append(f"{package_manager} test")
-    return hints
 
 
 def detect_layers(base_dir: Path) -> list[str]:
@@ -111,6 +95,9 @@ def detect_packages(root: Path) -> list[dict[str, list[str] | str]]:
             or (candidate / "pyproject.toml").exists()
             or (candidate / "pom.xml").exists()
             or (candidate / "Cargo.toml").exists()
+            or (candidate / "go.mod").exists()
+            or (candidate / "build.gradle").exists()
+            or (candidate / "build.gradle.kts").exists()
         ):
             continue
         packages.append({"name": candidate.name, "layers": detect_layers(candidate)})
@@ -534,7 +521,7 @@ def build_layered_runtime(
 
 def build_runtime_files(root: Path) -> tuple[dict[str, str], str]:
     package_manager = detect_package_manager(root)
-    test_hints = detect_test_hints(root, package_manager)
+    test_hints = detect_verification_commands(root, package_manager)
     packages = detect_packages(root)
 
     runtime: dict[str, str] = {

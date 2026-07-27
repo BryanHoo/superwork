@@ -26,10 +26,10 @@ class WorkflowScenarioTest(unittest.TestCase):
 
     def test_has_balanced_scenario_inventory(self) -> None:
         self.assertGreaterEqual(len(self.scenarios), 40)
-        positive = [item for item in self.scenarios if item.get("caseType") == "positive"]
-        negative = [item for item in self.scenarios if item.get("caseType") == "negative"]
-        self.assertGreaterEqual(len(positive), 20)
-        self.assertGreaterEqual(len(negative), 20)
+        happy_paths = [item for item in self.scenarios if item.get("caseType") == "happy-path"]
+        guardrails = [item for item in self.scenarios if item.get("caseType") == "guardrail"]
+        self.assertGreaterEqual(len(happy_paths), 20)
+        self.assertGreaterEqual(len(guardrails), 20)
 
     def test_ids_and_fields_are_valid(self) -> None:
         ids = [item.get("id") for item in self.scenarios]
@@ -37,13 +37,13 @@ class WorkflowScenarioTest(unittest.TestCase):
 
         for item in self.scenarios:
             self.assertEqual(set(item), REQUIRED_FIELDS, item.get("id"))
-            self.assertIn(item["caseType"], {"positive", "negative"})
+            self.assertIn(item["caseType"], {"happy-path", "guardrail"})
             self.assertEqual(item["expectedEntry"], "superwork-start")
             self.assertIsInstance(item["expectedPath"], list)
             self.assertIsInstance(item["requiredMethods"], list)
             self.assertIsInstance(item["forbiddenActions"], list)
 
-    def test_each_route_has_positive_and_negative_neighbors(self) -> None:
+    def test_each_route_has_happy_path_and_guardrail_neighbors(self) -> None:
         coverage: dict[str, set[str]] = defaultdict(set)
         for item in self.scenarios:
             coverage[item["expectedRoute"]].add(item["caseType"])
@@ -59,7 +59,7 @@ class WorkflowScenarioTest(unittest.TestCase):
         }
         self.assertEqual(set(coverage), expected_routes)
         for route in expected_routes:
-            self.assertEqual(coverage[route], {"positive", "negative"}, route)
+            self.assertEqual(coverage[route], {"happy-path", "guardrail"}, route)
 
     def test_continuous_paths_finalize_once(self) -> None:
         for item in self.scenarios:

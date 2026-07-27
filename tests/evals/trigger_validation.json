@@ -1,0 +1,46 @@
+[
+  {
+    "id": "validation-final-readiness",
+    "query": "实现都完成了，重新跑必要检查并确认这个分支能不能交付",
+    "should_trigger": true,
+    "expected_route": "superwork-check"
+  },
+  {
+    "id": "validation-light-casual",
+    "query": "这个小函数顺手加下长度校验和单测，就改这一处",
+    "should_trigger": true,
+    "expected_route": "superwork-tdd"
+  },
+  {
+    "id": "validation-medium-english",
+    "query": "Implement the already-specified audit export across the handler, service, and tests.",
+    "should_trigger": true,
+    "expected_route": "superwork-writing-plans"
+  },
+  {
+    "id": "validation-bug-casual",
+    "query": "支付回调偶尔重复入账，先复现找根因再修掉",
+    "should_trigger": true,
+    "expected_route": "superwork-debugging"
+  },
+  {
+    "id": "validation-conventional-commits",
+    "query": "Conventional Commits 的 scope 应该怎么选？",
+    "should_trigger": false
+  },
+  {
+    "id": "validation-current-time",
+    "query": "现在北京时间几点？",
+    "should_trigger": false
+  },
+  {
+    "id": "validation-polish-copy",
+    "query": "把这句产品文案润色得自然一点：我们提供强大的能力",
+    "should_trigger": false
+  },
+  {
+    "id": "validation-poem",
+    "query": "写一首四行的夏夜短诗",
+    "should_trigger": false
+  }
+]

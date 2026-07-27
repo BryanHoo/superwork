@@ -1,6 +1,6 @@
 ---
 name: superwork-tdd
-description: Implements one bounded behavior slice with RED, GREEN, and behavior-preserving REFACTOR. It is called by light-task routing, saved-plan execution, or confirmed bug repair; it does not investigate root cause, choose planning depth, or finalize the whole task.
+description: Use this skill to implement one bounded behavior slice with RED, GREEN, and behavior-preserving REFACTOR. Apply it to a direct small change, a saved-plan task, or a confirmed bug repair; return evidence to the caller and leave root-cause analysis, planning depth, and finalization to their owners.
 ---
 
 # Superwork TDD
@@ -17,7 +17,7 @@ The caller provides:
 - relevant files, contracts, and project rules
 - a falsifiable expected outcome
 - the verification command or the smallest reliable way to derive it
-- the caller identity: `superwork-start`, `superwork-executing-plans`, or `superwork-debugging`
+- the caller identity: `user`, `superwork-start`, `superwork-executing-plans`, or `superwork-debugging`
 
 Do not use this skill while root cause is unknown or architecture is unresolved. Return those cases to debugging or design/planning.
 
@@ -31,7 +31,7 @@ State the smallest observable behavior that distinguishes success from failure. 
 
 Write the smallest proof and run it. Confirm it fails for the intended missing or broken behavior, not because of syntax, fixture, environment, or unrelated failures.
 
-Do not keep production implementation written before a valid RED.
+Do not add production implementation for the current slice before a valid RED. Never revert pre-existing user changes; isolate the proof around them.
 
 ### 3. Reach minimal GREEN
 
@@ -53,7 +53,7 @@ Return:
 - any refactor performed
 - remaining risks or broader checks still owned by the caller
 
-`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`.
+`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`. A direct `user` call reads `../superwork-check/SKILL.md` in full after GREEN unless the user explicitly limits the outcome.
 
 ## Stop Conditions
 

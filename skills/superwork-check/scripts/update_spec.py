@@ -5,8 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import sys
 from pathlib import Path
+
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+if str(SKILLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SKILLS_ROOT))
+
+from _shared.repository import collect_git_changes  # noqa: E402
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
@@ -112,34 +118,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--format", choices=("text", "json"), default="text")
     return parser.parse_args()
-
-
-def git_changed_files(root: Path) -> list[str]:
-    try:
-        commands = [
-            ["git", "-C", str(root), "diff", "--name-only", "HEAD"],
-            ["git", "-C", str(root), "ls-files", "--others", "--exclude-standard"],
-        ]
-        files: list[str] = []
-        seen: set[str] = set()
-        for command in commands:
-            completed = subprocess.run(
-                command,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            if completed.returncode != 0:
-                return []
-            # spec 决策必须同时覆盖已跟踪改动和新增未跟踪文件。
-            for line in completed.stdout.splitlines():
-                file_path = line.strip()
-                if file_path and file_path not in seen:
-                    files.append(file_path)
-                    seen.add(file_path)
-    except FileNotFoundError:
-        return []
-    return files
 
 
 def detect_layer(parts: tuple[str, ...]) -> str:
@@ -298,11 +276,13 @@ def classify_change_for_spec(file_path: str) -> tuple[bool, str]:
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
-    changed_files = git_changed_files(root)
+    change_detection = collect_git_changes(root)
+    changed_files = change_detection.files
     spec_root = root / ".superwork" / "spec"
     if not spec_root.exists():
         payload = {
             "decision": "no-update",
+            "changeDetection": change_detection.to_dict(),
             "targets": [],
             "ignoredChanges": [],
             "summary": ["spec root is missing, run superwork-init before updating spec"],
@@ -345,6 +325,7 @@ def main() -> int:
     has_create_target = any(target["action"] == "create" for target in targets)
     payload = {
         "decision": ("create" if has_create_target else "update") if targets else "no-update",
+        "changeDetection": change_detection.to_dict(),
         "targets": targets,
         "ignoredChanges": ignored_changes,
         "summary": [],

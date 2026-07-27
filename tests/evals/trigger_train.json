@@ -1,0 +1,68 @@
+[
+  {
+    "id": "train-analysis-auth-flow",
+    "query": "分析当前认证流程为什么分成三层，只报告结论，不要修改文件",
+    "should_trigger": true,
+    "expected_route": "direct-response"
+  },
+  {
+    "id": "train-debug-login-regression",
+    "query": "登录回归测试突然失败了，定位根因并修复，错误是 session token 为空",
+    "should_trigger": true,
+    "expected_route": "superwork-debugging"
+  },
+  {
+    "id": "train-light-validation-change",
+    "query": "给 src/validator.py 增加一个拒绝空用户名的分支并补测试",
+    "should_trigger": true,
+    "expected_route": "superwork-tdd"
+  },
+  {
+    "id": "train-medium-api-ui-change",
+    "query": "实现用户停用功能，需要修改 API、服务层和管理页面，需求已经明确",
+    "should_trigger": true,
+    "expected_route": "superwork-writing-plans"
+  },
+  {
+    "id": "train-heavy-permission-redesign",
+    "query": "设计并实现跨包权限模型重构，角色继承和审计边界还没有定",
+    "should_trigger": true,
+    "expected_route": "superwork-brainstorming"
+  },
+  {
+    "id": "train-resume-saved-plan",
+    "query": "继续执行 .superwork/plans/demo.md，从第一个未完成任务开始",
+    "should_trigger": true,
+    "expected_route": "superwork-executing-plans"
+  },
+  {
+    "id": "train-translate-paragraph",
+    "query": "把这句话翻译成英文：今天的会议改到下午三点",
+    "should_trigger": false
+  },
+  {
+    "id": "train-weather-query",
+    "query": "上海明天会下雨吗？",
+    "should_trigger": false
+  },
+  {
+    "id": "train-write-email",
+    "query": "帮我写一封简短的会议改期邮件",
+    "should_trigger": false
+  },
+  {
+    "id": "train-explain-sql-join",
+    "query": "用简单例子解释 SQL LEFT JOIN 和 INNER JOIN 的区别",
+    "should_trigger": false
+  },
+  {
+    "id": "train-create-image",
+    "query": "生成一张雨夜城市街道的电影感图片",
+    "should_trigger": false
+  },
+  {
+    "id": "train-set-reminder",
+    "query": "提醒我明天下午提交报销单",
+    "should_trigger": false
+  }
+]

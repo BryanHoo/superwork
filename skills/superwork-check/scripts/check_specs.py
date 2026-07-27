@@ -5,8 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import sys
 from pathlib import Path
+
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+if str(SKILLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SKILLS_ROOT))
+
+from _shared.repository import collect_git_changes  # noqa: E402
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
@@ -33,34 +39,6 @@ def load_runtime(root: Path) -> tuple[str, list[str]]:
     verification = payload.get("verification")
     hints = [item for item in verification if isinstance(item, str)] if isinstance(verification, list) else []
     return "ready", hints
-
-
-def git_changed_files(root: Path) -> list[str]:
-    try:
-        commands = [
-            ["git", "-C", str(root), "diff", "--name-only", "HEAD"],
-            ["git", "-C", str(root), "ls-files", "--others", "--exclude-standard"],
-        ]
-        files: list[str] = []
-        seen: set[str] = set()
-        for command in commands:
-            completed = subprocess.run(
-                command,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            if completed.returncode != 0:
-                return []
-            # 同时纳入已跟踪改动和未跟踪文件，避免新增文件漏掉规范匹配。
-            for line in completed.stdout.splitlines():
-                file_path = line.strip()
-                if file_path and file_path not in seen:
-                    files.append(file_path)
-                    seen.add(file_path)
-    except FileNotFoundError:
-        return []
-    return files
 
 
 def detect_layer(file_path: str) -> str:
@@ -235,11 +213,13 @@ def collect_relevant_specs(root: Path, changed_files: list[str]) -> list[dict[st
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
-    changed_files = git_changed_files(root)
+    change_detection = collect_git_changes(root)
+    changed_files = change_detection.files
     relevant_specs = collect_relevant_specs(root, changed_files)
     runtime_status, configured_hints = load_runtime(root)
     payload = {
         "runtimeStatus": runtime_status,
+        "changeDetection": change_detection.to_dict(),
         "changedFiles": changed_files,
         "relevantSpecs": relevant_specs,
         "verificationHints": configured_hints
@@ -247,7 +227,11 @@ def main() -> int:
             "run related unit tests",
             "run lint for the changed package when available",
         ],
-        "risks": [] if relevant_specs or not changed_files else ["no relevant spec index matched the changed files"],
+        "risks": (
+            [change_detection.error]
+            if change_detection.error
+            else ([] if relevant_specs or not changed_files else ["no relevant spec index matched the changed files"])
+        ),
     }
     if args.format == "json":
         print(json.dumps(payload, ensure_ascii=False, indent=2))

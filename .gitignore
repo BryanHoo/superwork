@@ -53,6 +53,10 @@ Temporary Items
 .history
 .ionide
 
+### Python ###
+__pycache__/
+*.py[cod]
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode
 
 /tmp

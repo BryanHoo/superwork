@@ -3,6 +3,8 @@ import unittest
 from collections import defaultdict, deque
 from pathlib import Path
 
+from tests.workflow.yaml_subset import load_mapping
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONTRACT_PATH = (
@@ -34,13 +36,35 @@ class WorkflowContractTest(unittest.TestCase):
         for skill in self.contract["skills"]:
             metadata_path = REPO_ROOT / "skills" / skill / "agents" / "openai.yaml"
             self.assertTrue(metadata_path.exists(), f"missing metadata: {metadata_path}")
-            content = metadata_path.read_text(encoding="utf-8")
-            if "allow_implicit_invocation: true" in content:
+            metadata = load_mapping(metadata_path)
+            policy = metadata.get("policy")
+            self.assertIsInstance(policy, dict)
+            if policy.get("allow_implicit_invocation") is True:
                 implicit_skills.append(skill)
             else:
-                self.assertIn("allow_implicit_invocation: false", content, skill)
+                self.assertIs(policy.get("allow_implicit_invocation"), False, skill)
 
         self.assertEqual(implicit_skills, ["superwork-start"])
+
+    def test_skill_metadata_and_descriptions_are_intent_first(self) -> None:
+        for skill in self.contract["skills"]:
+            skill_path = REPO_ROOT / "skills" / skill / "SKILL.md"
+            content = skill_path.read_text(encoding="utf-8")
+            frontmatter = content.split("---", 2)[1]
+            fields = {}
+            for line in frontmatter.splitlines():
+                if ":" in line:
+                    key, value = line.split(":", 1)
+                    fields[key.strip()] = value.strip()
+            self.assertEqual(set(fields), {"name", "description"}, skill)
+            self.assertEqual(fields["name"], skill)
+            self.assertTrue(fields["description"].startswith("Use this skill to"), skill)
+            self.assertLessEqual(len(fields["description"]), 1024, skill)
+
+            metadata = load_mapping(REPO_ROOT / "skills" / skill / "agents" / "openai.yaml")
+            interface = metadata.get("interface")
+            self.assertIsInstance(interface, dict)
+            self.assertIn(f"${skill}", interface["default_prompt"])
 
     def test_plugin_manifest_packages_all_skills(self) -> None:
         manifest_path = REPO_ROOT / ".codex-plugin" / "plugin.json"
@@ -92,27 +116,47 @@ class WorkflowContractTest(unittest.TestCase):
         }
         self.assertNotIn("superwork-tdd", phase_nodes)
 
-    def test_skill_text_assigns_tdd_one_implementation_role(self) -> None:
-        tdd = (REPO_ROOT / "skills" / "superwork-tdd" / "SKILL.md").read_text(
+    def test_handoff_contract_is_structured_and_loads_target_skill(self) -> None:
+        handoff = self.contract["handoffContract"]
+
+        self.assertEqual(
+            handoff["requiredFields"],
+            ["target", "caller", "outcome", "evidence", "stopConditions", "returnTo"],
+        )
+        self.assertEqual(handoff["loadTargetSkill"], "read-full-skill-md")
+        self.assertEqual(handoff["targetPath"], "../{target}/SKILL.md")
+
+    def test_plan_execution_contract_is_single_file_and_serial(self) -> None:
+        plan = self.contract["planContract"]
+
+        self.assertEqual(plan["format"], "single-markdown-file")
+        self.assertEqual(plan["taskHeading"], "### Task <number>: <title>")
+        self.assertEqual(plan["executionOrder"], "first-unchecked-task")
+        self.assertEqual(plan["statusMarker"], "Task Status")
+
+    def test_phase_skills_load_declared_targets(self) -> None:
+        for edge in self.contract["phaseTransitions"]:
+            source = edge["from"]
+            target = edge["to"]
+            if source == "superwork-start":
+                continue
+            content = (REPO_ROOT / "skills" / source / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn(f"`../{target}/SKILL.md` in full", content, f"{source} -> {target}")
+
+        for call in self.contract["methodCalls"]:
+            caller = call["caller"]
+            if caller == "superwork-start":
+                continue
+            content = (REPO_ROOT / "skills" / caller / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("`../superwork-tdd/SKILL.md` in full", content, caller)
+
+    def test_tdd_supports_direct_use_without_reverting_existing_work(self) -> None:
+        content = (REPO_ROOT / "skills" / "superwork-tdd" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        debugging = (
-            REPO_ROOT / "skills" / "superwork-debugging" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-        executing = (
-            REPO_ROOT / "skills" / "superwork-executing-plans" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-        writing = (
-            REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
-        ).read_text(encoding="utf-8")
 
-        self.assertIn("not limited to light tasks", tdd)
-        self.assertIn("Return to the caller", tdd)
-        self.assertNotIn("NO LIGHT-TASK EXECUTION", tdd)
-        self.assertIn("invoke `superwork-tdd`", debugging)
-        self.assertIn("does not write the regression test", debugging)
-        self.assertIn("invoke `superwork-tdd`", executing)
-        self.assertIn("TDD method", writing)
+        self.assertIn("`user`", content)
+        self.assertIn("Never revert pre-existing user changes", content)
 
     def test_contract_defaults_to_continuous_execution(self) -> None:
         self.assertEqual(
@@ -125,40 +169,37 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertNotIn("authorizationLevels", self.contract)
         self.assertNotIn("authorizationTerminals", self.contract)
 
-    def test_start_continues_unless_user_explicitly_stops(self) -> None:
-        content = (
-            REPO_ROOT / "skills" / "superwork-start" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-
-        self.assertIn("Continue by default", content)
-        self.assertIn("explicit user instruction", content)
-        self.assertNotIn("authorized_until", content)
-        self.assertNotIn("authorization boundary", content.lower())
-
     def test_start_does_not_initialize_missing_runtime_implicitly(self) -> None:
-        content = (
-            REPO_ROOT / "skills" / "superwork-start" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-
-        normalized = content.lower()
-        self.assertIn("Do not invoke `superwork-init`", content)
-        self.assertIn("read-only requests can finish without `.superwork/`", normalized)
+        targets = {edge["to"] for edge in self.contract["phaseTransitions"]}
+        self.assertNotIn("superwork-init", targets)
 
     def test_design_and_plan_skills_continue_by_default(self) -> None:
-        brainstorming = (
-            REPO_ROOT / "skills" / "superwork-brainstorming" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-        writing_plans = (
+        transitions = {(edge["from"], edge["to"]) for edge in self.contract["phaseTransitions"]}
+        self.assertIn(("superwork-brainstorming", "superwork-writing-plans"), transitions)
+        self.assertIn(("superwork-writing-plans", "superwork-executing-plans"), transitions)
+
+    def test_plans_are_resumable_single_file_serial_artifacts(self) -> None:
+        writing = (
             REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
         ).read_text(encoding="utf-8")
+        executing = (
+            REPO_ROOT / "skills" / "superwork-executing-plans" / "SKILL.md"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("Continue by default", brainstorming)
-        self.assertIn("explicitly asks to stop after design", brainstorming)
-        self.assertNotIn("authorized_until", brainstorming)
-        self.assertNotIn("Authorized Until", writing_plans)
-        self.assertIn("Stop Conditions", writing_plans)
-        self.assertIn("invoke `superwork-executing-plans`", writing_plans)
-        self.assertIn("explicitly asks for a plan only", writing_plans)
+        self.assertIn("one Markdown file", writing)
+        self.assertIn("`### Task <number>: <title>`", writing)
+        self.assertIn("`Task Status`", writing)
+        self.assertNotIn("overview.md", writing)
+        self.assertIn("first unchecked task in document order", executing)
+        self.assertNotIn("dependency-ready", executing)
+
+    def test_plan_preflight_reports_the_declared_task_heading(self) -> None:
+        plan = self.contract["planContract"]
+        preflight = (
+            REPO_ROOT / "skills" / "superwork-executing-plans" / "scripts" / "preflight_plan.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(f'TASK_HEADING_FORMAT = "{plan["taskHeading"]}"', preflight)
 
     def test_check_is_the_only_completion_skill(self) -> None:
         self.assertEqual(self.contract["completionSkill"], "superwork-check")

@@ -1,6 +1,6 @@
 ---
 name: superwork-start
-description: Routes repository work by problem type and planning depth. Use as the normal Superwork entry for analysis, implementation, bug fixing, verification, or resuming a saved plan; it selects one downstream phase and lets the workflow continue to completion by default.
+description: Use this skill to route repository work through Superwork when `.superwork/config.json` exists or the user explicitly requests Superwork. Handle implementation, bug repair, saved-plan continuation, final verification, and repository analysis; do not trigger for non-repository tasks or Git-only commands.
 ---
 
 # Superwork Start
@@ -28,12 +28,12 @@ python3 <skill_dir>/scripts/get_context.py --root . --format json
 Use `runtime.status` as follows:
 
 - `ready`: read `.superwork/config.json`, `.superwork/spec/guides/index.md`, every `recommendedReads` path, and concrete docs linked by those indexes
-- `missing`: continue read-only work without runtime artifacts; report initialization as a blocker only when a required write workflow cannot proceed
+- `missing`: if the user explicitly requested Superwork, report initialization as required before an artifact-backed write workflow; otherwise leave Superwork routing and continue the repository request normally without workflow artifacts
 - `unsupported-schema`: report the runtime mismatch and require an explicit repair request before changing runtime files
 
 Do not invoke `superwork-init` unless the user explicitly asks to initialize, onboard, adopt, or repair Superwork. Read-only requests can finish without `.superwork/`.
 
-If implementation requires Superwork artifacts but runtime is missing, explain the required initialization instead of silently writing workflow files.
+Never block ordinary repository work merely because an implicitly selected Superwork runtime is missing.
 
 ### Step 3: Classify the work
 
@@ -52,9 +52,11 @@ Task size chooses planning depth only. It does not decide whether implementation
 
 ### Step 4: State and invoke one route
 
-Before handoff, report the selected route and one short reason tied to the request and repository evidence.
+Before handoff, report `Superwork route: <route> - <reason>.` using one short reason tied to the request and repository evidence.
 
-Then invoke exactly one route. Do not reproduce downstream implementation rules here.
+Then read `../<route>/SKILL.md` in full and continue with exactly one route. Do not reproduce downstream implementation rules here.
+
+Pass a handoff with `target`, `caller`, `outcome`, `evidence`, `stopConditions`, and `returnTo`. Treat `skills/superwork-start/references/workflow-contract.json` as the machine-readable source for this contract.
 
 ## Handoff Contract
 
@@ -70,7 +72,7 @@ Continue across these transitions until final verification. Stop early only for 
 ## Output Example
 
 ```text
-Routing to superwork-writing-plans: this is a clear multi-file change; after preflight the workflow will continue through execution and final verification.
+Superwork route: superwork-writing-plans - this is a clear multi-file change.
 ```
 
 ## Boundaries

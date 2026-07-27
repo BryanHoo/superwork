@@ -1,6 +1,6 @@
 ---
 name: superwork-writing-plans
-description: Creates a saved implementation plan for a clear medium task or a heavy-task design. It defines behavior slices and verification without editing product code, then hands a valid plan to execution by default.
+description: Use this skill to create a resumable implementation plan for a clear multi-file change or an approved heavy-task design. Define serial behavior slices, interfaces, stop conditions, and verification in one Markdown file, then continue to execution by default.
 ---
 
 # Superwork Writing Plans
@@ -22,13 +22,13 @@ If the work is still a light, tightly bounded change, return it to `superwork-td
 
 ## Plan Location
 
-Save a normal plan to:
+Save every plan as one Markdown file:
 
 ```text
 .superwork/plans/YYYY-MM-DD-<topic>.md
 ```
 
-For a plan too large to read efficiently as one file, use an `overview.md` plus one file per independently verifiable task under `.superwork/plans/<topic>/`.
+Split an oversized request into separate bounded plans instead of creating a multi-file plan.
 
 ## Required Header
 
@@ -54,8 +54,15 @@ Every plan contains:
 
 ## Task Contract
 
+Start every task with the exact heading format `### Task <number>: <title>`, using sequential numbers from 1 and a non-empty title. For example:
+
+```markdown
+### Task 1: Add request validation
+```
+
 Each task must include:
 
+- one `Task Status` checkbox: `- [ ] **Task Status:** pending` or `- [x] **Task Status:** completed`
 - `Files`: exact create, modify, delete, and test paths
 - `Interfaces`: exact consumed and produced contracts or artifacts
 - one bounded behavior slice
@@ -82,4 +89,4 @@ Before handoff:
 
 ## Continuation Policy
 
-After the plan passes preflight, invoke `superwork-executing-plans` by default. If the user explicitly asks for a plan only or says not to implement, save the plan, report its path and preflight result, and stop.
+After the plan passes preflight, read `../superwork-executing-plans/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, including the exact plan path and preflight evidence. If the user explicitly asks for a plan only or says not to implement, save the plan, report its path and preflight result, and stop.

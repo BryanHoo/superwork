@@ -5,8 +5,18 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import sys
 from pathlib import Path
+
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+if str(SKILLS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SKILLS_ROOT))
+
+from _shared.repository import (  # noqa: E402
+    collect_git_changes,
+    detect_package_manager,
+    detect_verification_commands,
+)
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
@@ -18,47 +28,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--format", choices=("text", "json"), default="text")
     return parser.parse_args()
-
-
-def detect_package_manager(root: Path) -> str:
-    if (root / "pnpm-lock.yaml").exists() or (root / "pnpm-workspace.yaml").exists():
-        return "pnpm"
-    if (root / "package-lock.json").exists():
-        return "npm"
-    if (root / "yarn.lock").exists():
-        return "yarn"
-    return "npm"
-
-
-def detect_test_hints(root: Path, package_manager: str) -> list[str]:
-    hints: list[str] = []
-    package_json = root / "package.json"
-    if package_json.exists():
-        try:
-            scripts = json.loads(package_json.read_text(encoding="utf-8")).get("scripts", {})
-        except json.JSONDecodeError:
-            scripts = {}
-        for name in ("test", "test:run", "lint", "typecheck", "build"):
-            if name in scripts:
-                hints.append(f"{package_manager} {name}")
-    if not hints:
-        hints.append(f"{package_manager} test")
-    return hints
-
-
-def git_changed_files(root: Path) -> list[str]:
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(root), "diff", "--name-only", "HEAD"],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-    except FileNotFoundError:
-        return []
-    if completed.returncode != 0:
-        return []
-    return [line for line in completed.stdout.splitlines() if line.strip()]
 
 
 def detect_layer(parts: tuple[str, ...]) -> str:
@@ -237,10 +206,11 @@ def main() -> int:
     test_hints = (
         [item for item in configured_verification if isinstance(item, str)]
         if isinstance(configured_verification, list)
-        else detect_test_hints(root, package_manager)
+        else detect_verification_commands(root, package_manager)
     )
     spec_root = root / ".superwork" / "spec"
-    changed_files = git_changed_files(root)
+    change_detection = collect_git_changes(root)
+    changed_files = change_detection.files
     packages: list[dict[str, object]] = []
     package_indexes: list[str] = []
     recommended_reads: list[str] = []
@@ -281,6 +251,7 @@ def main() -> int:
             "packages": packages,
         },
         "runtime": runtime,
+        "changeDetection": change_detection.to_dict(),
         "spec": {
             "layout": load_layout(spec_root) if spec_root.exists() else None,
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,

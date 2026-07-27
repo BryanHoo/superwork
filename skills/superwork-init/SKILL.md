@@ -1,6 +1,6 @@
 ---
 name: superwork-init
-description: Initializes or repairs the project-local `.superwork/` runtime after the user explicitly requests Superwork onboarding. Generates project configuration and specs, but does not start feature implementation.
+description: Use this skill to initialize, onboard, or repair the project-local `.superwork/` runtime only when the user explicitly requests it. Detect real project tooling, generate configuration and durable spec structure, and preserve existing authored artifacts.
 ---
 
 # Superwork Init
@@ -45,7 +45,7 @@ Do not generate route/state blocks, scripts, templates, or copies of the generic
 
 4. Replace generic generated spec wording with project-true paths, commands, contracts, and checklists.
 5. Verify `config.json` parses, `schemaVersion` is `2`, spec links resolve, and no generic workflow copy was generated.
-6. Hand normal development back to `superwork-start`.
+6. When the user also requested development, read `../superwork-start/SKILL.md` in full and pass a structured handoff containing the initialized runtime evidence. Otherwise report initialization and stop.
 
 ## Preservation Rules
 

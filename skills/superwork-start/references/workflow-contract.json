@@ -15,6 +15,24 @@
     "default": "complete",
     "stopCondition": "explicit-user-instruction"
   },
+  "handoffContract": {
+    "requiredFields": [
+      "target",
+      "caller",
+      "outcome",
+      "evidence",
+      "stopConditions",
+      "returnTo"
+    ],
+    "loadTargetSkill": "read-full-skill-md",
+    "targetPath": "../{target}/SKILL.md"
+  },
+  "planContract": {
+    "format": "single-markdown-file",
+    "taskHeading": "### Task <number>: <title>",
+    "executionOrder": "first-unchecked-task",
+    "statusMarker": "Task Status"
+  },
   "routes": {
     "analysis": "direct-response",
     "bug": "superwork-debugging",
