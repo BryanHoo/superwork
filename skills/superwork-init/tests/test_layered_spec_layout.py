@@ -15,6 +15,7 @@ UPDATE_SPEC_SCRIPT = REPO_ROOT / "skills" / "superwork-check" / "scripts" / "upd
 PREFLIGHT_PLAN_SCRIPT = (
     REPO_ROOT / "skills" / "superwork-executing-plans" / "scripts" / "preflight_plan.py"
 )
+WRITING_PLANS_SKILL = REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
 
 
 class LayeredSpecLayoutTest(unittest.TestCase):
@@ -428,6 +429,56 @@ Expected: PASS
             )
             self.assertNotIn("authorizedUntil", payload)
             self.assertNotIn("executionAllowed", payload)
+
+    def test_writing_plan_task_template_passes_preflight(self) -> None:
+        skill_text = WRITING_PLANS_SKILL.read_text(encoding="utf-8")
+        # 直接验证展示给模型的模板，避免写计划说明和预检规则再次独立演进。
+        template_section = skill_text.split("## Exact Task Template", 1)[1]
+        task_template = template_section.split("```markdown", 1)[1].split("```", 1)[0].strip()
+
+        self.assertIn("\n**Files:**\n", task_template)
+        self.assertIn("\n**Interfaces:**\n", task_template)
+        self.assertIn("\n**Stop Conditions:**\n", task_template)
+        self.assertNotIn("- **Files:**", task_template)
+        self.assertNotIn("- **Interfaces:**", task_template)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.create_single_repo_fixture(root)
+            self.bootstrap_spec(root)
+            plan_text = f"""# Generated Implementation Plan
+
+**Goal:** Validate the generated task contract
+
+**Suggested Spec Reads:**
+
+- `.superwork/spec/guides/index.md` - shared rules
+
+**Architecture:** Keep the generated structure deterministic.
+
+**Tech Stack:** Markdown and Python 3
+
+## Global Constraints
+
+- Keep task labels on standalone lines.
+
+{task_template}
+"""
+            self.write_file(root / ".superwork" / "plans" / "generated.md", plan_text)
+
+            result = self.run_command(
+                "python3",
+                str(PREFLIGHT_PLAN_SCRIPT),
+                "--root",
+                str(root),
+                "--plan",
+                ".superwork/plans/generated.md",
+                "--format",
+                "json",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertTrue(json.loads(result.stdout)["ok"])
 
     def test_preflight_plan_rejects_missing_stop_conditions(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

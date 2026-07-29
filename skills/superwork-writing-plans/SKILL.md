@@ -54,21 +54,47 @@ Every plan contains:
 
 ## Task Contract
 
-Start every task with the exact heading format `### Task <number>: <title>`, using sequential numbers from 1 and a non-empty title. For example:
+Use the heading grammar `### Task <number>: <title>` with sequential task numbers starting from 1. Copy the exact structure below for every task, replace its example values, and repeat the whole block for later tasks.
+
+## Exact Task Template
 
 ```markdown
-### Task 1: Add request validation
+### Task 1: Implement bounded behavior
+
+**Files:**
+
+- Modify: `src/module.py`
+- Test: `tests/test_module.py`
+
+**Interfaces:**
+
+- Consumes: `ExistingContract`
+- Produces: `UpdatedContract`
+
+**Behavior:**
+
+- Define one bounded, falsifiable behavior slice.
+
+**Stop Conditions:**
+
+- Stop if a required interface or constraint is unresolved.
+
+- [ ] **Task Status:** pending
+
+Run: `python3 -m unittest tests.test_module -v`
+
+Expected: the targeted behavior test passes.
 ```
 
-Each task must include:
+Keep `**Files:**`, `**Interfaces:**`, and `**Stop Conditions:**` as standalone lines exactly as shown. Never prefix these labels with `- `. Keep exactly one `Task Status` marker in each task.
 
-- one `Task Status` checkbox: `- [ ] **Task Status:** pending` or `- [x] **Task Status:** completed`
-- `Files`: exact create, modify, delete, and test paths
-- `Interfaces`: exact consumed and produced contracts or artifacts
-- one bounded behavior slice
-- test or falsifiable proof intent
-- exact verification command and expected signal
-- `Stop Conditions`: conditions that require plan repair, clarification, or debugging
+For every task:
+
+- list exact create, modify, delete, and test paths under `Files`
+- list exact consumed and produced contracts or artifacts under `Interfaces`
+- define one bounded behavior slice and its test or falsifiable proof intent
+- use exactly one status checkbox: `- [ ] **Task Status:** pending` or `- [x] **Task Status:** completed`
+- provide one exact `Run:` command, one `Expected:` signal, and concrete stop conditions
 
 Every code behavior slice is executed through the `superwork-tdd` TDD method. The plan defines the intended behavior and evidence; it does not duplicate that method's RED/GREEN/REFACTOR instructions.
 
