@@ -13,17 +13,18 @@ Durable contracts for the Superwork skill bundle and its deterministic tooling.
 
 ## Pre-Development Checklist
 
-- Read `.superwork/spec/guides/index.md`
-- Read both guides before changing a skill boundary, workflow contract, script, or plugin metadata
+- Read required context candidates first
+- Load both guides only when changing a skill boundary, workflow contract, script, or plugin metadata
 
 ## Verification Checklist
 
-- Confirm the eight-skill set matches `workflow-contract.json`
+- Confirm runtime config uses `schemaVersion: 3`
+- Confirm the seven-skill set matches `workflow-contract.json`
 - Confirm only `superwork-start` is implicitly invocable
-- Confirm all implementation paths call TDD and all completion paths enter check once
+- Confirm clear development goes directly to TDD, planning invokes TDD in the same run, and saved-plan resumes enter check once
 
 ## Update Triggers
 
 - A skill is added, removed, renamed, or changes responsibility
 - A script moves between skill ownership boundaries
-- The plugin manifest or invocation policy changes
+- The runtime schema, plugin manifest, or invocation policy changes

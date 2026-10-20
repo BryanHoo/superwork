@@ -1,176 +1,27 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-BOOTSTRAP_SCRIPT = REPO_ROOT / "skills" / "superwork-init" / "scripts" / "bootstrap_superwork.py"
-GET_CONTEXT_SCRIPT = REPO_ROOT / "skills" / "superwork-start" / "scripts" / "get_context.py"
-CHECK_SPECS_SCRIPT = REPO_ROOT / "skills" / "superwork-check" / "scripts" / "check_specs.py"
-UPDATE_SPEC_SCRIPT = REPO_ROOT / "skills" / "superwork-check" / "scripts" / "update_spec.py"
-PREFLIGHT_PLAN_SCRIPT = (
-    REPO_ROOT / "skills" / "superwork-executing-plans" / "scripts" / "preflight_plan.py"
+TESTS_DIR = Path(__file__).resolve().parent
+if str(TESTS_DIR) not in sys.path:
+    sys.path.insert(0, str(TESTS_DIR))
+
+from _support import (
+    CHECK_SPECS_SCRIPT,
+    GET_CONTEXT_SCRIPT,
+    PLANNING_SKILL,
+    PREFLIGHT_PLAN_SCRIPT,
+    UPDATE_SPEC_SCRIPT,
+    SuperworkFixtureTestCase,
 )
-WRITING_PLANS_SKILL = REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
 
 
-class LayeredSpecLayoutTest(unittest.TestCase):
-    def run_command(self, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            list(args),
-            cwd=cwd,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-
-    def write_file(self, path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
-
-    def init_git_repo(self, root: Path) -> None:
-        self.run_command("git", "init", cwd=root)
-        self.run_command("git", "add", ".", cwd=root)
-        commit = self.run_command(
-            "git",
-            "-c",
-            "user.name=Test User",
-            "-c",
-            "user.email=test@example.com",
-            "commit",
-            "-m",
-            "init",
-            cwd=root,
-        )
-        self.assertEqual(commit.returncode, 0, commit.stderr)
-
-    def create_single_repo_fixture(self, root: Path) -> None:
-        self.write_file(
-            root / "package.json",
-            json.dumps(
-                {
-                    "name": "demo-app",
-                    "scripts": {
-                        "test": "vitest",
-                        "lint": "eslint .",
-                    },
-                }
-            ),
-        )
-        self.write_file(root / "src" / "components" / "Button.tsx", "export const Button = () => null;\n")
-        self.write_file(root / "server" / "index.ts", "export const server = true;\n")
-
-    def bootstrap_spec(self, root: Path) -> dict[str, object]:
-        result = self.run_command("python3", str(BOOTSTRAP_SCRIPT), "--root", str(root))
-        self.assertEqual(result.returncode, 0, result.stderr)
-        return json.loads(result.stdout)
-
-    def test_bootstrap_creates_layered_layout_for_single_repo(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            self.create_single_repo_fixture(root)
-
-            self.bootstrap_spec(root)
-
-            self.assertTrue((root / ".superwork" / "spec" / "frontend" / "index.md").exists())
-            self.assertTrue(
-                (root / ".superwork" / "spec" / "frontend" / "component-guidelines.md").exists()
-            )
-            self.assertTrue((root / ".superwork" / "spec" / "backend" / "index.md").exists())
-            self.assertFalse((root / ".superwork" / "spec" / "root").exists())
-
-    def test_bootstrap_creates_config_v2_without_workflow_copy(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            self.create_single_repo_fixture(root)
-
-            payload = self.bootstrap_spec(root)
-
-            config_path = root / ".superwork" / "config.json"
-            self.assertTrue(config_path.exists())
-            config = json.loads(config_path.read_text(encoding="utf-8"))
-            self.assertEqual(config["schemaVersion"], 2)
-            self.assertEqual(config["packageManager"], "npm")
-            self.assertEqual(
-                config["artifactPaths"],
-                {
-                    "designs": ".superwork/prd",
-                    "plans": ".superwork/plans",
-                    "specs": ".superwork/spec",
-                },
-            )
-            self.assertFalse((root / ".superwork" / "workflow.md").exists())
-            self.assertIn(".superwork/config.json", payload["created"])
-
-    def test_bootstrap_python_repo_uses_python_verification(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            self.write_file(root / "pyproject.toml", "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n")
-            self.write_file(
-                root / "tests" / "test_demo.py",
-                "import unittest\n\nclass DemoTest(unittest.TestCase):\n    pass\n",
-            )
-
-            self.bootstrap_spec(root)
-
-            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
-            self.assertEqual(config["packageManager"], "none")
-            self.assertEqual(
-                config["verification"],
-                ["python3 -m unittest discover -s tests -p 'test_*.py' -v"],
-            )
-
-    def test_bootstrap_empty_repo_does_not_invent_node_commands(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-
-            self.bootstrap_spec(root)
-
-            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
-            self.assertEqual(config["packageManager"], "none")
-            self.assertEqual(config["verification"], [])
-
-    def test_bootstrap_prefers_declared_node_package_manager(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            self.write_file(
-                root / "package.json",
-                json.dumps(
-                    {
-                        "name": "declared-manager",
-                        "packageManager": "yarn@4.2.0",
-                        "scripts": {"test": "vitest", "lint": "eslint ."},
-                    }
-                ),
-            )
-            self.write_file(root / "package-lock.json", "{}\n")
-
-            self.bootstrap_spec(root)
-
-            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
-            self.assertEqual(config["packageManager"], "yarn")
-            self.assertEqual(config["verification"], ["yarn test", "yarn run lint"])
-
-    def test_bootstrap_uses_uv_for_pyproject_pytest(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            root = Path(temp_dir)
-            self.write_file(
-                root / "pyproject.toml",
-                "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n\n[tool.pytest.ini_options]\naddopts = \"-q\"\n",
-            )
-            self.write_file(root / "uv.lock", "version = 1\n")
-            self.write_file(root / "tests" / "test_demo.py", "def test_demo():\n    assert True\n")
-
-            self.bootstrap_spec(root)
-
-            config = json.loads((root / ".superwork" / "config.json").read_text(encoding="utf-8"))
-            self.assertEqual(config["packageManager"], "uv")
-            self.assertEqual(config["verification"], ["uv run python3 -m pytest"])
+class LayeredSpecLayoutTest(SuperworkFixtureTestCase):
 
     def test_generated_guides_do_not_copy_generic_workflow(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -184,7 +35,8 @@ class LayeredSpecLayoutTest(unittest.TestCase):
             self.assertNotIn(".superwork/workflow.md", guides)
             self.assertNotIn("superwork-code-simplifier", guides)
             self.assertNotIn("superwork-update-spec", guides)
-            self.assertIn(".superwork/config.json", guides)
+            self.assertIn("get_context.py", guides)
+            self.assertIn("candidateReads", guides)
 
     def test_get_context_reports_ready_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -228,9 +80,13 @@ class LayeredSpecLayoutTest(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             payload = json.loads(result.stdout)
-            self.assertIn(".superwork/spec/guides/index.md", payload["spec"]["recommendedReads"])
-            self.assertIn(".superwork/spec/frontend/index.md", payload["spec"]["recommendedReads"])
-            self.assertIn(".superwork/spec/backend/index.md", payload["spec"]["recommendedReads"])
+            candidates = {item["path"]: item for item in payload["spec"]["candidateReads"]}
+            self.assertEqual(candidates[".superwork/spec/guides/index.md"]["priority"], "recommended")
+            self.assertEqual(candidates[".superwork/spec/frontend/index.md"]["priority"], "recommended")
+            self.assertEqual(candidates[".superwork/spec/backend/index.md"]["priority"], "recommended")
+            self.assertTrue(all(item["reason"] for item in candidates.values()))
+            self.assertTrue(all(item["size"] > 0 for item in candidates.values()))
+            self.assertNotIn("recommendedReads", payload["spec"])
 
     def test_get_context_scopes_recommended_reads_by_changed_files(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -249,10 +105,10 @@ class LayeredSpecLayoutTest(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             payload = json.loads(result.stdout)
-            recommended_reads = set(payload["spec"]["recommendedReads"])
-            self.assertIn(".superwork/spec/guides/index.md", recommended_reads)
-            self.assertIn(".superwork/spec/frontend/index.md", recommended_reads)
-            self.assertNotIn(".superwork/spec/backend/index.md", recommended_reads)
+            candidates = {item["path"]: item for item in payload["spec"]["candidateReads"]}
+            self.assertEqual(candidates[".superwork/spec/frontend/index.md"]["priority"], "required")
+            self.assertEqual(candidates[".superwork/spec/guides/index.md"]["priority"], "recommended")
+            self.assertNotIn(".superwork/spec/backend/index.md", candidates)
 
     def test_get_context_includes_untracked_files(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -379,13 +235,8 @@ class LayeredSpecLayoutTest(unittest.TestCase):
                 """# Demo Implementation Plan
 
 **Goal:** Build the demo change
-
-**Suggested Spec Reads:**
-- `.superwork/spec/guides/index.md` — shared rules
-
-## Global Constraints
-
-- Keep the API stable.
+**Scope:** Update button validation only
+**Acceptance:** The focused button test passes
 
 ### Task 1: Update button
 
@@ -393,10 +244,11 @@ class LayeredSpecLayoutTest(unittest.TestCase):
 
 - Modify: `src/components/Button.tsx`
 
-**Interfaces:**
+**Behavior:**
 
-- Consumes: `ButtonProps`
-- Produces: `ButtonResult`
+- Reject an empty button label.
+
+**Proof:** `npm test`
 
 **Stop Conditions:**
 
@@ -404,8 +256,6 @@ class LayeredSpecLayoutTest(unittest.TestCase):
 
 - [ ] **Task Status:** pending
 
-Run: `npm test`
-Expected: PASS
 """,
             )
 
@@ -425,46 +275,40 @@ Expected: PASS
             self.assertTrue(payload["ok"])
             self.assertEqual(
                 payload["tasks"],
-                [{"id": "Task 1", "title": "Update button", "status": "pending"}],
+                [
+                    {
+                        "id": "Task 1",
+                        "title": "Update button",
+                        "status": "pending",
+                        "proof": "`npm test`",
+                    }
+                ],
             )
             self.assertNotIn("authorizedUntil", payload)
             self.assertNotIn("executionAllowed", payload)
 
-    def test_writing_plan_task_template_passes_preflight(self) -> None:
-        skill_text = WRITING_PLANS_SKILL.read_text(encoding="utf-8")
+    def test_planning_task_template_passes_preflight(self) -> None:
+        skill_text = PLANNING_SKILL.read_text(encoding="utf-8")
         # 直接验证展示给模型的模板，避免写计划说明和预检规则再次独立演进。
-        template_section = skill_text.split("## Exact Task Template", 1)[1]
-        task_template = template_section.split("```markdown", 1)[1].split("```", 1)[0].strip()
+        template_section = skill_text.split("## Exact Saved Plan Template", 1)[1]
+        plan_template = template_section.split("```markdown", 1)[1].split("```", 1)[0].strip()
 
-        self.assertIn("\n**Files:**\n", task_template)
-        self.assertIn("\n**Interfaces:**\n", task_template)
-        self.assertIn("\n**Stop Conditions:**\n", task_template)
-        self.assertNotIn("- **Files:**", task_template)
-        self.assertNotIn("- **Interfaces:**", task_template)
+        self.assertIn("**Goal:**", plan_template)
+        self.assertIn("**Scope:**", plan_template)
+        self.assertIn("**Acceptance:**", plan_template)
+        self.assertIn("\n**Files:**\n", plan_template)
+        self.assertIn("\n**Behavior:**\n", plan_template)
+        self.assertIn("\n**Proof:**", plan_template)
+        self.assertIn("\n**Stop Conditions:**\n", plan_template)
+        self.assertNotIn("Suggested Spec Reads", plan_template)
+        self.assertNotIn("Global Constraints", plan_template)
+        self.assertNotIn("**Interfaces:**", plan_template)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             self.create_single_repo_fixture(root)
             self.bootstrap_spec(root)
-            plan_text = f"""# Generated Implementation Plan
-
-**Goal:** Validate the generated task contract
-
-**Suggested Spec Reads:**
-
-- `.superwork/spec/guides/index.md` - shared rules
-
-**Architecture:** Keep the generated structure deterministic.
-
-**Tech Stack:** Markdown and Python 3
-
-## Global Constraints
-
-- Keep task labels on standalone lines.
-
-{task_template}
-"""
-            self.write_file(root / ".superwork" / "plans" / "generated.md", plan_text)
+            self.write_file(root / ".superwork" / "plans" / "generated.md", plan_template)
 
             result = self.run_command(
                 "python3",
@@ -490,13 +334,8 @@ Expected: PASS
                 """# Bad Plan
 
 **Goal:** Missing stop conditions
-
-**Suggested Spec Reads:**
-- `.superwork/spec/guides/index.md` — shared rules
-
-## Global Constraints
-
-- Keep behavior stable.
+**Scope:** Update one button
+**Acceptance:** The focused test passes
 
 ### Task 1: Invalid task
 
@@ -504,12 +343,13 @@ Expected: PASS
 
 - Modify: `src/components/Button.tsx`
 
-**Interfaces:**
+**Behavior:**
 
-- Consumes: `ButtonProps`
-- Produces: `ButtonResult`
+- Reject an empty label.
 
-Expected: PASS
+**Proof:** `npm test`
+
+- [ ] **Task Status:** pending
 """,
             )
 
@@ -537,13 +377,8 @@ Expected: PASS
                 """# Missing Status Plan
 
 **Goal:** Reject a plan that cannot be resumed
-
-**Suggested Spec Reads:**
-- `.superwork/spec/guides/index.md` - shared rules
-
-## Global Constraints
-
-- Keep behavior stable.
+**Scope:** Update one button
+**Acceptance:** The focused test passes
 
 ### Task 1: Update button
 
@@ -551,17 +386,16 @@ Expected: PASS
 
 - Modify: `src/components/Button.tsx`
 
-**Interfaces:**
+**Behavior:**
 
-- Consumes: `ButtonProps`
-- Produces: `ButtonResult`
+- Reject an empty label.
+
+**Proof:** `npm test`
 
 **Stop Conditions:**
 
 - Stop if the interface is unclear.
 
-Run: `npm test`
-Expected: PASS
 """,
             )
 

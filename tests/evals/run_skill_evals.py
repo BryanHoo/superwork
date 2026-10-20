@@ -8,13 +8,20 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
+from statistics import median
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from skills._shared.repository import RUNTIME_SCHEMA_VERSION  # noqa: E402
+
+
 ROUTE_RE = re.compile(r"Superwork route:\s*(direct-response|superwork-[a-z-]+)\s*-")
 REQUIRED_CASE_FIELDS = {"id", "query", "should_trigger"}
 
@@ -79,6 +86,34 @@ def parse_jsonl_output(output: str) -> dict[str, object]:
     return {"route": route, "finalMessage": final_message, "eventCount": len(events)}
 
 
+def summarize_efficiency(runs: list[dict[str, object]]) -> dict[str, object]:
+    valid_runs = [run for run in runs if run.get("exitCode", 0) == 0]
+    durations = [run["durationMs"] for run in valid_runs if isinstance(run.get("durationMs"), int)]
+    event_counts = [run["eventCount"] for run in valid_runs if isinstance(run.get("eventCount"), int)]
+    return {
+        "validRuns": len(valid_runs),
+        "medianDurationMs": median(durations) if durations else None,
+        "medianEventCount": median(event_counts) if event_counts else None,
+    }
+
+
+def fatal_infrastructure_reason(run: dict[str, object]) -> str | None:
+    if run.get("exitCode", 0) == 0:
+        return None
+    error = run.get("error")
+    if not isinstance(error, str):
+        return None
+    normalized = error.lower()
+    if "401 unauthorized" in normalized:
+        return "Codex CLI authentication failed: 401 Unauthorized"
+    if any(
+        marker in normalized
+        for marker in ("authentication failed", "invalid api key", "not logged in")
+    ):
+        return "Codex CLI authentication failed"
+    return None
+
+
 def evaluate_case(
     case: dict[str, object],
     runs: list[dict[str, object]],
@@ -102,6 +137,7 @@ def evaluate_case(
         "triggerRate": trigger_rate,
         "routeAccuracy": route_accuracy,
         "invalidRuns": len(invalid_runs),
+        "efficiency": summarize_efficiency(runs),
         "passed": passed,
         "runs": runs,
     }
@@ -117,7 +153,7 @@ def create_fixture(fixture: Path, skills_root: Path) -> None:
 
     # fixture 只提供路由所需的最小项目事实，不承载任何真实用户代码。
     config = {
-        "schemaVersion": 2,
+        "schemaVersion": RUNTIME_SCHEMA_VERSION,
         "packageManager": "none",
         "packages": [{"name": "root", "layers": ["shared"]}],
         "artifactPaths": {
@@ -207,13 +243,27 @@ def run_suite(
         fixture = Path(temp_dir) / "fixture"
         create_fixture(fixture, skills_root)
         results = []
+        abort_reason: str | None = None
         for case in cases:
-            runs = [run_once(codex_bin, fixture, str(case["query"]), timeout) for _ in range(runs_per_case)]
+            runs = []
+            for _ in range(runs_per_case):
+                run = run_once(codex_bin, fixture, str(case["query"]), timeout)
+                runs.append(run)
+                abort_reason = fatal_infrastructure_reason(run)
+                if abort_reason:
+                    break
             results.append(evaluate_case(case, runs, threshold))
+            if abort_reason:
+                break
+    all_runs = [run for result in results for run in result["runs"]]
     return {
-        "passed": all(result["passed"] for result in results),
+        "passed": not abort_reason and all(result["passed"] for result in results),
         "passedCases": sum(result["passed"] for result in results),
-        "totalCases": len(results),
+        "executedCases": len(results),
+        "totalCases": len(cases),
+        "aborted": abort_reason is not None,
+        "abortReason": abort_reason,
+        "efficiency": summarize_efficiency(all_runs),
         "cases": results,
     }
 

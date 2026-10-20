@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "packageManager": "none",
   "packages": [
     {
@@ -15,7 +15,8 @@
     "specs": ".superwork/spec"
   },
   "verification": [
-    "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+    "python3 -m unittest discover -s tests/evals -p 'test_*.py' -v",
+    "python3 -m unittest discover -s tests/workflow -p 'test_*.py' -v",
     "python3 -m unittest discover -s skills/superwork-init/tests -p 'test_*.py' -v"
   ]
 }

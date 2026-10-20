@@ -6,14 +6,14 @@ Shared project-wide engineering rules used by all packages and layers.
 
 ## Pre-Development Checklist
 
-- Read `.superwork/config.json`
-- Read the relevant package/layer `index.md`
+- Use embedded runtime facts from `get_context.py`
+- Read only `candidateReads` marked `required`; load recommended guidance when task evidence makes it relevant
 - Read applicable `AGENTS.md` instructions before changing files
 - Keep project-specific contracts in `.superwork/spec/`, not in generated workflow copies
 
 ## Verification Checklist
 
-- Run fresh verification before any completion claim
+- Reuse current targeted evidence and run only missing, stale, or broader verification
 - Use project-local commands such as:
 {{ test_hints }}
 

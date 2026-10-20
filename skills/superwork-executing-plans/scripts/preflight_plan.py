@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a fast structural preflight before executing a saved superwork plan."""
+"""Run a compact structural preflight before resuming a saved Superwork plan."""
 
 from __future__ import annotations
 
@@ -21,15 +21,13 @@ PLACEHOLDER_PATTERNS = (
 )
 TASK_HEADING_FORMAT = "### Task <number>: <title>"
 TASK_BLOCK_RE = re.compile(
-    r"^### (?P<id>Task \d+): (?P<title>.+?)\s*$\n(?P<body>.*?)(?=^### Task \d+: |\Z)",
+    r"^### (?P<id>Task (?P<number>\d+)): (?P<title>.+?)\s*$\n(?P<body>.*?)(?=^### Task \d+: |\Z)",
     re.MULTILINE | re.DOTALL,
 )
 TASK_STATUS_RE = re.compile(
     r"^- \[(?P<checked>[ xX])\] \*\*Task Status:\*\* (?P<status>pending|completed)\s*$",
     re.MULTILINE,
 )
-SECTION_RE_TEMPLATE = r"^## {title}\s*$\n(?P<body>.*?)(?=^## |\Z)"
-SPEC_PATH_RE = re.compile(r"`(\.superwork/spec/[^`]+)`")
 
 
 def parse_args() -> argparse.Namespace:
@@ -40,63 +38,77 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def extract_section(text: str, title: str) -> str | None:
-    match = re.search(SECTION_RE_TEMPLATE.format(title=re.escape(title)), text, re.MULTILINE | re.DOTALL)
-    if not match:
-        return None
-    return match.group("body").strip()
+def extract_inline_field(text: str, label: str) -> str | None:
+    match = re.search(rf"^\*\*{re.escape(label)}:\*\*\s+(?P<value>\S.*)$", text, re.MULTILINE)
+    return match.group("value").strip() if match else None
 
 
-def extract_labeled_block(text: str, label: str) -> str | None:
+def extract_task_section(task_text: str, marker: str) -> str | None:
     pattern = re.compile(
-        rf"^\*\*{re.escape(label)}:\*\*\s*$\n(?P<body>.*?)(?=^\*\*|^## |^\-\-\-$|\Z)",
+        rf"^\*\*{re.escape(marker)}:\*\*\s*$\n(?P<body>.*?)(?=^\*\*|^- \[[ xX]\] \*\*Task Status|\Z)",
         re.MULTILINE | re.DOTALL,
     )
-    match = pattern.search(text)
-    if not match:
-        return None
-    return match.group("body").strip()
+    match = pattern.search(task_text)
+    return match.group("body").strip() if match else None
 
 
 def extract_bullets(section_text: str | None) -> list[str]:
     if not section_text:
         return []
-    bullets: list[str] = []
-    for raw_line in section_text.splitlines():
-        line = raw_line.strip()
-        if line.startswith("- "):
-            bullets.append(line[2:].strip())
-    return bullets
+    return [
+        line[2:].strip()
+        for raw_line in section_text.splitlines()
+        if (line := raw_line.strip()).startswith("- ") and line[2:].strip()
+    ]
 
 
-def extract_task_section(task_text: str, marker: str) -> str | None:
-    pattern = re.compile(
-        rf"^\*\*{re.escape(marker)}:\*\*\s*$\n(?P<body>.*?)(?=^\*\*|\Z)",
-        re.MULTILINE | re.DOTALL,
-    )
-    match = pattern.search(task_text)
-    if not match:
+def validate_header(plan_text: str, issues: list[dict[str, str]]) -> None:
+    for label in ("Goal", "Scope", "Acceptance"):
+        if not extract_inline_field(plan_text, label):
+            issues.append({"severity": "error", "message": f"missing `**{label}:**` value"})
+
+
+def validate_status(
+    task_text: str,
+    task_number: int,
+    issues: list[dict[str, str]],
+) -> str | None:
+    matches = list(TASK_STATUS_RE.finditer(task_text))
+    if not matches:
+        issues.append(
+            {"severity": "error", "message": f"Task {task_number} is missing `Task Status` checkbox"}
+        )
         return None
-    return match.group("body").strip()
-
-
-def normalize_interface_name(interface_line: str) -> str | None:
-    value = interface_line.strip()
-    if not value or value == "[exact function, type, file contract, or artifact this task depends on]":
+    if len(matches) > 1:
+        issues.append(
+            {"severity": "error", "message": f"Task {task_number} has multiple `Task Status` checkboxes"}
+        )
         return None
-    # 用最保守的名字抽取方式检测跨任务接口漂移，避免做复杂语义解析。
-    token = value.split("(", 1)[0].split(":", 1)[0].split(" ", 1)[0].strip("`")
-    return token or None
+
+    match = matches[0]
+    status = match.group("status")
+    checked = match.group("checked").lower() == "x"
+    if checked != (status == "completed"):
+        issues.append(
+            {"severity": "error", "message": f"Task {task_number} has inconsistent `Task Status` checkbox"}
+        )
+        return None
+    return status
 
 
-def collect_interface_map(lines: list[str]) -> dict[str, set[str]]:
-    mapping: dict[str, set[str]] = {}
-    for line in lines:
-        name = normalize_interface_name(line)
-        if not name:
-            continue
-        mapping.setdefault(name, set()).add(line.strip())
-    return mapping
+def validate_task_sections(
+    task_text: str,
+    task_number: int,
+    issues: list[dict[str, str]],
+) -> None:
+    for label in ("Files", "Behavior", "Stop Conditions"):
+        section = extract_task_section(task_text, label)
+        if not extract_bullets(section):
+            issues.append(
+                {"severity": "error", "message": f"Task {task_number} is missing `**{label}:**` bullets"}
+            )
+    if not extract_inline_field(task_text, "Proof"):
+        issues.append({"severity": "error", "message": f"Task {task_number} is missing `**Proof:**`"})
 
 
 def main() -> int:
@@ -111,24 +123,13 @@ def main() -> int:
         return emit(args.format, plan_path, issues, warnings, [])
 
     plan_text = plan_path.read_text(encoding="utf-8")
-
-    suggested_reads = extract_bullets(extract_labeled_block(plan_text, "Suggested Spec Reads"))
-    constraint_lines = extract_bullets(extract_section(plan_text, "Global Constraints"))
-    task_matches = list(TASK_BLOCK_RE.finditer(plan_text))
-
-    if not suggested_reads:
-        issues.append({"severity": "error", "message": "missing `Suggested Spec Reads` section or bullet entries"})
-    for rel_path in SPEC_PATH_RE.findall("\n".join(suggested_reads)):
-        if not (root / rel_path).exists():
-            issues.append({"severity": "error", "message": f"referenced spec path does not exist: {rel_path}"})
-
-    if not constraint_lines:
-        issues.append({"severity": "error", "message": "missing `## Global Constraints` bullets"})
+    validate_header(plan_text, issues)
 
     for placeholder in PLACEHOLDER_PATTERNS:
         if placeholder in plan_text:
             issues.append({"severity": "error", "message": f"placeholder text found: {placeholder}"})
 
+    task_matches = list(TASK_BLOCK_RE.finditer(plan_text))
     if not task_matches:
         issues.append(
             {
@@ -137,82 +138,28 @@ def main() -> int:
             }
         )
 
-    produced_map: dict[str, set[str]] = {}
     tasks: list[dict[str, str]] = []
-
-    for index, task_match in enumerate(task_matches, start=1):
-        task_text = task_match.group(0)
-        task_id = task_match.group("id")
-        task_title = task_match.group("title").strip()
-        files_section = extract_task_section(task_text, "Files")
-        interfaces_section = extract_task_section(task_text, "Interfaces")
-
-        # 状态同时用于结构校验和中断后的唯一恢复位置。
-        status_matches = list(TASK_STATUS_RE.finditer(task_text))
-        if not status_matches:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `Task Status` checkbox"})
-        elif len(status_matches) > 1:
-            issues.append({"severity": "error", "message": f"Task {index} has multiple `Task Status` checkboxes"})
-        else:
-            status_match = status_matches[0]
-            status = status_match.group("status")
-            checked = status_match.group("checked").lower() == "x"
-            if checked != (status == "completed"):
-                issues.append({"severity": "error", "message": f"Task {index} has inconsistent `Task Status` checkbox"})
-            else:
-                tasks.append({"id": task_id, "title": task_title, "status": status})
-
-        if not files_section:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `**Files:**`"})
-        if not interfaces_section:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `**Interfaces:**`"})
-            continue
-
-        stop_conditions = extract_task_section(task_text, "Stop Conditions")
-        if not stop_conditions:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `**Stop Conditions:**`"})
-        if "Expected:" not in task_text:
-            issues.append({"severity": "error", "message": f"Task {index} is missing an `Expected:` verification signal"})
-
-        interface_lines = extract_bullets(interfaces_section)
-        consumes = [line.removeprefix("Consumes:").strip() for line in interface_lines if line.startswith("Consumes:")]
-        produces = [line.removeprefix("Produces:").strip() for line in interface_lines if line.startswith("Produces:")]
-
-        if not consumes:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `Consumes`"})
-        if not produces:
-            issues.append({"severity": "error", "message": f"Task {index} is missing `Produces`"})
-
-        # 当前任务可以消费旧接口并产出新接口，所以只检查“消费方”是否和更早任务产出的接口漂移。
-        for line in consumes:
-            name = normalize_interface_name(line)
-            if not name:
-                continue
-            produced_values = produced_map.get(name)
-            if produced_values and line not in produced_values:
-                issues.append(
-                    {
-                        "severity": "error",
-                        "message": f"interface drift for `{name}`: consumes `{line}` but earlier tasks produce {sorted(produced_values)}",
-                    }
-                )
-            if not produced_values:
-                warnings.append(
-                    {
-                        "severity": "warning",
-                        "message": f"consumed interface `{name}` is not produced by an earlier task in this plan; verify it already exists in the codebase",
-                    }
-                )
-
-        for name, values in collect_interface_map(produces).items():
-            produced_map.setdefault(name, set()).update(values)
-
-    for name, values in produced_map.items():
-        if len(values) > 1:
+    for expected_number, task_match in enumerate(task_matches, start=1):
+        actual_number = int(task_match.group("number"))
+        if actual_number != expected_number:
             issues.append(
                 {
                     "severity": "error",
-                    "message": f"interface `{name}` is produced with conflicting signatures: {sorted(values)}",
+                    "message": f"Task numbering must be sequential; expected {expected_number}, found {actual_number}",
+                }
+            )
+
+        task_text = task_match.group(0)
+        validate_task_sections(task_text, expected_number, issues)
+        status = validate_status(task_text, expected_number, issues)
+        proof = extract_inline_field(task_text, "Proof")
+        if status and proof:
+            tasks.append(
+                {
+                    "id": task_match.group("id"),
+                    "title": task_match.group("title").strip(),
+                    "status": status,
+                    "proof": proof,
                 }
             )
 
@@ -238,14 +185,11 @@ def emit(
     else:
         print(f"Plan preflight: {plan_path}")
         print("Status: PASS" if payload["ok"] else "Status: FAIL")
-        if issues:
-            print("Issues:")
-            for item in issues:
-                print(f"- {item['message']}")
-        if warnings:
-            print("Warnings:")
-            for item in warnings:
-                print(f"- {item['message']}")
+        for heading, entries in (("Issues", issues), ("Warnings", warnings)):
+            if entries:
+                print(f"{heading}:")
+                for item in entries:
+                    print(f"- {item['message']}")
     return 0 if payload["ok"] else 1
 
 

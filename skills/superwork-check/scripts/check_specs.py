@@ -12,11 +12,10 @@ SKILLS_ROOT = Path(__file__).resolve().parents[2]
 if str(SKILLS_ROOT) not in sys.path:
     sys.path.insert(0, str(SKILLS_ROOT))
 
-from _shared.repository import collect_git_changes  # noqa: E402
+from _shared.repository import RUNTIME_SCHEMA_VERSION, collect_git_changes  # noqa: E402
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
-RUNTIME_SCHEMA_VERSION = 2
 
 
 def parse_args() -> argparse.Namespace:

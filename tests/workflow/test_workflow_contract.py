@@ -27,7 +27,10 @@ class WorkflowContractTest(unittest.TestCase):
         }
 
         self.assertEqual(discovered, expected)
-        self.assertEqual(len(expected), 8)
+        self.assertEqual(len(expected), 7)
+        self.assertIn("superwork-planning", expected)
+        self.assertNotIn("superwork-brainstorming", expected)
+        self.assertNotIn("superwork-writing-plans", expected)
 
     def test_only_start_is_implicit_entry(self) -> None:
         self.assertEqual(self.contract["implicitEntry"], "superwork-start")
@@ -107,7 +110,12 @@ class WorkflowContractTest(unittest.TestCase):
         calls = self.contract["methodCalls"]
         self.assertEqual(
             {item["caller"] for item in calls if item["method"] == "superwork-tdd"},
-            {"superwork-start", "superwork-executing-plans", "superwork-debugging"},
+            {
+                "superwork-start",
+                "superwork-planning",
+                "superwork-executing-plans",
+                "superwork-debugging",
+            },
         )
         phase_nodes = {
             value
@@ -123,7 +131,7 @@ class WorkflowContractTest(unittest.TestCase):
             handoff["requiredFields"],
             ["target", "caller", "outcome", "evidence", "stopConditions", "returnTo"],
         )
-        self.assertEqual(handoff["loadTargetSkill"], "read-full-skill-md")
+        self.assertEqual(handoff["loadTargetSkill"], "read-once-per-run")
         self.assertEqual(handoff["targetPath"], "../{target}/SKILL.md")
 
     def test_plan_execution_contract_is_single_file_and_serial(self) -> None:
@@ -133,6 +141,12 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertEqual(plan["taskHeading"], "### Task <number>: <title>")
         self.assertEqual(plan["executionOrder"], "first-unchecked-task")
         self.assertEqual(plan["statusMarker"], "Task Status")
+        self.assertEqual(plan["requiredHeader"], ["Goal", "Scope", "Acceptance"])
+        self.assertEqual(
+            plan["taskFields"],
+            ["Files", "Behavior", "Proof", "Stop Conditions", "Task Status"],
+        )
+        self.assertEqual(plan["optionalTaskFields"], ["Interfaces"])
 
     def test_phase_skills_load_declared_targets(self) -> None:
         for edge in self.contract["phaseTransitions"]:
@@ -141,14 +155,14 @@ class WorkflowContractTest(unittest.TestCase):
             if source == "superwork-start":
                 continue
             content = (REPO_ROOT / "skills" / source / "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn(f"`../{target}/SKILL.md` in full", content, f"{source} -> {target}")
+            self.assertIn(f"`../{target}/SKILL.md` once", content, f"{source} -> {target}")
 
         for call in self.contract["methodCalls"]:
             caller = call["caller"]
             if caller == "superwork-start":
                 continue
             content = (REPO_ROOT / "skills" / caller / "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn("`../superwork-tdd/SKILL.md` in full", content, caller)
+            self.assertIn("`../superwork-tdd/SKILL.md` once", content, caller)
 
     def test_tdd_supports_direct_use_without_reverting_existing_work(self) -> None:
         content = (REPO_ROOT / "skills" / "superwork-tdd" / "SKILL.md").read_text(
@@ -173,25 +187,30 @@ class WorkflowContractTest(unittest.TestCase):
         targets = {edge["to"] for edge in self.contract["phaseTransitions"]}
         self.assertNotIn("superwork-init", targets)
 
-    def test_design_and_plan_skills_continue_by_default(self) -> None:
+    def test_planning_continues_through_tdd_without_execution_handoff(self) -> None:
         transitions = {(edge["from"], edge["to"]) for edge in self.contract["phaseTransitions"]}
-        self.assertIn(("superwork-brainstorming", "superwork-writing-plans"), transitions)
-        self.assertIn(("superwork-writing-plans", "superwork-executing-plans"), transitions)
+        self.assertIn(("superwork-planning", "superwork-check"), transitions)
+        self.assertNotIn(("superwork-planning", "superwork-executing-plans"), transitions)
+        planning_calls = {
+            item["method"] for item in self.contract["methodCalls"] if item["caller"] == "superwork-planning"
+        }
+        self.assertEqual(planning_calls, {"superwork-tdd"})
 
     def test_plans_are_resumable_single_file_serial_artifacts(self) -> None:
-        writing = (
-            REPO_ROOT / "skills" / "superwork-writing-plans" / "SKILL.md"
+        planning = (
+            REPO_ROOT / "skills" / "superwork-planning" / "SKILL.md"
         ).read_text(encoding="utf-8")
         executing = (
             REPO_ROOT / "skills" / "superwork-executing-plans" / "SKILL.md"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("one Markdown file", writing)
-        self.assertIn("`### Task <number>: <title>`", writing)
-        self.assertIn("`Task Status`", writing)
-        self.assertNotIn("overview.md", writing)
+        self.assertIn("one Markdown file", planning)
+        self.assertIn("`### Task <number>: <title>`", planning)
+        self.assertIn("`Task Status`", planning)
+        self.assertNotIn("overview.md", planning)
         self.assertIn("first unchecked task in document order", executing)
         self.assertNotIn("dependency-ready", executing)
+        self.assertIn("Do not rerun an equivalent proof", executing)
 
     def test_plan_preflight_reports_the_declared_task_heading(self) -> None:
         plan = self.contract["planContract"]
@@ -212,18 +231,20 @@ class WorkflowContractTest(unittest.TestCase):
         )
         headings = [
             "### Step 1: Gather context",
-            "### Step 2: Inspect the diff",
-            "### Step 3: Review simplification",
-            "### Step 4: Run fresh verification",
-            "### Step 5: Decide spec",
-            "### Step 6: Validate spec artifacts",
-            "### Step 7: Report",
+            "### Step 2: Inspect diff and evidence",
+            "### Step 3: Review simplification when needed",
+            "### Step 4: Complete verification",
+            "### Step 5: Decide durable spec",
+            "### Step 6: Report",
         ]
         positions = [content.index(heading) for heading in headings]
 
         self.assertEqual(positions, sorted(positions))
         self.assertIn("`no-change`", content)
         self.assertIn("`update`, `create`, or `no-update`", content)
+        self.assertIn("Do not rerun an equivalent targeted proof", content)
+        self.assertIn("only when its decision is `update` or `create`", content)
+        self.assertIn("only when the changed code presents", content)
         self.assertIn("explicit read-only request", content)
         self.assertNotIn("authorized_until", content)
         self.assertNotIn("route to `superwork-check`", content.lower())
@@ -235,7 +256,12 @@ class WorkflowContractTest(unittest.TestCase):
         )
 
     def test_removed_skill_references_are_absent(self) -> None:
-        forbidden = ("superwork-code-simplifier", "superwork-update-spec")
+        forbidden = (
+            "superwork-code-simplifier",
+            "superwork-update-spec",
+            "superwork-brainstorming",
+            "superwork-writing-plans",
+        )
         offenders: list[str] = []
         candidates = list((REPO_ROOT / "skills").glob("superwork-*/SKILL.md"))
         candidates.extend((REPO_ROOT / "skills" / "superwork-init" / "templates").glob("*"))

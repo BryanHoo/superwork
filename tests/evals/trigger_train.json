@@ -21,13 +21,13 @@
     "id": "train-medium-api-ui-change",
     "query": "实现用户停用功能，需要修改 API、服务层和管理页面，需求已经明确",
     "should_trigger": true,
-    "expected_route": "superwork-writing-plans"
+    "expected_route": "superwork-planning"
   },
   {
     "id": "train-heavy-permission-redesign",
     "query": "设计并实现跨包权限模型重构，角色继承和审计边界还没有定",
     "should_trigger": true,
-    "expected_route": "superwork-brainstorming"
+    "expected_route": "superwork-planning"
   },
   {
     "id": "train-resume-saved-plan",

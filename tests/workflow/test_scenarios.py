@@ -50,8 +50,7 @@ class WorkflowScenarioTest(unittest.TestCase):
 
         expected_routes = {
             "direct-response",
-            "superwork-brainstorming",
-            "superwork-writing-plans",
+            "superwork-planning",
             "superwork-tdd",
             "superwork-debugging",
             "superwork-check",

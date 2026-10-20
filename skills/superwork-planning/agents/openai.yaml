@@ -1,0 +1,6 @@
+interface:
+  display_name: "Superwork Planning"
+  short_description: "Resolve uncertainty and plan resumable work"
+  default_prompt: "Use $superwork-planning to resolve this change and continue safely."
+policy:
+  allow_implicit_invocation: false

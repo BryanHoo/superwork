@@ -13,6 +13,7 @@ if str(SKILLS_ROOT) not in sys.path:
     sys.path.insert(0, str(SKILLS_ROOT))
 
 from _shared.repository import (  # noqa: E402
+    RUNTIME_SCHEMA_VERSION,
     collect_git_changes,
     detect_package_manager,
     detect_verification_commands,
@@ -20,7 +21,6 @@ from _shared.repository import (  # noqa: E402
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
-RUNTIME_SCHEMA_VERSION = 2
 
 
 def parse_args() -> argparse.Namespace:
@@ -187,6 +187,45 @@ def derive_package_layer_scope(spec_root: Path, changed_files: list[str]) -> tup
     return scoped_package_layers, wildcard_layers
 
 
+def build_candidate_reads(
+    root: Path,
+    guides_index: Path,
+    package_reads: list[str],
+    changed_files: list[str],
+    read_scope: str,
+) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+
+    if guides_index.exists():
+        candidates.append(
+            {
+                "path": str(guides_index.relative_to(root)),
+                "reason": "project-wide guidance; load only when the task changes shared workflow or rules",
+                "priority": "recommended",
+                "size": guides_index.stat().st_size,
+            }
+        )
+
+    for rel_path in package_reads:
+        path = root / rel_path
+        # 变更可以映射到具体 layer 时，该索引才是当前任务的必读事实。
+        priority = "required" if changed_files and read_scope == "changed-files" else "recommended"
+        candidates.append(
+            {
+                "path": rel_path,
+                "reason": (
+                    "matched the current changed-file scope"
+                    if priority == "required"
+                    else "available package or layer guidance; load when task evidence makes it relevant"
+                ),
+                "priority": priority,
+                "size": path.stat().st_size if path.exists() else 0,
+            }
+        )
+
+    return candidates
+
+
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
@@ -213,12 +252,10 @@ def main() -> int:
     changed_files = change_detection.files
     packages: list[dict[str, object]] = []
     package_indexes: list[str] = []
-    recommended_reads: list[str] = []
+    package_reads: list[str] = []
     read_scope = "full"
 
     guides_index = spec_root / "guides" / "index.md"
-    if guides_index.exists():
-        recommended_reads.append(str(guides_index.relative_to(root)))
 
     # 从 `.superwork/spec` 反推布局，并按当前变更收敛推荐阅读。
     if spec_root.exists():
@@ -242,7 +279,13 @@ def main() -> int:
         if changed_files and not package_reads:
             package_reads = package_indexes.copy()
             read_scope = "full-fallback"
-        recommended_reads.extend(package_reads)
+    candidate_reads = build_candidate_reads(
+        root,
+        guides_index,
+        package_reads,
+        changed_files,
+        read_scope,
+    )
 
     payload = {
         "project": {
@@ -256,7 +299,7 @@ def main() -> int:
             "layout": load_layout(spec_root) if spec_root.exists() else None,
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,
             "packageIndexes": package_indexes,
-            "recommendedReads": recommended_reads,
+            "candidateReads": candidate_reads,
             "readScope": read_scope,
             "changedFiles": changed_files,
         },
@@ -271,9 +314,9 @@ def main() -> int:
     print("- packages:")
     for package in packages:
         print(f"  - {package['name']}: {', '.join(package['layers']) or 'none'}")
-    print("- recommendedReads:")
-    for item in recommended_reads:
-        print(f"  - {item}")
+    print("- candidateReads:")
+    for item in candidate_reads:
+        print(f"  - {item['priority']}: {item['path']} ({item['reason']})")
     return 0
 
 

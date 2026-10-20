@@ -17,7 +17,7 @@ The caller provides:
 - relevant files, contracts, and project rules
 - a falsifiable expected outcome
 - the verification command or the smallest reliable way to derive it
-- the caller identity: `user`, `superwork-start`, `superwork-executing-plans`, or `superwork-debugging`
+- the caller identity: `user`, `superwork-start`, `superwork-planning`, `superwork-executing-plans`, or `superwork-debugging`
 
 Do not use this skill while root cause is unknown or architecture is unresolved. Return those cases to debugging or design/planning.
 
@@ -53,7 +53,7 @@ Return:
 - any refactor performed
 - remaining risks or broader checks still owned by the caller
 
-`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`. A direct `user` call reads `../superwork-check/SKILL.md` in full after GREEN unless the user explicitly limits the outcome.
+`superwork-start` sends a completed clear slice to `superwork-check`. `superwork-planning` and `superwork-executing-plans` resume the next bounded slice without reloading this skill. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`. A direct `user` call reads `../superwork-check/SKILL.md` once after GREEN unless the user explicitly limits the outcome.
 
 ## Stop Conditions
 

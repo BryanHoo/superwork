@@ -15,7 +15,7 @@
     "id": "validation-medium-english",
     "query": "Implement the already-specified audit export across the handler, service, and tests.",
     "should_trigger": true,
-    "expected_route": "superwork-writing-plans"
+    "expected_route": "superwork-planning"
   },
   {
     "id": "validation-bug-casual",

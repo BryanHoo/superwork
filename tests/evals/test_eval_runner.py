@@ -4,12 +4,15 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tests.evals.run_skill_evals import (
     build_codex_command,
     create_fixture,
     evaluate_case,
     parse_jsonl_output,
+    run_suite,
+    summarize_efficiency,
     validate_cases,
 )
 
@@ -76,6 +79,56 @@ class SkillEvalRunnerTest(unittest.TestCase):
 
         self.assertFalse(result["passed"])
         self.assertEqual(result["invalidRuns"], 1)
+
+    def test_efficiency_summary_uses_valid_runs(self) -> None:
+        runs = [
+            {"exitCode": 0, "durationMs": 300, "eventCount": 30},
+            {"exitCode": 1, "durationMs": 1, "eventCount": 1},
+            {"exitCode": 0, "durationMs": 100, "eventCount": 10},
+            {"exitCode": 0, "durationMs": 200, "eventCount": 20},
+        ]
+
+        summary = summarize_efficiency(runs)
+
+        self.assertEqual(summary["validRuns"], 3)
+        self.assertEqual(summary["medianDurationMs"], 200)
+        self.assertEqual(summary["medianEventCount"], 20)
+
+    def test_suite_aborts_after_fatal_authentication_failure(self) -> None:
+        cases = [
+            {
+                "id": "first",
+                "query": "Implement a change",
+                "should_trigger": True,
+                "expected_route": "superwork-tdd",
+            },
+            {
+                "id": "second",
+                "query": "Fix a bug",
+                "should_trigger": True,
+                "expected_route": "superwork-debugging",
+            },
+        ]
+        failed_run = {
+            "triggered": False,
+            "route": None,
+            "exitCode": 1,
+            "durationMs": 100,
+            "eventCount": 1,
+            "error": "HTTP error: 401 Unauthorized",
+        }
+
+        with patch("tests.evals.run_skill_evals.run_once", return_value=failed_run) as run_once:
+            result = run_suite(cases, REPO_ROOT / "skills", "codex", 3, 0.5, 180)
+
+        run_once.assert_called_once()
+        self.assertTrue(result["aborted"])
+        self.assertEqual(result["executedCases"], 1)
+        self.assertEqual(result["totalCases"], 2)
+        self.assertEqual(
+            result["abortReason"],
+            "Codex CLI authentication failed: 401 Unauthorized",
+        )
 
     def test_fixture_and_command_keep_live_eval_isolated_and_read_only(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -25,9 +25,9 @@ Do not propose or apply a repair before the root cause is confirmed.
 After confirmation:
 
 - define the smallest regression behavior that must remain fixed
-- read `../superwork-tdd/SKILL.md` in full and pass the structured handoff defined by `superwork-start` to create the failing regression proof and implement the repair
+- read `../superwork-tdd/SKILL.md` once and pass the structured handoff defined by `superwork-start` to create the failing regression proof and implement the repair
 - do not stack unrelated fixes or opportunistic refactors
-- after TDD returns green, confirm the original symptom is gone, then read `../superwork-check/SKILL.md` in full and pass the finalization handoff once
+- after TDD returns green, confirm the original symptom is gone, then read `../superwork-check/SKILL.md` once and pass the finalization handoff once
 
 This skill does not write the regression test itself; TDD owns RED, GREEN, and REFACTOR. Debugging owns the evidence and hypothesis that make that RED trustworthy.
 

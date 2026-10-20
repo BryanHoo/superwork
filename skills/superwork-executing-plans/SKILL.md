@@ -1,13 +1,13 @@
 ---
 name: superwork-executing-plans
-description: Use this skill to execute or resume a preflighted Superwork plan from its first unchecked task. Preserve serial task state, stop on plan drift, use TDD for each code behavior slice, and hand the completed plan to final verification once.
+description: Use this skill to resume a previously saved, preflighted Superwork plan from its first unchecked task. Preserve serial task state, stop on plan drift, load TDD once for all code behavior slices, and hand the completed plan to final verification once.
 ---
 
 # Superwork Executing Plans
 
 ## Purpose
 
-Coordinate a saved implementation plan without redefining design, TDD, debugging, or completion rules.
+Resume a saved implementation plan without repeating same-session planning or redefining TDD and completion rules.
 
 ## Entry
 
@@ -23,16 +23,16 @@ Coordinate a saved implementation plan without redefining design, TDD, debugging
 
 ## Execute Tasks
 
-For each unchecked task in document order:
+Before the first code task, read `../superwork-tdd/SKILL.md` once and reuse it for all code behavior slices. For each unchecked task in document order:
 
 1. Mark it in progress.
-2. Re-read that task's files, interfaces, expected signal, and stop conditions.
-3. For a code behavior slice, read `../superwork-tdd/SKILL.md` in full, pass the structured handoff, and wait for its RED/GREEN/REFACTOR evidence.
+2. Re-read that task's files, behavior, proof, optional interfaces, and stop conditions.
+3. For a code behavior slice, pass the structured handoff to the loaded TDD method and wait for its RED/GREEN/REFACTOR evidence.
 4. For a non-code slice, execute its smallest falsifiable proof before and after the edit.
-5. Run the task-level verification from the plan.
+5. Treat a TDD GREEN command as the task proof when it is equivalent and no later edit invalidated it. Do not rerun an equivalent proof; run only a distinct or stale task proof.
 6. Change its `Task Status` checkbox to completed only after the expected signal is observed.
 
-After all tasks pass, read `../superwork-check/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, including plan completion and verification evidence.
+After all tasks pass, read `../superwork-check/SKILL.md` once and pass the structured handoff defined by `superwork-start`, including plan completion and verification evidence.
 
 ## Plan Drift
 

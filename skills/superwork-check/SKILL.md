@@ -1,6 +1,6 @@
 ---
 name: superwork-check
-description: Use this skill to finalize completed repository changes or answer an explicit readiness request. Apply necessary in-scope simplification and durable spec updates by default, run fresh verification, validate final artifacts, and report completion evidence exactly once unless the user explicitly requires read-only checking.
+description: Use this skill to finalize completed repository changes or answer an explicit readiness request. Reuse current TDD evidence, add only risk-relevant verification, load simplification or spec guidance conditionally, and report completion evidence exactly once unless the user explicitly requires read-only checking.
 ---
 
 # Superwork Check
@@ -11,7 +11,7 @@ Produce trustworthy completion evidence in one internal sequence. Enter after im
 
 ## Change Policy
 
-Apply necessary in-scope simplification and durable spec updates, then re-verify the resulting artifacts. For an explicit read-only request or an explicit instruction not to modify files, report recommended changes without applying them.
+Apply necessary in-scope simplification and durable spec updates only when the diff provides a concrete signal. For an explicit read-only request or an explicit instruction not to modify files, report recommended changes without applying them.
 
 ## Finalization Sequence
 
@@ -23,17 +23,17 @@ Run:
 python3 <skill_dir>/scripts/check_specs.py --root . --format json
 ```
 
-Use its changed files, relevant specs, verification hints, runtime status, and risks. Read applicable spec indexes and concrete linked docs before judging the diff.
+Use its changed files, relevant spec candidates, verification hints, runtime status, and risks. Do not read every returned spec; load only the entries needed to judge a concrete changed contract or project rule.
 
-### Step 2: Inspect the diff
+### Step 2: Inspect diff and evidence
 
-Review all current-task changes against the selected design or saved plan, project instructions, interfaces, and relevant specs. Separate unrelated user changes and preserve them.
+Review all current-task changes against the request, optional saved plan, project instructions, interfaces, and already loaded relevant specs. Separate unrelated user changes and preserve them.
 
-Identify missing behavior, tests, edge cases, contract drift, and scope expansion before reporting success.
+Build an evidence ledger containing each TDD RED/GREEN command, the last relevant edit, and any broader check already run. Identify missing behavior, tests, edge cases, contract drift, and scope expansion before reporting success.
 
-### Step 3: Review simplification
+### Step 3: Review simplification when needed
 
-Read [references/simplification-review.md](references/simplification-review.md). Record exactly one outcome:
+Read [references/simplification-review.md](references/simplification-review.md) only when the changed code presents concrete duplication, excess nesting, speculative abstraction, or local complexity. Otherwise record `no-change` directly. Record exactly one outcome:
 
 - `no-change`
 - `changed`, followed by targeted re-verification
@@ -43,35 +43,31 @@ Diff size controls review depth, not whether code must change. This review never
 
 During an explicitly read-only check, do not apply cleanup; report the concrete finding instead.
 
-### Step 4: Run fresh verification
+### Step 4: Complete verification
 
-Run the commands that prove the claims being made now:
+Accept a targeted TDD proof as current when it ran after the last relevant code or test edit. Do not rerun an equivalent targeted proof. Run only the commands still needed to prove the final state:
 
-- targeted behavior or regression tests
-- broader tests when the change crosses boundaries
+- a targeted behavior or regression test when the prior proof is stale or missing
+- broader tests when the change crosses boundaries and they are not already current
 - lint, typecheck, build, schema, packaging, or render checks when applicable
 
-Use project commands from `.superwork/config.json` and relevant spec checklists. Earlier output is not fresh completion evidence.
+Use project commands from the gathered context and relevant spec checklists. Evidence from before the last relevant edit is stale.
 
-### Step 5: Decide spec
+### Step 5: Decide durable spec
 
-Read [references/spec-update.md](references/spec-update.md), then run:
+Run the deterministic classifier first:
 
 ```bash
 python3 <skill_dir>/scripts/update_spec.py --root . --format json
 ```
 
-Use the script as a target suggestion, not the final judgment. Choose `update`, `create`, or `no-update` and state the reason. Do not record transient implementation details as durable rules.
+Use the script as a target suggestion, not the final judgment. Read [references/spec-update.md](references/spec-update.md) only when its decision is `update` or `create`. Choose `update`, `create`, or `no-update` and state the reason. Do not record transient implementation details as durable rules.
 
 During an explicitly read-only check, do not edit specs. Report an `update` or `create` recommendation as unapplied, or choose `no-update` when no durable knowledge changed.
 
-### Step 6: Validate spec artifacts
+After `update` or `create`, confirm the document is reachable from the relevant index, contains concrete rules or verification guidance, and passes available documentation or structure checks. If spec files change after code verification, run only the checks needed to validate those final artifacts.
 
-After `update` or `create`, confirm the document is reachable from the relevant index, contains concrete rules or verification guidance, and passes available documentation or structure checks.
-
-If spec files change after code verification, run the checks needed to validate those final artifacts before completion.
-
-### Step 7: Report
+### Step 6: Report
 
 Report findings before summary:
 

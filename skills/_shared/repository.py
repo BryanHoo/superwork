@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 GIT_TIMEOUT_SECONDS = 10
+RUNTIME_SCHEMA_VERSION = 3
 IGNORED_WALK_DIRS = {
     ".git",
     ".superwork",

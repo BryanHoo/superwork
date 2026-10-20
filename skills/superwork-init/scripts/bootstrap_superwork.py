@@ -18,7 +18,12 @@ SKILLS_ROOT = Path(__file__).resolve().parents[2]
 if str(SKILLS_ROOT) not in sys.path:
     sys.path.insert(0, str(SKILLS_ROOT))
 
-from _shared.repository import detect_package_manager, detect_verification_commands  # noqa: E402
+from _shared.repository import (  # noqa: E402
+    RUNTIME_SCHEMA_VERSION,
+    detect_package_manager,
+    detect_verification_commands,
+)
+from runtime_templates import layered_guides_files, layered_shared_files  # noqa: E402
 
 
 IGNORED_DIRS = {
@@ -151,6 +156,7 @@ def config_template(
 ) -> str:
     content = render_template(
         "config.json.tmpl",
+        schema_version=str(RUNTIME_SCHEMA_VERSION),
         package_manager=json.dumps(package_manager, ensure_ascii=False),
         packages=json.dumps(packages, ensure_ascii=False, indent=2),
         verification=json.dumps(verification, ensure_ascii=False, indent=2),
@@ -158,14 +164,6 @@ def config_template(
     # 写入前用标准库重新解析，避免模板替换生成无效 JSON。
     payload = json.loads(content)
     return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
-
-
-def guides_index_template(test_hints: list[str]) -> str:
-    hint_lines = "\n".join(f"- `{hint}`" for hint in test_hints)
-    return render_template(
-        "guides-index.md.tmpl",
-        test_hints=hint_lines,
-    )
 
 
 def package_index_template(package_name: str, layer: str, package_manager: str) -> str:
@@ -186,49 +184,6 @@ def package_guideline_template(package_name: str, layer: str) -> str:
         layer=layer,
         layer_title=layer.title(),
     )
-
-
-def layered_guides_files(test_hints: list[str]) -> dict[str, str]:
-    return {
-        # 运行时 guides index 统一从模板渲染，避免模板文件与内联文案双份漂移。
-        ".superwork/spec/guides/index.md": guides_index_template(test_hints),
-        ".superwork/spec/guides/code-reuse-thinking-guide.md": """# Code Reuse Thinking Guide
-
-## Goal
-
-Reduce duplicated logic before it spreads across the project.
-
-## Checklist
-
-- Search for an existing helper before creating a new one
-- Prefer extending a stable pattern over adding a near-duplicate
-- Record the chosen abstraction in the relevant layer doc when it becomes durable
-""",
-        ".superwork/spec/guides/cross-layer-thinking-guide.md": """# Cross-Layer Thinking Guide
-
-## Goal
-
-Make contracts explicit when behavior crosses frontend, backend, and shared boundaries.
-
-## Checklist
-
-- Trace the data shape from entry to output
-- Call out validation, error, and fallback behavior
-- Update both sides of the contract when one side changes
-""",
-        ".superwork/spec/guides/cross-platform-thinking-guide.md": """# Cross-Platform Thinking Guide
-
-## Goal
-
-Keep tooling and scripts understandable across local machines and CI.
-
-## Checklist
-
-- Prefer `python3` for Python scripts
-- Prefer portable paths and repository-relative commands
-- Record shell or platform assumptions before relying on them
-""",
-    }
 
 
 def layered_frontend_files(scope_label: str) -> dict[str, str]:
@@ -427,53 +382,6 @@ Capture schema, query, and migration rules for {scope_label}.
 - Keep schema changes and verification steps explicit
 - Prefer existing query and transaction patterns before adding new ones
 - Record indexing, performance, and consistency assumptions when they matter
-""",
-    }
-
-
-def layered_shared_files(scope_label: str) -> dict[str, str]:
-    return {
-        "index.md": f"""# Shared Development Guidelines
-
-## Scope
-
-Durable shared rules for {scope_label}.
-
-## Guidelines Index
-
-| Guide | Description |
-|---|---|
-| [Directory Structure](./directory-structure.md) | Where shared modules and helpers belong |
-| [Quality Guidelines](./quality-guidelines.md) | Reuse, testing, and compatibility rules |
-
-## Pre-Development Checklist
-
-- Read `.superwork/spec/guides/index.md`
-- Read both guides before changing shared contracts or utilities
-""",
-        "directory-structure.md": f"""# Shared Directory Structure
-
-## Purpose
-
-Document how reusable code should be organized for {scope_label}.
-
-## Rules
-
-- Keep shared modules narrowly reusable
-- Avoid moving feature-specific code into shared directories too early
-- Record ownership or boundary rules when multiple packages depend on the same module
-""",
-        "quality-guidelines.md": f"""# Shared Quality Guidelines
-
-## Purpose
-
-Capture compatibility and verification standards for {scope_label}.
-
-## Rules
-
-- Check all known consumers before changing a shared contract
-- Prefer backward-compatible changes when practical
-- Record migration notes when breaking behavior is intentional
 """,
     }
 

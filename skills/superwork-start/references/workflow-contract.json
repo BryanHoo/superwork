@@ -1,11 +1,10 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "implicitEntry": "superwork-start",
   "skills": [
     "superwork-init",
     "superwork-start",
-    "superwork-brainstorming",
-    "superwork-writing-plans",
+    "superwork-planning",
     "superwork-executing-plans",
     "superwork-tdd",
     "superwork-debugging",
@@ -24,21 +23,36 @@
       "stopConditions",
       "returnTo"
     ],
-    "loadTargetSkill": "read-full-skill-md",
+    "loadTargetSkill": "read-once-per-run",
     "targetPath": "../{target}/SKILL.md"
   },
   "planContract": {
     "format": "single-markdown-file",
     "taskHeading": "### Task <number>: <title>",
     "executionOrder": "first-unchecked-task",
-    "statusMarker": "Task Status"
+    "statusMarker": "Task Status",
+    "requiredHeader": [
+      "Goal",
+      "Scope",
+      "Acceptance"
+    ],
+    "taskFields": [
+      "Files",
+      "Behavior",
+      "Proof",
+      "Stop Conditions",
+      "Task Status"
+    ],
+    "optionalTaskFields": [
+      "Interfaces"
+    ]
   },
   "routes": {
     "analysis": "direct-response",
     "bug": "superwork-debugging",
-    "light": "superwork-tdd",
-    "medium": "superwork-writing-plans",
-    "heavy": "superwork-brainstorming",
+    "development": "superwork-tdd",
+    "planning": "superwork-planning",
+    "resume": "superwork-executing-plans",
     "verification": "superwork-check"
   },
   "phaseTransitions": [
@@ -48,11 +62,7 @@
     },
     {
       "from": "superwork-start",
-      "to": "superwork-writing-plans"
-    },
-    {
-      "from": "superwork-start",
-      "to": "superwork-brainstorming"
+      "to": "superwork-planning"
     },
     {
       "from": "superwork-start",
@@ -63,12 +73,8 @@
       "to": "superwork-executing-plans"
     },
     {
-      "from": "superwork-brainstorming",
-      "to": "superwork-writing-plans"
-    },
-    {
-      "from": "superwork-writing-plans",
-      "to": "superwork-executing-plans"
+      "from": "superwork-planning",
+      "to": "superwork-check"
     },
     {
       "from": "superwork-executing-plans",
@@ -89,6 +95,11 @@
       "caller": "superwork-executing-plans",
       "method": "superwork-tdd",
       "returnsTo": "superwork-executing-plans"
+    },
+    {
+      "caller": "superwork-planning",
+      "method": "superwork-tdd",
+      "returnsTo": "superwork-planning"
     },
     {
       "caller": "superwork-debugging",
