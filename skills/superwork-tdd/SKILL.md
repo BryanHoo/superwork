@@ -48,12 +48,13 @@ Improve names, duplication, nesting, or local structure only when the result is 
 Return:
 
 - RED command and intended failure reason
-- GREEN command and pass signal
+- GREEN command, working directory, pass signal and exit status, verified behavior and input scope, and execution point relative to the last relevant edit
+- relevant dependency, configuration, environment, and fixture state needed to judge whether the result remains current
 - files changed
 - any refactor performed
 - remaining risks or broader checks still owned by the caller
 
-`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`. A direct `user` call reads `../superwork-check/SKILL.md` in full after GREEN unless the user explicitly limits the outcome.
+`superwork-start` sends a completed light slice to `superwork-check`. `superwork-executing-plans` resumes the next saved-plan task. `superwork-debugging` confirms the regression repair and then hands completion to `superwork-check`. A direct `user` call reads `../superwork-check/SKILL.md` once per run in full after GREEN unless the user explicitly limits the outcome.
 
 ## Stop Conditions
 

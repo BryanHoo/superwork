@@ -6,14 +6,15 @@ Shared project-wide engineering rules used by all packages and layers.
 
 ## Pre-Development Checklist
 
-- Read `.superwork/config.json`
-- Read the relevant package/layer `index.md`
+- Use the runtime config returned by context discovery, or read `.superwork/config.json`
+- Read global and applicable shared rules, then the package/layer indexes for intended files before editing
+- Load linked reference docs when their rules apply; reuse already-read guidance only while its content remains current and available
 - Read applicable `AGENTS.md` instructions before changing files
 - Keep project-specific contracts in `.superwork/spec/`, not in generated workflow copies
 
 ## Verification Checklist
 
-- Run fresh verification before any completion claim
+- Require current verification evidence before any completion claim; reuse equivalent checks only when their inputs and environment remain unchanged, and rerun missing or invalidated checks
 - Use project-local commands such as:
 {{ test_hints }}
 

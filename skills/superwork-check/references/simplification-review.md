@@ -19,7 +19,7 @@ Diff size increases review depth but does not require manufacturing a code chang
 
 ## Outcomes
 
-- `no-change`: the changed code is already clear and consistent; continue to fresh verification
+- `no-change`: the changed code is already clear and consistent; continue to verification using current evidence where valid
 - `changed`: apply one behavior-preserving cleanup, rerun the targeted proof, then continue
 - `blocked`: the proposed cleanup changes behavior or scope; return it to implementation or debugging
 

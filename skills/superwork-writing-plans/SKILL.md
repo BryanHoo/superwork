@@ -11,14 +11,16 @@ Create an executable plan that fixes boundaries, interfaces, verification, and s
 
 ## Inputs
 
-Read:
+Reuse current inputs from the handoff; read missing or changed inputs:
 
 - design artifact or clear task requirements
-- `.superwork/config.json` when available
-- relevant `.superwork/spec/**` indexes and linked concrete docs
+- runtime config embedded by `get_context.py`, or `.superwork/config.json` on direct entry
+- required spec indexes and the linked rules that constrain the intended files, interfaces, or verification; scope candidate reads with `get_context.py --files <path> ...` when needed
 - existing source and test patterns needed to name real files and interfaces
 
 If the work is still a light, tightly bounded change, return it to `superwork-tdd`. If unresolved design choices remain, return it to `superwork-brainstorming`.
+
+Keep `Suggested Spec Reads`, `Global Constraints`, and task `Interfaces` explicit in the saved plan. On-demand reading does not remove applicable rules or their exact values from the handoff artifact.
 
 ## Plan Location
 
@@ -115,4 +117,4 @@ Before handoff:
 
 ## Continuation Policy
 
-After the plan passes preflight, read `../superwork-executing-plans/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, including the exact plan path and preflight evidence. If the user explicitly asks for a plan only or says not to implement, save the plan, report its path and preflight result, and stop.
+After the plan passes preflight, read `../superwork-executing-plans/SKILL.md` once per run in full and pass the structured handoff defined by `superwork-start`, including the exact plan path and preflight evidence. If the user explicitly asks for a plan only or says not to implement, save the plan, report its path and preflight result, and stop.

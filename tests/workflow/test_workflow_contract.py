@@ -123,7 +123,7 @@ class WorkflowContractTest(unittest.TestCase):
             handoff["requiredFields"],
             ["target", "caller", "outcome", "evidence", "stopConditions", "returnTo"],
         )
-        self.assertEqual(handoff["loadTargetSkill"], "read-full-skill-md")
+        self.assertEqual(handoff["loadTargetSkill"], "read-once-per-run")
         self.assertEqual(handoff["targetPath"], "../{target}/SKILL.md")
 
     def test_plan_execution_contract_is_single_file_and_serial(self) -> None:
@@ -141,14 +141,14 @@ class WorkflowContractTest(unittest.TestCase):
             if source == "superwork-start":
                 continue
             content = (REPO_ROOT / "skills" / source / "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn(f"`../{target}/SKILL.md` in full", content, f"{source} -> {target}")
+            self.assertIn(f"`../{target}/SKILL.md` once per run in full", content, f"{source} -> {target}")
 
         for call in self.contract["methodCalls"]:
             caller = call["caller"]
             if caller == "superwork-start":
                 continue
             content = (REPO_ROOT / "skills" / caller / "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn("`../superwork-tdd/SKILL.md` in full", content, caller)
+            self.assertIn("`../superwork-tdd/SKILL.md` once per run in full", content, caller)
 
     def test_tdd_supports_direct_use_without_reverting_existing_work(self) -> None:
         content = (REPO_ROOT / "skills" / "superwork-tdd" / "SKILL.md").read_text(

@@ -27,13 +27,15 @@ python3 <skill_dir>/scripts/get_context.py --root . --format json
 
 Use `runtime.status` as follows:
 
-- `ready`: read `.superwork/config.json`, `.superwork/spec/guides/index.md`, every `recommendedReads` path, and concrete docs linked by those indexes
+- `ready`: use the embedded runtime config and project facts; read `candidateReads` marked `required`, then load recommended indexes or linked docs only when their rules apply to the task. Global and applicable shared indexes remain required.
 - `missing`: if the user explicitly requested Superwork, report initialization as required before an artifact-backed write workflow; otherwise leave Superwork routing and continue the repository request normally without workflow artifacts
 - `unsupported-schema`: report the runtime mismatch and require an explicit repair request before changing runtime files
 
 Do not invoke `superwork-init` unless the user explicitly asks to initialize, onboard, adopt, or repair Superwork. Read-only requests can finish without `.superwork/`.
 
 Never block ordinary repository work merely because an implicitly selected Superwork runtime is missing.
+
+Before the first edit, scope guidance to the task's intended files, including new files, with `get_context.py --root . --format json --files <path> ...` when the initial Git scope is empty or includes unrelated changes. Load the applicable package/layer indexes and their binding linked rules before implementation; a recommended priority never overrides a project requirement. Reassess reads when the task scope grows. `recommendedReads` remains a compatibility field, not an instruction to read every document.
 
 ### Step 3: Classify the work
 
@@ -54,9 +56,11 @@ Task size chooses planning depth only. It does not decide whether implementation
 
 Before handoff, report `Superwork route: <route> - <reason>.` using one short reason tied to the request and repository evidence.
 
-Then read `../<route>/SKILL.md` in full and continue with exactly one route. Do not reproduce downstream implementation rules here.
+Then read `../<route>/SKILL.md` once per run in full and continue with exactly one route. Do not reproduce downstream implementation rules here.
 
 Pass a handoff with `target`, `caller`, `outcome`, `evidence`, `stopConditions`, and `returnTo`. Treat `skills/superwork-start/references/workflow-contract.json` as the machine-readable source for this contract.
+
+A run is continuous execution by one agent in one workspace with the loaded instructions available. Load each skill in full once per run and reuse it across slices. Reload when instructions change, a new run or executor starts, or the loaded content is unavailable after context loss. Apply the same rule to already-read references and project guidance; do not cache mutable source code, plan status, or verification results under this rule.
 
 ## Handoff Contract
 

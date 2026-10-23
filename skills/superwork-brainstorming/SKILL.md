@@ -19,7 +19,7 @@ Do not write implementation code or scaffold product files while designing. Plan
 
 ## Process
 
-1. Inspect the repository, recent changes, `.superwork/config.json`, relevant spec indexes, and concrete linked docs when available.
+1. Reuse current project facts and already-read guidance from the handoff. Inspect relevant repository changes, required indexes, and only the linked docs needed for the design decisions; on direct entry, obtain context through `superwork-start/scripts/get_context.py` first. Read applicable binding rules even when they are listed as recommended.
 2. Identify whether the request contains multiple independent subsystems. Split it before detailed design when one document would not produce a coherent implementation plan.
 3. Resolve uncertainty from repository evidence and reasonable assumptions. Ask one focused question only when a missing choice would materially change the outcome.
 4. Present two or three viable approaches with trade-offs and a recommendation.
@@ -46,7 +46,7 @@ Do not auto-commit the design document.
 
 ## Continuation Policy
 
-Continue by default after the design is self-reviewed: read `../superwork-writing-plans/SKILL.md` in full and pass the structured handoff defined by `superwork-start`, with the design path and self-review evidence. If the user explicitly asks to stop after design or says not to plan or implement, save and report the design without loading the next skill.
+Continue by default after the design is self-reviewed: read `../superwork-writing-plans/SKILL.md` once per run in full and pass the structured handoff defined by `superwork-start`, with the design path and self-review evidence. If the user explicitly asks to stop after design or says not to plan or implement, save and report the design without loading the next skill.
 
 ## Boundaries
 

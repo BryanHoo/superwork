@@ -27,6 +27,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument(
+        "--files", nargs="+", type=Path, default=[],
+        help="Target files relative to --root; scope guidance before editing instead of using all Git changes",
+    )
     return parser.parse_args()
 
 
@@ -187,9 +191,52 @@ def derive_package_layer_scope(spec_root: Path, changed_files: list[str]) -> tup
     return scoped_package_layers, wildcard_layers
 
 
+def build_candidate_reads(
+    root: Path,
+    guides_index: Path,
+    package_indexes: list[str],
+    selected_reads: list[str],
+    read_scope: str,
+) -> list[dict[str, object]]:
+    """保留公共与共享约束，按目标范围区分必读索引和可按需读取的候选。"""
+    selected = set(selected_reads)
+    selected_packages = {Path(path).parent.parent for path in selected_reads}
+    paths = ([str(guides_index.relative_to(root))] if guides_index.exists() else []) + package_indexes
+    candidates: list[dict[str, object]] = []
+    for relative in dict.fromkeys(paths):
+        path = root / relative
+        is_global = path == guides_index
+        is_shared = path.parent.name == "shared" and (
+            path.parent.parent == guides_index.parent.parent
+            or Path(relative).parent.parent in selected_packages
+        )
+        # 无法定位目标时保守保留全部索引；已定位时仍补入相关包的共享约束。
+        required = is_global or is_shared or (read_scope != "full" and relative in selected)
+        if is_global or is_shared:
+            reason = "global or applicable shared constraints"
+        elif required:
+            reason = "scope could not be mapped; conservative fallback" if read_scope == "full-fallback" else "matched target or changed-file scope"
+        else:
+            reason = "available guidance; load when task evidence makes it relevant"
+        candidates.append({
+            "path": relative, "priority": "required" if required else "recommended",
+            "reason": reason, "size": path.stat().st_size,
+        })
+    return candidates
+
+
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
+    # 显式任务路径可以尚不存在，但必须属于当前仓库，避免绝对路径误导分层匹配。
+    target_files: list[str] = []
+    for path in args.files:
+        try:
+            relative = str((root / path).resolve().relative_to(root))
+        except ValueError:
+            raise SystemExit(f"target file is outside repository: {path}")
+        if relative not in target_files:
+            target_files.append(relative)
     runtime = load_runtime_config(root)
     runtime_config = runtime.get("config")
     configured_package_manager = (
@@ -211,6 +258,7 @@ def main() -> int:
     spec_root = root / ".superwork" / "spec"
     change_detection = collect_git_changes(root)
     changed_files = change_detection.files
+    scope_files = target_files or changed_files
     packages: list[dict[str, object]] = []
     package_indexes: list[str] = []
     recommended_reads: list[str] = []
@@ -224,12 +272,12 @@ def main() -> int:
     if spec_root.exists():
         layout = load_layout(spec_root)
         if layout["mode"] == "layer-root":
-            scope_layers = derive_layer_scope(changed_files)
+            scope_layers = derive_layer_scope(scope_files)
             packages, package_indexes, package_reads = collect_layer_root_context(root, spec_root, scope_layers)
             if scope_layers:
-                read_scope = "changed-files"
+                read_scope = "target-files" if target_files else "changed-files"
         else:
-            scoped_package_layers, wildcard_layers = derive_package_layer_scope(spec_root, changed_files)
+            scoped_package_layers, wildcard_layers = derive_package_layer_scope(spec_root, scope_files)
             packages, package_indexes, package_reads = collect_package_layer_context(
                 root,
                 spec_root,
@@ -237,9 +285,9 @@ def main() -> int:
                 wildcard_layers,
             )
             if scoped_package_layers is not None:
-                read_scope = "changed-files"
+                read_scope = "target-files" if target_files else "changed-files"
         # 如果变更范围无法映射到任何 index，回退到全量索引，避免漏读。
-        if changed_files and not package_reads:
+        if scope_files and not package_reads:
             package_reads = package_indexes.copy()
             read_scope = "full-fallback"
         recommended_reads.extend(package_reads)
@@ -257,7 +305,11 @@ def main() -> int:
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,
             "packageIndexes": package_indexes,
             "recommendedReads": recommended_reads,
+            "candidateReads": build_candidate_reads(
+                root, guides_index, package_indexes, recommended_reads, read_scope,
+            ),
             "readScope": read_scope,
+            "scopeFiles": scope_files,
             "changedFiles": changed_files,
         },
     }
@@ -271,9 +323,9 @@ def main() -> int:
     print("- packages:")
     for package in packages:
         print(f"  - {package['name']}: {', '.join(package['layers']) or 'none'}")
-    print("- recommendedReads:")
-    for item in recommended_reads:
-        print(f"  - {item}")
+    print("- candidateReads:")
+    for item in payload["spec"]["candidateReads"]:
+        print(f"  - [{item['priority']}] {item['path']} ({item['size']} bytes): {item['reason']}")
     return 0
 
 

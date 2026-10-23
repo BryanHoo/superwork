@@ -24,8 +24,13 @@
       "stopConditions",
       "returnTo"
     ],
-    "loadTargetSkill": "read-full-skill-md",
-    "targetPath": "../{target}/SKILL.md"
+    "loadTargetSkill": "read-once-per-run",
+    "targetPath": "../{target}/SKILL.md",
+    "reloadTargetSkillWhen": [
+      "new-run",
+      "instructions-changed",
+      "context-unavailable"
+    ]
   },
   "planContract": {
     "format": "single-markdown-file",

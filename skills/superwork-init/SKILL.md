@@ -45,7 +45,7 @@ Do not generate route/state blocks, scripts, templates, or copies of the generic
 
 4. Replace generic generated spec wording with project-true paths, commands, contracts, and checklists.
 5. Verify `config.json` parses, `schemaVersion` is `2`, spec links resolve, and no generic workflow copy was generated.
-6. When the user also requested development, read `../superwork-start/SKILL.md` in full and pass a structured handoff containing the initialized runtime evidence. Otherwise report initialization and stop.
+6. When the user also requested development, read `../superwork-start/SKILL.md` once per run in full and pass a structured handoff containing the initialized runtime evidence. Otherwise report initialization and stop.
 
 ## Preservation Rules
 

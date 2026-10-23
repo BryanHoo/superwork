@@ -15,12 +15,14 @@ Durable contracts for the Superwork skill bundle and its deterministic tooling.
 
 - Read `.superwork/spec/guides/index.md`
 - Read both guides before changing a skill boundary, workflow contract, script, or plugin metadata
+- Reuse these guides within the same run while their content remains current and available
 
 ## Verification Checklist
 
 - Confirm the eight-skill set matches `workflow-contract.json`
 - Confirm only `superwork-start` is implicitly invocable
 - Confirm all implementation paths call TDD and all completion paths enter check once
+- Confirm schema 2, medium/heavy planning routes, mandatory plan interfaces, and spec-reference preflight remain intact
 
 ## Update Triggers
 
