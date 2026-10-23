@@ -11,6 +11,10 @@ Capture workflow correctness and validation standards for this project.
 - Keep every `SKILL.md` focused and under 500 lines; move conditional detail to one-level references
 - Start every skill description with user intent, state its trigger boundary, and keep it within 1024 characters
 - Validate all skill frontmatter, all `agents/openai.yaml` policies, and the plugin manifest
+- Verify installation through standard input without a source checkout, including download failures, shared imports, template loading, and repeatable runs after runtime caches are generated
+- Keep the Shell installer executable and independent of Python and Git; workflow scripts retain their own Python requirements
+- Preflight all installation destinations before writes; reuse identical content and verified file hard links, and reject conflicts without overwriting user content
+- Verify Claude files share inode identity with the default installation; directory symlinks do not satisfy the hard-link contract
 - Maintain at least 20 balanced trigger eval queries split into fixed train and validation sets
 - Run each live trigger query three times by default; treat timeouts, authentication failures, and nonzero exits as invalid runs rather than negative triggers
 - Keep static workflow scenarios classified as `happy-path` or `guardrail`; do not present them as trigger negatives

@@ -9,6 +9,9 @@ Define ownership boundaries for the Superwork plugin, skills, tests, and project
 - Store plugin distribution metadata only in `.codex-plugin/plugin.json`
 - Store one skill per `skills/<skill-name>/SKILL.md` with optional one-level `agents/`, `references/`, `scripts/`, and `templates/`
 - Store plugin-wide deterministic repository helpers under `skills/_shared/`; do not register that directory as a skill
+- Store the standalone installation entry at `scripts/install.sh` and its integration tests at `tests/test_install.py`
+- Download and copy every skill directory and `skills/_shared/` into `~/.agents/skills/`; the installation must run without retaining a source checkout
+- For optional Claude Code support, recreate directories under `~/.claude/skills/` and hard-link individual files from the default installation on the same filesystem
 - Store the machine workflow contract under `skills/superwork-start/references/`
 - Store cross-skill contract and scenario tests under `tests/workflow/`
 - Store live trigger datasets, the isolated Codex runner, and runner tests under `tests/evals/`
