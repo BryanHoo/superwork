@@ -17,6 +17,7 @@ from _shared.repository import (  # noqa: E402
     detect_package_manager,
     detect_verification_commands,
 )
+from _shared.parallel import parallel_context  # noqa: E402
 
 
 KNOWN_LAYERS = {"frontend", "backend", "shared"}
@@ -300,6 +301,8 @@ def main() -> int:
         },
         "runtime": runtime,
         "changeDetection": change_detection.to_dict(),
+        # 仅加载协作摘要；对方计划与规范正文仍由执行者在确认影响后按需读取。
+        "parallel": parallel_context(root),
         "spec": {
             "layout": load_layout(spec_root) if spec_root.exists() else None,
             "guidesIndex": str(guides_index.relative_to(root)) if guides_index.exists() else None,
@@ -320,6 +323,18 @@ def main() -> int:
     print("Superwork context")
     print(f"- runtime: {runtime['status']}")
     print(f"- packageManager: {package_manager}")
+    parallel = payload["parallel"]
+    print(f"- parallel: {parallel['status']} ({len(parallel['tasks'])} task(s)); guide: {parallel['guide']}")
+    for task in parallel["tasks"]:
+        print(f"  - {task['id']} [{task['status']}] @{task['owner']}: {task['goal']}")
+        print(f"    writes: {', '.join(task['writePaths'])}")
+        print(f"    sharedImpact: {'; '.join(task['sharedImpact']) or 'none'}")
+        if task["plan"]:
+            print(f"    plan: {task['plan']}")
+        if task["reason"]:
+            print(f"    paused: {task['reason']}")
+    for error in parallel["errors"]:
+        print(f"  - error: {error['path']}: {error['error']}")
     print("- packages:")
     for package in packages:
         print(f"  - {package['name']}: {', '.join(package['layers']) or 'none'}")

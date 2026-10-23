@@ -69,6 +69,27 @@ class InstallTest(unittest.TestCase):
         self.assertEqual(preview.returncode, 0, preview.stderr)
         self.assertIn(".superwork/config.json", preview.stdout)
         self.assertFalse((self.prefix / ".superwork").exists())
+        # 从真实分发目录初始化并登记，覆盖新共享模块、模板与 CLI 的独立运行依赖。
+        project = Path(tempfile.mkdtemp(prefix="parallel-project-", dir=self.root))
+        bootstrap = subprocess.run(
+            [sys.executable, str(installed / "superwork-init/scripts/bootstrap_superwork.py"),
+             "--root", str(project)], capture_output=True, text=True,
+        )
+        self.assertEqual(bootstrap.returncode, 0, bootstrap.stderr)
+        cli = installed / "superwork-start/scripts/parallel_task.py"
+        register = subprocess.run(
+            [sys.executable, str(cli), "register", "--root", str(project), "--id", "installed-task",
+             "--owner", "test-session", "--goal", "测试独立安装", "--files", "src/new.py"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(register.returncode, 0, register.stdout + register.stderr)
+        self.assertEqual(json.loads(register.stdout)["parallel"]["tasks"][0]["id"], "installed-task")
+        finish = subprocess.run(
+            [sys.executable, str(cli), "finish", "--root", str(project), "--id", "installed-task",
+             "--owner", "test-session"], capture_output=True, text=True,
+        )
+        self.assertEqual(finish.returncode, 0, finish.stdout + finish.stderr)
+        self.assertFalse((project / ".superwork/parallel/installed-task.json").exists())
 
     def test_piped_install_defaults_to_agents_and_is_self_contained(self) -> None:
         other = self.prefix / ".agents/skills/other-skill"

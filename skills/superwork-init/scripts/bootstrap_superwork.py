@@ -527,6 +527,9 @@ def build_runtime_files(root: Path) -> tuple[dict[str, str], str]:
     runtime: dict[str, str] = {
         ".superwork/config.json": config_template(package_manager, packages, test_hints),
     }
+    # 协作说明允许项目定制；初始化和修复都只补缺失文件，不能覆盖人工约定。
+    if not (root / ".superwork/parallel.md").exists():
+        runtime[".superwork/parallel.md"] = load_template("parallel.md.tmpl")
     layered_runtime, mode = build_layered_runtime(packages, test_hints)
     runtime.update(layered_runtime)
     return runtime, mode

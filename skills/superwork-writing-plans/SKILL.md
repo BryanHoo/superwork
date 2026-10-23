@@ -24,6 +24,8 @@ Keep `Suggested Spec Reads`, `Global Constraints`, and task `Interfaces` explici
 
 ## Plan Location
 
+Before saving or changing a plan, follow [parallel coordination](../superwork-start/references/parallel-coordination.md), loaded once per run. Reuse the caller's notice or establish one on direct entry; include the planned files and shared impact without reading unrelated plans. A plan-only outcome releases its own notice only after successful artifact validation; a plan handed to execution keeps it.
+
 Save every plan as one Markdown file:
 
 ```text

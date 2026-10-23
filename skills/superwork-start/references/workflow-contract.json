@@ -38,6 +38,19 @@
     "executionOrder": "first-unchecked-task",
     "statusMarker": "Task Status"
   },
+  "parallelCoordination": {
+    "guide": ".superwork/parallel.md",
+    "records": ".superwork/parallel/<id>.json",
+    "reference": "skills/superwork-start/references/parallel-coordination.md",
+    "tool": "skills/superwork-start/scripts/parallel_task.py",
+    "contextKey": "parallel",
+    "handoffField": "evidence.parallelTask",
+    "readPolicy": "summary-first-related-plans-on-demand",
+    "noticeScope": "whole-outcome",
+    "cleanup": "owner-only-after-verification",
+    "readOnly": "inspect-without-notices",
+    "visibility": "same-project-directory"
+  },
   "routes": {
     "analysis": "direct-response",
     "bug": "superwork-debugging",

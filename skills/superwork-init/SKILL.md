@@ -18,6 +18,7 @@ Generate:
 ```text
 .superwork/
 ├── config.json
+├── parallel.md
 ├── spec/
 ├── prd/
 └── plans/
@@ -32,6 +33,10 @@ Generate:
 - project verification commands
 
 Do not generate route/state blocks, scripts, templates, or copies of the generic workflow.
+
+`parallel.md` is a small, project-editable cooperation agreement, not a route/state definition. Preserve existing authored content. Task notices under `parallel/` are created lazily by write tasks, kept local with their own ignore file, and removed only by their owner after verification. Existing schema 2 projects can add the missing guide at first registration without reinitializing config or specs.
+
+When repairing an already-ready runtime, follow [parallel coordination](../superwork-start/references/parallel-coordination.md) before writes and release only your own notice after validating the repair. First initialization of a missing runtime does not create a notice before that runtime exists; incompatible-runtime repair remains explicit and must preserve existing notices.
 
 ## Process
 

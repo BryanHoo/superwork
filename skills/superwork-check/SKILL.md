@@ -25,6 +25,8 @@ python3 <skill_dir>/scripts/check_specs.py --root . --format json
 
 Use its changed files, relevant spec candidates, verification hints, runtime status, and risks. Reuse already-read current project guidance; load missing global and applicable shared indexes, plus indexes and linked rules needed to judge the changed contracts. Do not read every returned reference merely because it is listed. On direct entry, use `superwork-start/scripts/get_context.py` for required context candidates.
 
+Follow [parallel coordination](../superwork-start/references/parallel-coordination.md), loaded once per run before any finalization edit. Reuse the caller's notice and refresh current impacts before simplification or spec writes; on direct entry establish a notice only if this check will edit files. Explicitly read-only checks inspect summaries without registration or cleanup.
+
 ### Step 2: Inspect the diff
 
 Review all current-task changes against the selected design or saved plan, project instructions, interfaces, and relevant specs. Separate unrelated user changes and preserve them.
@@ -72,6 +74,8 @@ After `update` or `create`, confirm the document is reachable from the relevant 
 If spec files change after code verification, run the checks needed to validate those final artifacts before completion.
 
 ### Step 7: Report
+
+After required gates pass, persist shared-impact handoff and verification evidence in the existing plan, then finish only the notice identified by `evidence.parallelTask` using the coordination reference. Preserve it on failure or pause; do not remove notices during read-only checks. Report cleanup errors without claiming the notice was released.
 
 Report findings before summary:
 

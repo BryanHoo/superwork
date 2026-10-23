@@ -11,6 +11,8 @@ Turn a symptom into a confirmed root cause and a precise regression behavior bef
 
 ## Root-Cause Process
 
+Inspect current parallel summaries on direct entry through `superwork-start/scripts/get_context.py`. Before any project write, follow [parallel coordination](../superwork-start/references/parallel-coordination.md), loaded once per run; reuse the caller's notice and refresh it when diagnosis changes the intended repair scope. Read-only investigation does not register.
+
 1. Reuse current config and guidance from the handoff; read missing or changed applicable spec indexes and rules, the full error output, and recent relevant changes. Load additional reference docs only when the symptom or boundary evidence makes them relevant.
 2. Reproduce the symptom reliably and record exact steps, expected behavior, actual behavior, and determinism.
 3. Trace data and control flow across boundaries. Compare the broken path with a working pattern in the same repository.

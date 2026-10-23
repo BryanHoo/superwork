@@ -134,6 +134,19 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertEqual(plan["executionOrder"], "first-unchecked-task")
         self.assertEqual(plan["statusMarker"], "Task Status")
 
+    def test_parallel_contract_has_discoverable_shared_resources_without_new_entry(self) -> None:
+        parallel = self.contract["parallelCoordination"]
+        reference = REPO_ROOT / parallel["reference"]
+        self.assertTrue(reference.is_file())
+        self.assertTrue((REPO_ROOT / parallel["tool"]).is_file())
+        self.assertEqual(parallel["handoffField"], "evidence.parallelTask")
+        self.assertEqual(parallel["noticeScope"], "whole-outcome")
+        self.assertEqual(parallel["cleanup"], "owner-only-after-verification")
+        # 所有可直接进入的写入技能都能发现同一操作参考，不能依赖入口恰好已经执行。
+        for skill in self.contract["skills"]:
+            content = (REPO_ROOT / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("references/parallel-coordination.md", content, skill)
+
     def test_phase_skills_load_declared_targets(self) -> None:
         for edge in self.contract["phaseTransitions"]:
             source = edge["from"]

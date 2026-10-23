@@ -89,11 +89,28 @@ State any execution limit or request to resume saved work directly:
 
 Supply the actual saved plan path when resuming. The executor checks plan structure, spec references, and interface declarations, then continues from the first unchecked `Task Status` in order. A new session reloads constraints and re-establishes verification evidence; checked tasks do not prove the current state. Repair the plan first if its interfaces, requirements, or verification conditions no longer match reality.
 
+### 4. Develop across parallel sessions
+
+Start multiple AI sessions in the same project directory and describe each outcome. Every session first inspects task summaries. Before writing, it reads `.superwork/parallel.md` and registers its intended paths and shared impact in its own `parallel/<id>.json`. Small tasks need no artificial plan; tasks inside each saved plan remain serial.
+
+Read summaries first, the project agreement before writes, and another task's plan and applicable specs only when relevant impact requires them. Refresh notices before scope expansion, shared edits, resumption, or finalization edits.
+
+- Continue independent work. Assign overlapping changes to one task while others advance unaffected parts.
+- Consider public behavior, database schemas, dependencies, and test resources as well as filenames.
+- Pause affected work when ownership or compatibility is unclear and record why. Paused notices retain their scope.
+- After verification, preserve shared changes and evidence in the existing plan, then remove only your notice. Retain it on failure, interruption, or pause. Read-only checks do not clean up other tasks.
+
+Records contain `id`, `owner`, `goal`, `status`, `writePaths`, `sharedImpact`, `plan`, `reason`, and `updatedAt`. Paths are literal project-relative files or directories; status is `running` or `paused`. The helper checks ownership, keeps separate files per task, and adds a local ignore file for temporary JSON records.
+
+An existing schema 2 project gets its missing agreement at first registration without reinitialization or overwriting authored content. These are cooperative notices, not file locks or process control. Separate clones and worktrees do not automatically share notices.
+
 ## Project files and constraints
 
 ```text
 .superwork/
 ├── config.json   # Project facts: tooling, packages, layers, artifact paths, checks
+├── parallel.md   # Project-editable cooperation agreement, read before writes
+├── parallel/     # Local per-task JSON notices, removed after verified completion
 ├── spec/         # Durable rules: shared guides, layer rules, and indexes
 ├── prd/          # Design documents
 └── plans/        # Resumable single-file plans and task status
@@ -101,6 +118,7 @@ Supply the actual saved plan path when resuming. The executor checks plan struct
 
 - `config.json` currently uses `schemaVersion: 2`. Update package facts and `verification` commands when the project's toolchain changes.
 - `spec/` holds lasting interface contracts, directory rules, and verification requirements linked through indexes. Keep temporary task progress in the plan.
+- `parallel.md` holds the cooperation agreement; `parallel/` holds current impact notices, does not replace plans, and keeps temporary records out of commits.
 - Plans use `YYYY-MM-DD-<topic>.md`. Each task declares files, input and output interfaces, expected behavior, stop conditions, and a verification command. Follow the [task template](skills/superwork-writing-plans/SKILL.md#exact-task-template) when editing a plan manually.
 - If the configuration version is incompatible, explicitly request repair of the existing `.superwork/` before continuing.
 

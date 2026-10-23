@@ -5,8 +5,11 @@
 | `skills/superwork-*/SKILL.md` | 技能入口、触发范围与行为契约 |
 | `skills/superwork-*/agents/openai.yaml` | 各技能的展示与默认提示元数据 |
 | `skills/_shared/repository.py` | 多技能复用的工具链检测与 Git 改动收集 |
+| `skills/_shared/parallel.py` | 独立任务登记的校验、摘要读取及完整文件发布 |
 | `skills/superwork-init/scripts/`、`templates/` | 项目运行配置与分层规范生成 |
 | `skills/superwork-start/scripts/get_context.py` | 项目事实、规范与候选任务上下文 |
+| `skills/superwork-start/scripts/parallel_task.py` | 登记、更新、暂停及按所有者清理任务的 CLI |
+| `skills/superwork-start/references/parallel-coordination.md` | 按需加载的通用协作操作；各写入技能链接同一来源 |
 | `skills/superwork-start/references/workflow-contract.json` | 通用工作流契约的仓库内来源 |
 | `skills/superwork-executing-plans/scripts/preflight_plan.py` | 已保存计划的结构与接口预检 |
 | `skills/superwork-check/scripts/` | 改动相关规范定位和规范更新工具 |
@@ -18,7 +21,8 @@
 | `.codex-plugin/plugin.json` | 插件分发元数据 |
 | `.superwork/config.json`、`spec/` | 本项目事实与长期规范 |
 | `.superwork/prd/`、`plans/` | 本项目设计和单文件任务计划 |
+| `.superwork/parallel.md`、`parallel/` | 项目协作约定与本地临时影响登记；登记不提交 Git |
 
-技能自身的脚本与模板留在该技能目录；跨技能工具放在 `_shared`。通用工作流仍由技能维护，禁止在 `.superwork/` 生成工作流副本、脚本或模板。设计与计划采用 `YYYY-MM-DD-<topic>.md` 文件名，临时任务进度不放入长期规范。
+技能自身的脚本与模板留在该技能目录；跨技能工具放在 `_shared`。通用工作流仍由技能维护，禁止在 `.superwork/` 生成工作流副本、脚本或模板；`parallel.md` 是经项目明确采用的轻量协作约定，由初始化模板生成并允许人工定制，不承载路由或执行脚本。设计与计划采用 `YYYY-MM-DD-<topic>.md` 文件名，临时任务进度不放入长期规范。
 
 [README.md](../../../README.md) 与 [README.en.md](../../../README.en.md) 分别面向中文和英文读者，公共使用方式与命令变更时应同步核对。

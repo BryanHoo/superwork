@@ -125,6 +125,17 @@ class LayeredSpecLayoutTest(unittest.TestCase):
                 ["python3 -m unittest discover -s tests -p 'test_*.py' -v"],
             )
 
+    def test_bootstrap_creates_parallel_guide_and_preserves_project_edits(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            self.bootstrap_spec(root)
+            guide = root / ".superwork/parallel.md"
+            self.assertTrue(guide.is_file())
+            self.assertFalse((root / ".superwork/parallel").exists())
+            guide.write_text("# 人工维护的协作约定\n", encoding="utf-8")
+            self.bootstrap_spec(root)
+            self.assertEqual(guide.read_text(encoding="utf-8"), "# 人工维护的协作约定\n")
+
     def test_bootstrap_empty_repo_does_not_invent_node_commands(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

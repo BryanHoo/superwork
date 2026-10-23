@@ -24,6 +24,8 @@ Coordinate a saved implementation plan without redefining design, TDD, debugging
 
 ## Execute Tasks
 
+Before the first project write, read [parallel coordination](../superwork-start/references/parallel-coordination.md) once per run if not already loaded. Reuse the caller's notice; on direct entry load context and register this plan's full intended scope. Refresh notices before expanding scope, shared edits, or resumption. Pause only the affected work when independence or ownership is unresolved, and preserve the notice and recovery notes.
+
 Before the first code task, read `../superwork-tdd/SKILL.md` once per run in full and reuse it for later slices. Before reusing a verification result, read [the evidence policy](../superwork-check/references/verification-evidence.md) once per run. For each unchecked task in document order:
 
 1. Mark it in progress.

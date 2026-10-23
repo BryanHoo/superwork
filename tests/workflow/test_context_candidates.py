@@ -57,6 +57,30 @@ class ContextCandidatesTest(unittest.TestCase):
         self.assertEqual(priorities[".superwork/spec/backend/index.md"], "recommended")
         self.assertEqual(set(payload["spec"]["recommendedReads"]), set(priorities))
 
+    def test_parallel_summary_does_not_load_other_plans_or_write_runtime(self) -> None:
+        before = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*") if ".git" not in path.parts)
+        self.assertEqual(self.context()["parallel"]["tasks"], [])
+        after = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*") if ".git" not in path.parts)
+        self.assertEqual(before, after)
+        self.write(".superwork/parallel.md", "# 项目协作说明\n")
+        self.write(".superwork/plans/other.md", "PRIVATE_PLAN_BODY_DO_NOT_LOAD" * 1000)
+        self.write(".superwork/parallel/other.json", json.dumps({
+            "id": "other", "owner": "another-session", "goal": "订单导出", "status": "running",
+            "writePaths": ["src/orders.ts"], "sharedImpact": ["修改订单查询"],
+            "plan": ".superwork/plans/other.md", "updatedAt": "2026-10-23T00:00:00Z",
+            "unrelatedContext": "PRIVATE_EXTRA_FIELD_DO_NOT_LOAD",
+        }))
+        payload = self.context()
+        self.assertEqual(payload["parallel"]["guide"], ".superwork/parallel.md")
+        self.assertEqual(payload["parallel"]["tasks"][0]["plan"], ".superwork/plans/other.md")
+        self.assertNotIn("PRIVATE_", json.dumps(payload))
+
+    def test_context_surfaces_invalid_parallel_records_without_hiding_valid_tasks(self) -> None:
+        self.write(".superwork/parallel/broken.json", "{broken")
+        payload = self.context()
+        self.assertEqual(payload["parallel"]["status"], "error")
+        self.assertEqual(payload["parallel"]["errors"][0]["path"], ".superwork/parallel/broken.json")
+
     def test_changed_file_requires_matching_and_shared_rules(self) -> None:
         self.write("src/components/Button.tsx", "export const Button = true;\n")
         payload = self.context()

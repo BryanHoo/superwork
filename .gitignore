@@ -62,3 +62,4 @@ __pycache__/
 /tmp
 .agents
 skills-lock.json
+.superwork/parallel/

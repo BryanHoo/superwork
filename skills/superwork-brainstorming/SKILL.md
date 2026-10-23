@@ -17,6 +17,8 @@ Turn broad requirements into one bounded design that can be planned and implemen
 
 Do not write implementation code or scaffold product files while designing. Planning and execution remain downstream responsibilities.
 
+Before saving design artifacts, follow [parallel coordination](../superwork-start/references/parallel-coordination.md), loaded once per run. Reuse the caller's notice; direct entry establishes its own before writes. A validated design-only outcome releases its own notice; continuation carries it to planning.
+
 ## Process
 
 1. Reuse current project facts and already-read guidance from the handoff. Inspect relevant repository changes, required indexes, and only the linked docs needed for the design decisions; on direct entry, obtain context through `superwork-start/scripts/get_context.py` first. Read applicable binding rules even when they are listed as recommended.

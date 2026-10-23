@@ -35,6 +35,8 @@ Do not invoke `superwork-init` unless the user explicitly asks to initialize, on
 
 Never block ordinary repository work merely because an implicitly selected Superwork runtime is missing.
 
+Inspect the returned `parallel` summary on every entry. Before project writes in a ready runtime, read [parallel coordination](references/parallel-coordination.md) once per run and follow its project-guide, registration, and refresh rules. Read-only work creates no notice. Carry an existing notice as `evidence.parallelTask`; do not register again at each skill transition or load other plans unless their impact is relevant.
+
 Before the first edit, scope guidance to the task's intended files, including new files, with `get_context.py --root . --format json --files <path> ...` when the initial Git scope is empty or includes unrelated changes. Load the applicable package/layer indexes and their binding linked rules before implementation; a recommended priority never overrides a project requirement. Reassess reads when the task scope grows. `recommendedReads` remains a compatibility field, not an instruction to read every document.
 
 ### Step 3: Classify the work

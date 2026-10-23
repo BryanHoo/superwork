@@ -23,6 +23,8 @@ Do not use this skill while root cause is unknown or architecture is unresolved.
 
 ## Method
 
+Before writing the proof or implementation, follow [parallel coordination](../superwork-start/references/parallel-coordination.md), loaded once per run. Reuse the caller's notice; on direct entry obtain context and establish one. Refresh before shared edits or scope expansion. Return the same `evidence.parallelTask` with the slice evidence; only the owning outcome's completion releases it.
+
 ### 1. Define the proof
 
 State the smallest observable behavior that distinguishes success from failure. For code behavior, prefer an automated test. For documentation, configuration, or copy, use a focused lint, render, build, snapshot, schema check, or search assertion.
