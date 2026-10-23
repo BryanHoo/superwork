@@ -1,36 +1,29 @@
-# Thinking Guides
+# Superwork 公共指南
 
-## Scope
+## 项目范围
 
-Shared rules for authoring, routing, packaging, and validating the Superwork skill bundle.
+本仓库发布 Markdown 技能、Python 辅助脚本和 Bash 安装脚本。包管理器为 `none`，包与分层为 `root/shared`；没有 Node 包、前端应用或后端服务。
 
-## Pre-Development Checklist
+| 指南 | 使用场景 |
+| --- | --- |
+| [代码复用](./code-reuse-thinking-guide.md) | 修改共享检测器、技能脚本和测试工具 |
+| [边界契约](./cross-layer-thinking-guide.md) | 修改配置、上下文、计划格式或安装产物 |
+| [平台与环境](./cross-platform-thinking-guide.md) | 运行 Python 工具、修改 Bash 安装脚本 |
+| [共享层索引](../shared/index.md) | 查询目录归属与验证要求 |
 
-- Use runtime facts embedded by context discovery; read required candidates including global and applicable shared indexes
-- Scope guidance to intended files with `get_context.py --files <path> ...` before editing when Git changes do not represent the task
-- Load linked reference docs when their constraints apply; reuse unchanged guidance already available in the current context
-- Read applicable `AGENTS.md` instructions before changing files
-- Treat `skills/superwork-start/references/workflow-contract.json` as the machine-readable workflow contract
-- Continue routed change work through final verification by default
-- Keep only `superwork-start` implicitly invocable; all phase skills require explicit handoff
-- Load every target `SKILL.md` once per run in full and pass the structured handoff fields declared by the workflow contract; reload on changed instructions, a new run/executor, or unavailable context
-- Keep saved plans in one Markdown file and resume from the first unchecked `Task Status`
-- Stop after analysis, design, or planning only when the user explicitly requests that outcome or prohibits later actions
-- Preserve explicit read-only instructions during final verification
+## 项目验证命令
 
-## Verification Checklist
+从仓库根目录、在 Python 3.11+ 环境中执行：
 
-- Require current verification evidence before any completion claim; reuse equivalent proof only while relevant inputs and environment remain unchanged
-- Run `python3 -m unittest discover -s tests -p 'test_*.py' -v` unless an equivalent result is already current
-- Run `python3 -m unittest discover -s skills/superwork-init/tests -p 'test_*.py' -v` unless an equivalent result is already current
-- Run `python3 tests/evals/run_skill_evals.py --split validation --runs 3` when Codex CLI authentication is valid and trigger behavior changes
-- Validate all eight skill folders and `.codex-plugin/plugin.json`
-- Confirm removed skill names and the old workflow/state model do not reappear in active skill content
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+python3 -m unittest discover -s skills/superwork-init/tests -p 'test_*.py' -v
+```
 
-## Update Triggers
+更改技能描述或触发边界时，另外执行真实触发评估；要求有效的 Codex CLI 认证：
 
-- A skill responsibility, handoff, or continuation rule changes
-- The workflow contract or scenario schema changes
-- Plugin or `agents/openai.yaml` requirements change
-- A repeated workflow failure needs a durable regression rule
-- A description, trigger boundary, route marker, or eval threshold changes
+```bash
+python3 tests/evals/run_skill_evals.py --split validation --runs 3
+```
+
+验证入口与依赖要求以 [项目 README](../../../README.md) 为依据；项目配置见 [config.json](../../config.json)。

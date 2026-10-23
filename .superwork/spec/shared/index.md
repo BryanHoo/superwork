@@ -1,31 +1,13 @@
-# Shared Development Guidelines
+# Superwork 共享层规范
 
-## Scope
+## 适用范围
 
-Durable contracts for the Superwork skill bundle and its deterministic tooling.
+`root/shared` 覆盖 `skills/`、`scripts/`、`tests/`、插件元数据和项目文档；本仓库没有独立子包或应用服务层。
 
-## Guidelines Index
+| 规范 | 内容 |
+| --- | --- |
+| [目录结构](./directory-structure.md) | 技能、共享模块、测试与运行产物的归属 |
+| [质量要求](./quality-guidelines.md) | 真实验证入口、契约与变更检查 |
+| [公共指南](../guides/index.md) | 代码复用、边界与平台约束 |
 
-| Guide | Description |
-|---|---|
-| [Directory Structure](./directory-structure.md) | Ownership of plugin, skill, test, and runtime artifacts |
-| [Quality Guidelines](./quality-guidelines.md) | Workflow, metadata, test, and completion requirements |
-
-## Pre-Development Checklist
-
-- Read `.superwork/spec/guides/index.md`
-- Read both guides before changing a skill boundary, workflow contract, script, or plugin metadata
-- Reuse these guides within the same run while their content remains current and available
-
-## Verification Checklist
-
-- Confirm the eight-skill set matches `workflow-contract.json`
-- Confirm only `superwork-start` is implicitly invocable
-- Confirm all implementation paths call TDD and all completion paths enter check once
-- Confirm schema 2, medium/heavy planning routes, mandatory plan interfaces, and spec-reference preflight remain intact
-
-## Update Triggers
-
-- A skill is added, removed, renamed, or changes responsibility
-- A script moves between skill ownership boundaries
-- The plugin manifest or invocation policy changes
+配置使用 [schema version 2](../../config.json)，规范布局为 `layered/layer-root`，记录在 [.layout.json](../.layout.json)。
